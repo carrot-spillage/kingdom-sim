@@ -28,7 +28,7 @@ fn spawn_camera(mut commands: Commands) {
 fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
     commands
         .spawn_bundle(SpriteBundle {
-            texture: textures.texture_bevy.clone(),
+            texture: textures.pawn_1.clone(),
             transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
             ..Default::default()
         })

@@ -1,5 +1,11 @@
 use crate::GameState;
-use bevy::prelude::*;
+use bevy::{
+    app::{App, Plugin},
+    asset::{AssetServer, Handle, HandleUntyped},
+    ecs::world::World,
+    render::texture::Image,
+    text::Font,
+};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_kira_audio::AudioSource;
 
@@ -36,6 +42,9 @@ pub struct AudioAssets {
 
 #[derive(AssetCollection)]
 pub struct TextureAssets {
-    #[asset(path = "textures/bevy.png")]
-    pub texture_bevy: Handle<Image>,
+    #[asset(path = "textures/Pawn Warrior 1.png")]
+    pub pawn_1: Handle<Image>,
+
+    #[asset(path = "textures/grass.png")]
+    pub grass_tile: Handle<Image>,
 }
