@@ -3,6 +3,8 @@ mod audio;
 mod loading;
 mod menu;
 mod player;
+mod work_process;
+mod activity;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
