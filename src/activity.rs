@@ -21,7 +21,7 @@ use bevy::prelude::Entity;
 use crate::work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState};
 
 #[derive(Clone, Copy)]
-struct Job {
+pub struct Job {
     id: Entity,
     name: &'static str,
     skill_type: SkillType,
@@ -57,10 +57,10 @@ fn create_job_generator(
 
 fn match_workers_with_jobs(
     workers_looking_for_jobs: &Vec<(Entity, Skilled)>,
-    job_queue: impl Iterator<Item = Job>,
+    mut job_queue: impl Iterator<Item = Job>,
 ) -> Vec<(Entity, Job)> {
-    let mut workers = workers_looking_for_jobs.clone();
-    let workers_with_jobs: Vec<(Entity, Job)> = vec![];
+    let mut workers = (*workers_looking_for_jobs).clone();
+    let mut workers_with_jobs: Vec<(Entity, Job)> = vec![];
 
     while workers.len() > 0 {
         let job = job_queue.next().unwrap();
@@ -74,44 +74,27 @@ fn match_workers_with_jobs(
 pub fn join_or_create_work_process(
     worker_id: Entity,
     job: &Job,
-    available_work_processess: &Vec<WorkProcess>,
+    available_work_processess: &Vec<(Entity, &WorkProcess)>,
 ) -> JoinOrCreateWorkProcessResult {
-    let available_process_index_opt = available_work_processess.iter().position(|x| {
-        x.max_workers > (x.worker_ids.len() as u32) + (x.tentative_worker_ids.len() as u32)
-            && job.id == x.job_id
+    let maybe_available_process = available_work_processess.iter().find(|(_, work_process)| {
+        work_process.max_workers
+            > (work_process.worker_ids.len() as u32)
+                + (work_process.tentative_worker_ids.len() as u32)
+            && job.id == work_process.job_id
     });
 
-    if let Some(available_process_index) = available_process_index_opt {
-        let work_process = join_work_process(
-            &(available_work_processess)[available_process_index],
-            worker_id,
-        );
-        return JoinOrCreateWorkProcessResult {
-            _type: JoinOrCreateWorkProcessResultType::Joined,
+    if let Some((work_process_id, work_process)) = maybe_available_process {
+        let work_process = join_work_process(&work_process, worker_id);
+
+        return JoinOrCreateWorkProcessResult::Join {
+            work_process_id: *work_process_id,
             worker_id,
             work_process,
-            updated_work_processes: available_work_processess
-                .iter()
-                .enumerate()
-                .map(|(i, x)| {
-                    if i == available_process_index {
-                        work_process
-                    } else {
-                        *x
-                    }
-                })
-                .collect(),
         };
     } else {
-        let work_process = create_work_process(worker_id, job);
-        let mut updated_work_processes = *available_work_processess.clone();
-        updated_work_processes.push(work_process);
-
-        return JoinOrCreateWorkProcessResult {
-            _type: JoinOrCreateWorkProcessResultType::Created,
+        return JoinOrCreateWorkProcessResult::Create {
             worker_id,
-            work_process,
-            updated_work_processes,
+            work_process: create_work_process(worker_id, job),
         };
     }
 }
@@ -121,7 +104,7 @@ fn join_work_process(work_process: &WorkProcess, worker_id: Entity) -> WorkProce
     tentative_worker_ids.push(worker_id);
     return WorkProcess {
         tentative_worker_ids,
-        ..*work_process
+        ..work_process.clone()
     };
 }
 
@@ -144,7 +127,8 @@ fn create_work_process(worker_id: Entity, job: &Job) -> WorkProcess {
     };
 }
 
-struct WorkProcess {
+#[derive(Clone)]
+pub struct WorkProcess {
     units_of_work: f32,
     job_id: Entity,
     max_workers: u32,
@@ -154,14 +138,14 @@ struct WorkProcess {
     tentative_worker_ids: Vec<Entity>,
 }
 
-enum JoinOrCreateWorkProcessResultType {
-    Joined,
-    Created,
-}
-
-struct JoinOrCreateWorkProcessResult {
-    _type: JoinOrCreateWorkProcessResultType,
-    worker_id: Entity,
-    work_process: WorkProcess,
-    updated_work_processes: Vec<WorkProcess>,
+pub enum JoinOrCreateWorkProcessResult {
+    Join {
+        work_process_id: Entity,
+        worker_id: Entity,
+        work_process: WorkProcess,
+    },
+    Create {
+        worker_id: Entity,
+        work_process: WorkProcess,
+    },
 }

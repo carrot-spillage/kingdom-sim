@@ -1,8 +1,10 @@
+#[derive(Clone)]
 pub struct QualityCounter {
     pub points: f32,
     pub instances: u32,
 }
 
+#[derive(Clone)]
 pub enum WorkProcessState {
     IncompleteWorkProcessState {
         units_of_work_left: f32,
@@ -14,7 +16,7 @@ pub enum WorkProcessState {
     },
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Hash, Eq)]
 pub enum SkillType {
     PlantingCrops,
     Harvesting,
@@ -26,6 +28,7 @@ pub struct Skill {
     pub value: f32,
 }
 
+#[derive(Clone)]
 pub struct Skilled {
     pub skills: HashMap<SkillType, f32>,
 }
@@ -72,7 +75,8 @@ pub fn advance_work_process_state(
     }
 }
 
-struct WorkChunk {
+#[derive(Clone)]
+pub struct WorkChunk {
     quality: f32,
     units_of_work: f32,
 } // quality and progress go from 0.0 to 1.0
@@ -84,10 +88,10 @@ use bevy::prelude::Entity;
 fn calc_work_chunks(workers: Vec<Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
     workers
         .iter()
-        .map(|x| x.skills.get(&skill_type)?)
-        .map(|x| WorkChunk {
-            units_of_work: 0.5 + x / 2.0,
-            quality: x,
+        .map(|x| x.skills.get(&skill_type).unwrap())
+        .map(|skill_value| WorkChunk {
+            units_of_work: 0.5 + skill_value / 2.0,
+            quality: *skill_value,
         })
         .collect()
 }
@@ -112,5 +116,13 @@ fn calc_work_chunks_progress(worker_chunks: &Vec<WorkChunk>, interval: f32) -> f
 pub fn get_most_skilled(workers: &Vec<(Entity, Skilled)>, skill_type: SkillType) -> Entity {
     workers
         .iter()
-        .max_by(|a, b| a.1.skills.get(&skill_type)?.cmp(b.1.skills.get(&skill_type)?)).0
+        .max_by(|a, b| {
+            a.1.skills
+                .get(&skill_type)
+                .unwrap()
+                .partial_cmp(b.1.skills.get(&skill_type).unwrap())
+                .unwrap()
+        })
+        .unwrap()
+        .0
 }
