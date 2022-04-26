@@ -102,10 +102,10 @@ pub fn join_or_create_work_process(
 fn join_work_process(work_process: &WorkProcess, worker_id: Entity) -> WorkProcess {
     let mut tentative_worker_ids = work_process.tentative_worker_ids.clone();
     tentative_worker_ids.push(worker_id);
-    return WorkProcess {
+    WorkProcess {
         tentative_worker_ids,
         ..work_process.clone()
-    };
+    }
 }
 
 fn create_work_process(worker_id: Entity, job: &Job) -> WorkProcess {
