@@ -5,6 +5,7 @@ mod menu;
 mod player;
 mod work_process;
 mod activity;
+pub mod movement;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
