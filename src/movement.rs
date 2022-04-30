@@ -1,13 +1,16 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Component, Entity, EventWriter, Plugin, Query, SystemSet, Transform},
+    prelude::{
+        App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet,
+        Transform,
+    },
 };
 
 use crate::GameState;
 
 #[derive(Clone, Copy)]
 pub enum ArraivalHandlerData {
-    Job(Entity),
+    WorkerStartWorking(Entity),
 }
 
 #[derive(Component)]
@@ -70,6 +73,21 @@ fn move_to_position(
             commands.entity(entity_id).remove::<MovingToPosition>();
             walker.stop();
             ev_arrival.send(moving_to_position.arrival_handler_data);
+        }
+    }
+}
+
+fn handle_arrivals(
+    mut commands: Commands,
+    mut ev_arrival: EventReader<ArraivalHandlerData>,
+    mut workers: Query<(Entity)>,
+) {
+    for arrival_handler_data in ev_arrival.iter() {
+        match arrival_handler_data {
+            ArraivalHandlerData::WorkerStartWorking(worker_id) => {
+                let worker = workers.get(*worker_id).unwrap();
+                
+            }
         }
     }
 }

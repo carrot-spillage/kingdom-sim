@@ -16,20 +16,25 @@ use std::{
     iter::{FromFn, Map},
 };
 
-use bevy::prelude::Entity;
+use bevy::prelude::{Component, Entity};
 
 use crate::work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState};
 
-#[derive(Clone, Copy)]
+#[derive(Component, Clone, Copy)]
 pub struct Job {
-    id: Entity,
-    name: &'static str,
-    skill_type: SkillType,
+    pub id: u32,
+    pub name: &'static str,
+    pub skill_type: SkillType,
 }
 
-fn create_job_generator(
+#[derive(Component)]
+pub struct Working {
+    pub work_process_id: Entity,
+}
+
+pub fn create_job_generator(
     jobs: Vec<Job>,
-    job_priorities: HashMap<Entity, f32>,
+    job_priorities: HashMap<u32, f32>,
 ) -> impl Iterator<Item = Job> {
     let mut counter = 0;
     let mut accumulated_value_per_job: HashMap<_, _> = jobs.iter().map(|j| (j.id, 0.0)).collect();
@@ -127,15 +132,15 @@ fn create_work_process(worker_id: Entity, job: &Job) -> WorkProcess {
     };
 }
 
-#[derive(Clone)]
+#[derive(Component, Clone)]
 pub struct WorkProcess {
-    units_of_work: f32,
-    job_id: Entity,
-    max_workers: u32,
+    pub units_of_work: f32,
+    pub job_id: u32,
+    pub max_workers: u32,
 
-    state: WorkProcessState,
-    worker_ids: Vec<Entity>,
-    tentative_worker_ids: Vec<Entity>,
+    pub state: WorkProcessState,
+    pub worker_ids: Vec<Entity>,
+    pub tentative_worker_ids: Vec<Entity>,
 }
 
 pub enum JoinOrCreateWorkProcessResult {

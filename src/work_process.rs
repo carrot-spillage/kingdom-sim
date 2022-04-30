@@ -23,12 +23,7 @@ pub enum SkillType {
     Crafting,
 }
 
-pub struct Skill {
-    pub _type: SkillType,
-    pub value: f32,
-}
-
-#[derive(Clone)]
+#[derive(Component, Clone)]
 pub struct Skilled {
     pub skills: HashMap<SkillType, f32>,
 }
@@ -83,7 +78,9 @@ pub struct WorkChunk {
 
 use std::collections::HashMap;
 
-use bevy::prelude::Entity;
+use bevy::prelude::{Component, Entity};
+
+use crate::activity::WorkProcess;
 
 fn calc_work_chunks(workers: Vec<Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
     workers
