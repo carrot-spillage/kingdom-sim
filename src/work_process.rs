@@ -80,8 +80,6 @@ use std::collections::HashMap;
 
 use bevy::prelude::{Component, Entity};
 
-use crate::activity::WorkProcess;
-
 fn calc_work_chunks(workers: Vec<Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
     workers
         .iter()

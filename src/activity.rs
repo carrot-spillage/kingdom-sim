@@ -18,7 +18,7 @@ use std::{
 
 use bevy::prelude::{Component, Entity};
 
-use crate::work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState};
+use crate::{work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState}, init::JobQueue};
 
 #[derive(Component, Clone, Copy)]
 pub struct Job {
@@ -60,9 +60,9 @@ pub fn create_job_generator(
     })
 }
 
-fn match_workers_with_jobs(
+pub fn match_workers_with_jobs(
     workers_looking_for_jobs: &Vec<(Entity, Skilled)>,
-    mut job_queue: impl Iterator<Item = Job>,
+    job_queue: &mut JobQueue,
 ) -> Vec<(Entity, Job)> {
     let mut workers = (*workers_looking_for_jobs).clone();
     let mut workers_with_jobs: Vec<(Entity, Job)> = vec![];

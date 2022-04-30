@@ -19,7 +19,7 @@ use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use init::{InitPlugin, WorldParams};
+use init::{InitPlugin, WorldParams, JobQueue};
 use movement::MovementPlugin;
 use work_process::SkillType;
 
@@ -51,7 +51,8 @@ impl Plugin for GamePlugin {
             skill_type: SkillType::PlantingCrops,
         }];
 
-        app.insert_resource(create_job_generator_with_default_priorities(&jobs));
+        let job_priorities = jobs.iter().map(|j| (j.id, 0.5)).collect();
+        app.insert_resource(JobQueue::new(jobs.clone(), job_priorities));
         app.insert_resource(jobs);
 
         app.add_state(GameState::Loading)
