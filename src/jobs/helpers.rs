@@ -13,24 +13,15 @@
 
 use std::{
     collections::HashMap,
-    iter::{FromFn, Map},
 };
 
 use bevy::prelude::{Component, Entity};
 
-use crate::{work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState}, init::JobQueue};
+use crate::{work_process::{get_most_skilled, QualityCounter, SkillType, Skilled, WorkProcessState}, jobs::JobQueue};
 
-#[derive(Component, Clone, Copy)]
-pub struct Job {
-    pub id: u32,
-    pub name: &'static str,
-    pub skill_type: SkillType,
-}
+use super::Job;
 
-#[derive(Component)]
-pub struct Working {
-    pub work_process_id: Entity,
-}
+
 
 pub fn create_job_generator(
     jobs: Vec<Job>,
