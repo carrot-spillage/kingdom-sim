@@ -2,14 +2,16 @@ pub mod helpers;
 
 use std::collections::HashMap;
 
-use bevy::prelude::{App, Commands, Entity, Plugin, Query, Res, ResMut, SystemSet, Without, Component};
+use bevy::prelude::{
+    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, Without,
+};
 
 use crate::{
     work_process::{SkillType, Skilled},
     GameState,
 };
 
-use self::helpers::{match_workers_with_jobs};
+use self::helpers::{create_work_process, join_work_process, match_workers_with_jobs, WorkProcess};
 
 pub struct JobsPlugin;
 
@@ -25,7 +27,7 @@ impl Plugin for JobsPlugin {
         app.insert_resource(JobQueue::new(jobs.clone(), job_priorities));
         app.insert_resource(jobs);
         app.add_system_set(
-            SystemSet::on_enter(GameState::Playing).with_system(assign_jobs_to_workers),
+            SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
         );
     }
 
@@ -79,13 +81,39 @@ fn assign_jobs_to_workers(
     jobs: Res<Vec<Job>>,
     mut job_queue: ResMut<JobQueue>,
     workers_looking_for_jobs: Query<(Entity, &Skilled), Without<Working>>,
+    mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
 ) {
     let all_workers = workers_looking_for_jobs
         .iter()
         .map(|(entity, s)| (entity, s.clone()))
         .collect::<Vec<_>>();
-    match_workers_with_jobs(&all_workers, &mut job_queue);
 
+    let worker_and_jobs = match_workers_with_jobs(&all_workers, &mut job_queue);
+    for (worker_id, job) in worker_and_jobs {
+        let maybe_existing_work_process =
+            available_work_processess.iter_mut().find(|(_, work_process)| {
+                work_process.max_workers
+                    > ((work_process.worker_ids.len() as u32)
+                        + (work_process.tentative_worker_ids.len() as u32))
+                    && job.id == work_process.job_id
+            });
+
+        match maybe_existing_work_process {
+            Some((work_process_id, mut work_process)) => {
+                *work_process = join_work_process(&work_process, worker_id);
+                commands
+                    .entity(worker_id)
+                    .insert(Working { work_process_id });
+            }
+            None => {
+                let new_work_process = create_work_process(worker_id, &job);
+                let work_process_id = commands.spawn().insert(new_work_process).id();
+                commands
+                    .entity(worker_id)
+                    .insert(Working { work_process_id });
+            }
+        }
+    }
     // let planting_crops_job_id = jobs[0].id;
 
     // let work_process = WorkProcess {

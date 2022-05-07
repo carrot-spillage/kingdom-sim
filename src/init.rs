@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin,
-        Res, ResMut, SystemSet, Transform,
+        App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin, Res,
+        ResMut, SystemSet, Transform,
     },
     sprite::SpriteBundle,
 };
@@ -13,7 +13,7 @@ use rand::Rng;
 use crate::{
     movement::{Position, Walker},
     work_process::{SkillType, Skilled},
-    GameState, jobs::Job,
+    GameState,
 };
 
 pub struct InitPlugin;
@@ -36,7 +36,6 @@ fn init(
     world_params: Res<WorldParams>,
     mut commands: Commands,
     mut asset_server: ResMut<AssetServer>,
-    jobs: Res<Vec<Job>>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
@@ -45,7 +44,6 @@ fn init(
             &mut commands,
             get_random_pos_in_world(&world_params),
             &mut asset_server,
-            &jobs,
         );
     }
 }
@@ -64,7 +62,6 @@ fn spawn_worker(
     commands: &mut Commands,
     position: Position,
     asset_server: &mut ResMut<AssetServer>,
-    jobs: &Res<Vec<Job>>,
 ) {
     let bundle = WorkerBundle {
         skilled: Skilled {
