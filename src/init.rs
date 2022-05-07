@@ -6,7 +6,7 @@ use bevy::{
         App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin, Res,
         ResMut, SystemSet, Transform,
     },
-    sprite::SpriteBundle,
+    sprite::{Sprite, SpriteBundle},
 };
 use rand::Rng;
 
@@ -74,10 +74,14 @@ fn spawn_worker(
         },
         position: position,
         sprite: SpriteBundle {
-            texture: asset_server.load("assets/bevy.png"),
+            texture: asset_server.load("textures/peasant.png"),
             transform: Transform {
                 translation: position.0,
                 ..Transform::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(12.0, 16.0)),
+                ..Sprite::default()
             },
             ..Default::default()
         },

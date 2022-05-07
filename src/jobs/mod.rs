@@ -2,16 +2,14 @@ pub mod helpers;
 
 use std::collections::HashMap;
 
-use bevy::prelude::{
-    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, Without,
-};
+use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, ResMut, SystemSet, Without};
 
 use crate::{
-    work_process::{SkillType, Skilled},
+    work_process::{SkillType, Skilled, WorkProcessState},
     GameState,
 };
 
-use self::helpers::{create_work_process, join_work_process, match_workers_with_jobs, WorkProcess};
+use self::helpers::{create_work_process, join_work_process, match_workers_with_jobs};
 
 pub struct JobsPlugin;
 
@@ -54,33 +52,34 @@ impl JobQueue {
         }
     }
 
-    pub fn next(&mut self) -> Option<Job> {
-        let job = self.jobs[self.counter];
+    pub fn next(&mut self) -> Job {
+        loop {
+            let job = self.jobs[self.counter];
 
-        let mut acc_value =
-            self.accumulated_value_per_job.get(&job.id)? + self.job_priorities.get(&job.id)?;
+            let mut acc_value = self.accumulated_value_per_job.get(&job.id).unwrap()
+                + self.job_priorities.get(&job.id).unwrap();
+            println!("{:?} {:?}", acc_value, self.counter);
+            if acc_value >= 1.0 {
+                acc_value -= 1.0;
+                self.accumulated_value_per_job.insert(job.id, acc_value);
+                return job;
+            }
 
-        if acc_value >= 1.0 {
-            acc_value -= 1.0;
             self.accumulated_value_per_job.insert(job.id, acc_value);
-            return Some(job);
+
+            self.counter += 1;
+
+            if self.counter >= self.jobs.len() {
+                self.counter = 0;
+            }
         }
-
-        self.counter += 1;
-
-        if self.counter >= self.jobs.len() {
-            self.counter = 0;
-        }
-
-        return None;
     }
 }
 
 fn assign_jobs_to_workers(
     mut commands: Commands,
-    jobs: Res<Vec<Job>>,
     mut job_queue: ResMut<JobQueue>,
-    workers_looking_for_jobs: Query<(Entity, &Skilled), Without<Working>>,
+    workers_looking_for_jobs: Query<(Entity, &Skilled), Without<AssignedToWorkProcess>>,
     mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
 ) {
     let all_workers = workers_looking_for_jobs
@@ -91,26 +90,28 @@ fn assign_jobs_to_workers(
     let worker_and_jobs = match_workers_with_jobs(&all_workers, &mut job_queue);
     for (worker_id, job) in worker_and_jobs {
         let maybe_existing_work_process =
-            available_work_processess.iter_mut().find(|(_, work_process)| {
-                work_process.max_workers
-                    > ((work_process.worker_ids.len() as u32)
-                        + (work_process.tentative_worker_ids.len() as u32))
-                    && job.id == work_process.job_id
-            });
+            available_work_processess
+                .iter_mut()
+                .find(|(_, work_process)| {
+                    work_process.max_workers
+                        > ((work_process.worker_ids.len() as u32)
+                            + (work_process.tentative_worker_ids.len() as u32))
+                        && job.id == work_process.job_id
+                });
 
         match maybe_existing_work_process {
             Some((work_process_id, mut work_process)) => {
                 *work_process = join_work_process(&work_process, worker_id);
                 commands
                     .entity(worker_id)
-                    .insert(Working { work_process_id });
+                    .insert(AssignedToWorkProcess { work_process_id });
             }
             None => {
                 let new_work_process = create_work_process(worker_id, &job);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
                 commands
                     .entity(worker_id)
-                    .insert(Working { work_process_id });
+                    .insert(AssignedToWorkProcess { work_process_id });
             }
         }
     }
@@ -145,7 +146,7 @@ fn assign_jobs_to_workers(
     //     },
     //     position: position,
     //     sprite: SpriteBundle {
-    //         texture: asset_server.load("assets/bevy.png"),
+    //         texture: asset_server.load("bevy.png"),
     //         transform: Transform {
     //             translation: position.0,
     //             ..Transform::default()
@@ -168,6 +169,17 @@ pub struct Job {
 }
 
 #[derive(Component)]
-pub struct Working {
+pub struct AssignedToWorkProcess {
     pub work_process_id: Entity,
+}
+
+#[derive(Component, Clone)]
+pub struct WorkProcess {
+    pub units_of_work: f32,
+    pub job_id: u32,
+    pub max_workers: u32,
+
+    pub state: WorkProcessState,
+    pub worker_ids: Vec<Entity>,
+    pub tentative_worker_ids: Vec<Entity>,
 }
