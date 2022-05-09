@@ -3,14 +3,16 @@ pub mod work_process;
 
 use std::collections::HashMap;
 
-use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, ResMut, SystemSet, Without};
-
-use crate::{
-
-    GameState,
+use bevy::prelude::{
+    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, With, Without,
 };
 
-use self::{helpers::{create_work_process, join_work_process, match_workers_with_jobs}, work_process::{SkillType, Skilled, WorkProcessState}};
+use crate::GameState;
+
+use self::{
+    helpers::{create_work_process, join_work_process, match_workers_with_jobs},
+    work_process::{advance_work_process_state, SkillType, Skilled, WorkProcessState},
+};
 
 pub struct JobsPlugin;
 
@@ -27,6 +29,9 @@ impl Plugin for JobsPlugin {
         app.insert_resource(jobs);
         app.add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::Playing).with_system(advance_all_work_processes),
         );
     }
 
@@ -36,7 +41,7 @@ impl Plugin for JobsPlugin {
 }
 
 pub struct JobQueue {
-    jobs: Vec<Job>,
+    pub jobs: Vec<Job>,
     counter: usize,
     accumulated_value_per_job: HashMap<u32, f32>,
     pub job_priorities: HashMap<u32, f32>,
@@ -116,50 +121,46 @@ fn assign_jobs_to_workers(
             }
         }
     }
-    // let planting_crops_job_id = jobs[0].id;
+}
 
-    // let work_process = WorkProcess {
-    //     units_of_work: 2.0,
-    //     job_id: planting_crops_job_id,
-    //     max_workers: 1,
-    //     state: WorkProcessState::IncompleteWorkProcessState {
-    //         units_of_work_left: 0.0,
-    //         quality_counter: crate::work_process::QualityCounter {
-    //             points: 0.0,
-    //             instances: 0,
-    //         },
-    //         work_chunks: vec![],
-    //     },
-    //     worker_ids: vec![],
-    //     tentative_worker_ids: vec![],
-    // };
+fn advance_all_work_processes(
+    mut commands: Commands,
+    mut work_processes: Query<&mut WorkProcess>,
+    workers: Query<&Skilled>,
+    job_queue: Res<JobQueue>,
+) {
+    for mut work_process in work_processes.iter_mut() {
+        let workers: Vec<&Skilled> = work_process
+            .worker_ids
+            .iter()
+            .map(|worker_id| workers.get(*worker_id).unwrap())
+            .collect();
+        let job = job_queue
+            .jobs
+            .iter()
+            .find(|j| j.id == work_process.job_id)
+            .unwrap();
+        match advance_work_process_state(workers, &work_process.state, job.skill_type) {
+            WorkProcessState::CompleteWorkProcessState { quality } => {
+                for worker_id in work_process.worker_ids.iter() {
+                    commands
+                        .entity(*worker_id)
+                        .remove::<AssignedToWorkProcess>();
+                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess);
+                }
 
-    // let work_process_id = commands.spawn().insert(work_process).id();
-
-    // let bundle = WorkerBundle {
-    //     skilled: Skilled {
-    //         skills: HashMap::from([(SkillType::PlantingCrops, 0.5)]),
-    //     },
-    //     walker: Walker {
-    //         max_speed: 2.0,
-    //         current_speed: 0.0,
-    //         acceleration: 0.5,
-    //     },
-    //     position: position,
-    //     sprite: SpriteBundle {
-    //         texture: asset_server.load("bevy.png"),
-    //         transform: Transform {
-    //             translation: position.0,
-    //             ..Transform::default()
-    //         },
-    //         ..Default::default()
-    //     },
-    // };
-
-    // commands
-    //     .spawn_bundle(bundle)
-    //     .insert(Working { work_process_id })
-    //     .insert(position);
+                for worker_id in work_process.tentative_worker_ids.iter() {
+                    commands
+                        .entity(*worker_id)
+                        .remove::<AssignedToWorkProcess>();
+                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess);
+                }
+            }
+            incomplete_state => {
+                (*work_process).state = incomplete_state;
+            }
+        }
+    }
 }
 
 #[derive(Component, Clone, Copy)]

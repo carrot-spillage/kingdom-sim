@@ -29,9 +29,9 @@ pub struct Skilled {
 }
 
 pub fn advance_work_process_state(
-    workers: Vec<Skilled>,
-    state: WorkProcessState,
-    skill_struct: SkillType,
+    workers: Vec<&Skilled>,
+    state: &WorkProcessState,
+    skill_type: SkillType,
 ) -> WorkProcessState {
     match state {
         WorkProcessState::CompleteWorkProcessState { .. } => {
@@ -40,9 +40,9 @@ pub fn advance_work_process_state(
         WorkProcessState::IncompleteWorkProcessState {
             units_of_work_left,
             quality_counter,
-            mut work_chunks,
+            work_chunks,
         } => {
-            let mut new_work_chunks = calc_work_chunks(workers, skill_struct);
+            let mut new_work_chunks = calc_work_chunks(workers, skill_type);
             let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
             let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);
 
@@ -53,12 +53,12 @@ pub fn advance_work_process_state(
             };
 
             if units_of_work_left > 0.0 {
-                work_chunks.append(&mut new_work_chunks);
-
+                let mut work_chunks_copy = work_chunks.clone(); // TODO: can we write something more elegant?
+                work_chunks_copy.append(&mut new_work_chunks);
                 return WorkProcessState::IncompleteWorkProcessState {
                     units_of_work_left,
                     quality_counter,
-                    work_chunks,
+                    work_chunks: work_chunks_copy,
                 };
             } else {
                 return WorkProcessState::CompleteWorkProcessState {
@@ -79,7 +79,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::{Component, Entity};
 
-fn calc_work_chunks(workers: Vec<Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
+fn calc_work_chunks(workers: Vec<&Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
     workers
         .iter()
         .map(|x| x.skills.get(&skill_type).unwrap())
