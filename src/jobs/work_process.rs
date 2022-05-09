@@ -32,7 +32,6 @@ pub fn advance_work_process_state(
     workers: Vec<Skilled>,
     state: WorkProcessState,
     skill_struct: SkillType,
-    interval: f32,
 ) -> WorkProcessState {
     match state {
         WorkProcessState::CompleteWorkProcessState { .. } => {
@@ -44,13 +43,13 @@ pub fn advance_work_process_state(
             mut work_chunks,
         } => {
             let mut new_work_chunks = calc_work_chunks(workers, skill_struct);
-            let progress = calc_work_chunks_progress(&new_work_chunks, interval);
+            let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
             let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);
 
             let quality_counter = QualityCounter {
                 instances: quality_counter.instances + new_work_chunks.len() as u32,
                 points: quality_counter.points
-                    + calc_work_chunks_quality(&new_work_chunks, interval),
+                    + calc_work_chunks_quality(&new_work_chunks, 1.0),
             };
 
             if units_of_work_left > 0.0 {

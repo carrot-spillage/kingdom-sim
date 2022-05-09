@@ -13,12 +13,9 @@
 
 use bevy::prelude::Entity;
 
-use crate::{
-    jobs::JobQueue,
-    work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState},
-};
+use crate::jobs::JobQueue;
 
-use super::{Job, WorkProcess};
+use super::{Job, WorkProcess, work_process::{get_most_skilled, Skilled, WorkProcessState, QualityCounter}};
 
 pub fn match_workers_with_jobs(
     workers_looking_for_jobs: &Vec<(Entity, Skilled)>,

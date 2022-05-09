@@ -12,8 +12,7 @@ use rand::Rng;
 
 use crate::{
     movement::{Position, Walker},
-    work_process::{SkillType, Skilled},
-    GameState,
+    GameState, jobs::work_process::{Skilled, SkillType},
 };
 
 pub struct InitPlugin;
@@ -72,7 +71,7 @@ fn spawn_worker(
             current_speed: 0.0,
             acceleration: 0.5,
         },
-        position: position,
+        position,
         sprite: SpriteBundle {
             texture: asset_server.load("textures/peasant.png"),
             transform: Transform {
@@ -86,8 +85,6 @@ fn spawn_worker(
             ..Default::default()
         },
     };
-
-    commands.spawn_bundle(bundle).insert(position);
 }
 
 #[derive(Component, Bundle)]

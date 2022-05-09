@@ -6,7 +6,7 @@ mod loading;
 mod menu;
 pub mod movement;
 mod player;
-mod work_process;
+pub mod status_info;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;

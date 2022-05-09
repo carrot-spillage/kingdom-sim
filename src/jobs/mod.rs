@@ -1,15 +1,16 @@
 pub mod helpers;
+pub mod work_process;
 
 use std::collections::HashMap;
 
 use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, ResMut, SystemSet, Without};
 
 use crate::{
-    work_process::{SkillType, Skilled, WorkProcessState},
+
     GameState,
 };
 
-use self::helpers::{create_work_process, join_work_process, match_workers_with_jobs};
+use self::{helpers::{create_work_process, join_work_process, match_workers_with_jobs}, work_process::{SkillType, Skilled, WorkProcessState}};
 
 pub struct JobsPlugin;
 
@@ -172,6 +173,9 @@ pub struct Job {
 pub struct AssignedToWorkProcess {
     pub work_process_id: Entity,
 }
+
+#[derive(Component)]
+pub struct NotAssignedToWorkProcess;
 
 #[derive(Component, Clone)]
 pub struct WorkProcess {
