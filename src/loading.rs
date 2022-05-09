@@ -12,9 +12,9 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         AssetLoader::new(GameState::Loading)
             .with_collection::<FontAssets>()
-            .with_collection::<AudioAssets>()
+            // .with_collection::<AudioAssets>() // NOTE: disabled audio, as if this failes to load, the game never starts
             .with_collection::<TextureAssets>()
-            .continue_to_state(GameState::Menu)
+            .continue_to_state(GameState::Playing) // TODO: change to GameState::Menu
             .build(app);
     }
 }

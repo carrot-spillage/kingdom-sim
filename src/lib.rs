@@ -1,18 +1,12 @@
-mod actions;
-mod audio;
 mod init;
 mod jobs;
 mod loading;
 mod menu;
-pub mod movement;
-mod player;
-pub mod status_info;
+mod movement;
+mod status_info;
 
-use crate::actions::ActionsPlugin;
-use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
-use crate::player::PlayerPlugin;
 
 use bevy::app::App;
 #[cfg(debug_assertions)]
@@ -47,9 +41,6 @@ impl Plugin for GamePlugin {
         app.add_state(GameState::Loading)
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
-            .add_plugin(ActionsPlugin)
-            .add_plugin(InternalAudioPlugin)
-            .add_plugin(PlayerPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(JobsPlugin)
             .add_plugin(InitPlugin);

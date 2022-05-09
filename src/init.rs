@@ -11,8 +11,9 @@ use bevy::{
 use rand::Rng;
 
 use crate::{
+    jobs::work_process::{SkillType, Skilled},
     movement::{Position, Walker},
-    GameState, jobs::work_process::{Skilled, SkillType},
+    GameState,
 };
 
 pub struct InitPlugin;
@@ -85,6 +86,8 @@ fn spawn_worker(
             ..Default::default()
         },
     };
+
+    commands.spawn_bundle(bundle).insert(position);
 }
 
 #[derive(Component, Bundle)]
