@@ -1,10 +1,16 @@
 pub mod helpers;
 pub mod work_process;
 
+use itertools::Itertools;
 use std::collections::HashMap;
 
-use bevy::prelude::{
-    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, With, Without,
+use bevy::{
+    hierarchy::{BuildChildren, Children},
+    prelude::{
+        Added, App, AssetServer, Changed, Color, Commands, Component, Entity, EventReader, Plugin,
+        Query, Res, ResMut, SystemSet, Transform, Without,
+    },
+    text::{HorizontalAlign, Text, TextAlignment, TextStyle, VerticalAlign},
 };
 
 use crate::GameState;
@@ -64,7 +70,6 @@ impl JobQueue {
 
             let mut acc_value = self.accumulated_value_per_job.get(&job.id).unwrap()
                 + self.job_priorities.get(&job.id).unwrap();
-            println!("{:?} {:?}", acc_value, self.counter);
             if acc_value >= 1.0 {
                 acc_value -= 1.0;
                 self.accumulated_value_per_job.insert(job.id, acc_value);
@@ -140,16 +145,14 @@ fn advance_all_work_processes(
             .iter()
             .find(|j| j.id == work_process.job_id)
             .unwrap();
+
         match advance_work_process_state(workers, &work_process.state, job.skill_type) {
             WorkProcessState::CompleteWorkProcessState { quality } => {
-                for worker_id in work_process.worker_ids.iter() {
-                    commands
-                        .entity(*worker_id)
-                        .remove::<AssignedToWorkProcess>();
-                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess);
-                }
-
-                for worker_id in work_process.tentative_worker_ids.iter() {
+                for worker_id in work_process
+                    .worker_ids
+                    .iter()
+                    .chain(work_process.tentative_worker_ids.iter())
+                {
                     commands
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();

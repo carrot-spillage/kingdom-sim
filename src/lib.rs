@@ -1,9 +1,9 @@
+mod activity_info;
 mod init;
 mod jobs;
 mod loading;
 mod menu;
 mod movement;
-mod status_info;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;

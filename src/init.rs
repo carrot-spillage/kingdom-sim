@@ -1,16 +1,19 @@
 use std::collections::HashMap;
 
 use bevy::{
+    hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin, Res,
-        ResMut, SystemSet, Transform,
+        default, App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin,
+        Res, SystemSet, Transform,
     },
     sprite::{Sprite, SpriteBundle},
+    text::Text2dBundle,
 };
 use rand::Rng;
 
 use crate::{
+    activity_info::create_activity_bundle,
     jobs::work_process::{SkillType, Skilled},
     movement::{Position, Walker},
     GameState,
@@ -32,18 +35,14 @@ pub struct WorldParams {
     pub size: Vec2,
 }
 
-fn init(
-    world_params: Res<WorldParams>,
-    mut commands: Commands,
-    mut asset_server: ResMut<AssetServer>,
-) {
+fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     for _ in 0..20 {
         spawn_worker(
             &mut commands,
             get_random_pos_in_world(&world_params),
-            &mut asset_server,
+            &asset_server,
         );
     }
 }
@@ -58,11 +57,7 @@ fn get_random_pos_in_world(world_params: &WorldParams) -> Position {
     ))
 }
 
-fn spawn_worker(
-    commands: &mut Commands,
-    position: Position,
-    asset_server: &mut ResMut<AssetServer>,
-) {
+fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<AssetServer>) {
     let bundle = WorkerBundle {
         skilled: Skilled {
             skills: HashMap::from([(SkillType::PlantingCrops, 0.5)]),
@@ -87,7 +82,12 @@ fn spawn_worker(
         },
     };
 
-    commands.spawn_bundle(bundle).insert(position);
+    commands
+        .spawn_bundle(bundle)
+        .insert(position)
+        .with_children(|parent| {
+            parent.spawn_bundle(create_activity_bundle(13.0, &asset_server));
+        });
 }
 
 #[derive(Component, Bundle)]
