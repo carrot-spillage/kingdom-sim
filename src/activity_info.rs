@@ -1,13 +1,43 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        default, App, AssetServer, Changed, Color, Component, Plugin, Query, Res, SystemSet,
-        Transform,
+        default, App, AssetServer, Changed, Color, Component, Entity, Plugin, Query, Res,
+        SystemSet, Transform,
     },
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
 
 use crate::GameState;
+
+#[derive(Component)]
+pub struct ActivityInfo {
+    pub title: &'static str,
+    pub child: Entity,
+}
+
+pub struct ActivityInfoPlugin;
+
+impl Plugin for ActivityInfoPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(track_work_status));
+    }
+
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+}
+
+fn track_work_status(
+    activities: Query<&ActivityInfo, Changed<ActivityInfo>>,
+    mut texts: Query<&mut Text>,
+    asset_server: Res<AssetServer>,
+) {
+    for activity in activities.iter() {
+        let mut text = texts.get_mut(activity.child).unwrap();
+        println!("tracking activity {:?}", activity.title);
+        *text = create_text(activity.title, &asset_server);
+    }
+}
 
 fn create_text<S>(text: S, asset_server: &Res<AssetServer>) -> Text
 where
@@ -34,29 +64,5 @@ pub fn create_activity_bundle(top: f32, asset_server: &Res<AssetServer>) -> Text
             ..Transform::default()
         },
         ..default()
-    }
-}
-
-#[derive(Component)]
-pub struct ActivityInfo(pub &'static str);
-
-fn track_work_status(
-    mut activities: Query<(&mut Text, &ActivityInfo), Changed<ActivityInfo>>,
-    asset_server: Res<AssetServer>,
-) {
-    for (mut text, activity) in activities.iter_mut() {
-        *text = create_text(activity.0, &asset_server);
-    }
-}
-
-pub struct ActivityInfoPlugin;
-
-impl Plugin for ActivityInfoPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(track_work_status));
-    }
-
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
     }
 }

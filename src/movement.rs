@@ -80,13 +80,12 @@ fn move_to_position(
 fn handle_arrivals(
     mut commands: Commands,
     mut ev_arrival: EventReader<ArraivalHandlerData>,
-    mut workers: Query<(Entity)>,
+    mut workers: Query<Entity>,
 ) {
     for arrival_handler_data in ev_arrival.iter() {
         match arrival_handler_data {
             ArraivalHandlerData::WorkerStartWorking(worker_id) => {
                 let worker = workers.get(*worker_id).unwrap();
-                
             }
         }
     }

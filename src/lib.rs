@@ -8,6 +8,7 @@ mod movement;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 
+use activity_info::ActivityInfoPlugin;
 use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -43,6 +44,7 @@ impl Plugin for GamePlugin {
             .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(JobsPlugin)
+            .add_plugin(ActivityInfoPlugin)
             .add_plugin(InitPlugin);
 
         #[cfg(debug_assertions)]

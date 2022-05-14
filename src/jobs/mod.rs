@@ -4,16 +4,11 @@ pub mod work_process;
 use itertools::Itertools;
 use std::collections::HashMap;
 
-use bevy::{
-    hierarchy::{BuildChildren, Children},
-    prelude::{
-        Added, App, AssetServer, Changed, Color, Commands, Component, Entity, EventReader, Plugin,
-        Query, Res, ResMut, SystemSet, Transform, Without,
-    },
-    text::{HorizontalAlign, Text, TextAlignment, TextStyle, VerticalAlign},
+use bevy::prelude::{
+    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, Without,
 };
 
-use crate::GameState;
+use crate::{activity_info::ActivityInfo, GameState};
 
 use self::{
     helpers::{create_work_process, join_work_process, match_workers_with_jobs},
@@ -92,6 +87,7 @@ fn assign_jobs_to_workers(
     mut job_queue: ResMut<JobQueue>,
     workers_looking_for_jobs: Query<(Entity, &Skilled), Without<AssignedToWorkProcess>>,
     mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
+    mut activities: Query<&mut ActivityInfo>,
 ) {
     let all_workers = workers_looking_for_jobs
         .iter()
@@ -125,6 +121,9 @@ fn assign_jobs_to_workers(
                     .insert(AssignedToWorkProcess { work_process_id });
             }
         }
+
+        let mut activity = activities.get_mut(worker_id).unwrap();
+        (*activity).title = job.name;
     }
 }
 
@@ -133,6 +132,7 @@ fn advance_all_work_processes(
     mut work_processes: Query<&mut WorkProcess>,
     workers: Query<&Skilled>,
     job_queue: Res<JobQueue>,
+    mut activities: Query<&mut ActivityInfo>,
 ) {
     for mut work_process in work_processes.iter_mut() {
         let workers: Vec<&Skilled> = work_process
@@ -156,7 +156,10 @@ fn advance_all_work_processes(
                     commands
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();
-                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess);
+                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess); // TODO: meybe we don't need this flag
+
+                    let mut activity = activities.get_mut(*worker_id).unwrap();
+                    (*activity).title = "NotAssignedToWorkProcess";
                 }
             }
             incomplete_state => {

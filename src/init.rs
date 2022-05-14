@@ -4,16 +4,15 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        default, App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin,
-        Res, SystemSet, Transform,
+        App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin, Res,
+        SystemSet, Transform, Entity,
     },
     sprite::{Sprite, SpriteBundle},
-    text::Text2dBundle,
 };
 use rand::Rng;
 
 use crate::{
-    activity_info::create_activity_bundle,
+    activity_info::{create_activity_bundle, ActivityInfo},
     jobs::work_process::{SkillType, Skilled},
     movement::{Position, Walker},
     GameState,
@@ -82,12 +81,14 @@ fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<
         },
     };
 
+    let mut id = None::<Entity>;
     commands
         .spawn_bundle(bundle)
         .insert(position)
         .with_children(|parent| {
-            parent.spawn_bundle(create_activity_bundle(13.0, &asset_server));
-        });
+            id = Some(parent.spawn_bundle(create_activity_bundle(13.0, &asset_server)).id());
+        })
+        .insert(ActivityInfo { title: "", child: id.unwrap() });
 }
 
 #[derive(Component, Bundle)]
