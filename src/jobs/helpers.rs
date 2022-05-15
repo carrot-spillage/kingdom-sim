@@ -11,11 +11,14 @@
 //   is_finished: boolean;
 // };
 
-use bevy::prelude::Entity;
+use bevy::{math::Vec3, prelude::Entity};
 
 use crate::jobs::JobQueue;
 
-use super::{Job, WorkProcess, work_process::{get_most_skilled, Skilled, WorkProcessState, QualityCounter}};
+use super::{
+    work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState},
+    Job, WorkProcess,
+};
 
 pub fn match_workers_with_jobs(
     workers_looking_for_jobs: &Vec<(Entity, Skilled)>,
@@ -42,7 +45,7 @@ pub fn join_work_process(work_process: &WorkProcess, worker_id: Entity) -> WorkP
     }
 }
 
-pub fn create_work_process(worker_id: Entity, job: &Job) -> WorkProcess {
+pub fn create_work_process(worker_id: Entity, position: Vec3, job: &Job) -> WorkProcess {
     let units_of_work = 10.0; // TODO: make this configurable
     return WorkProcess {
         job_id: job.id,
@@ -58,5 +61,6 @@ pub fn create_work_process(worker_id: Entity, job: &Job) -> WorkProcess {
         units_of_work,
         tentative_worker_ids: vec![worker_id],
         worker_ids: vec![],
+        position,
     };
 }

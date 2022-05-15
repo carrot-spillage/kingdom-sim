@@ -4,11 +4,19 @@ pub mod work_process;
 use itertools::Itertools;
 use std::collections::HashMap;
 
-use bevy::prelude::{
-    App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, Without,
+use bevy::{
+    math::Vec3,
+    prelude::{
+        App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, With, Without,
+    },
 };
 
-use crate::{activity_info::ActivityInfo, GameState};
+use crate::{
+    activity_info::ActivityInfo,
+    init::{get_random_pos_in_world, WorldParams},
+    movement::{Arrived, MovingToPosition, Position},
+    GameState,
+};
 
 use self::{
     helpers::{create_work_process, join_work_process, match_workers_with_jobs},
@@ -85,6 +93,7 @@ impl JobQueue {
 fn assign_jobs_to_workers(
     mut commands: Commands,
     mut job_queue: ResMut<JobQueue>,
+    world_params: Res<WorldParams>,
     workers_looking_for_jobs: Query<(Entity, &Skilled), Without<AssignedToWorkProcess>>,
     mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
     mut activities: Query<&mut ActivityInfo>,
@@ -106,24 +115,53 @@ fn assign_jobs_to_workers(
                         && job.id == work_process.job_id
                 });
 
-        match maybe_existing_work_process {
+        let (work_process_id, position) = match maybe_existing_work_process {
             Some((work_process_id, mut work_process)) => {
                 *work_process = join_work_process(&work_process, worker_id);
-                commands
-                    .entity(worker_id)
-                    .insert(AssignedToWorkProcess { work_process_id });
+                (work_process_id, work_process.position)
             }
             None => {
-                let new_work_process = create_work_process(worker_id, &job);
+                // big TODO: find a way to provide position
+                let position = get_random_pos_in_world(&world_params).0;
+                let new_work_process = create_work_process(worker_id, position, &job);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
-                commands
-                    .entity(worker_id)
-                    .insert(AssignedToWorkProcess { work_process_id });
+                (work_process_id, position)
             }
-        }
+        };
+
+        commands
+            .entity(worker_id)
+            .insert(AssignedToWorkProcess { work_process_id })
+            .insert(MovingToPosition {
+                position,
+                sufficient_range: 30.0,
+            });
 
         let mut activity = activities.get_mut(worker_id).unwrap();
-        (*activity).title = job.name;
+        (*activity).title = format!("Moving to {job_name}", job_name = job.name);
+    }
+}
+
+fn handle_arrivals(
+    mut commands: Commands,
+    mut arriveds: Query<(Entity, Option<&AssignedToWorkProcess>, &mut ActivityInfo), With<Arrived>>,
+    mut assigned_workers: Query<(Option<&AssignedToWorkProcess>, &mut ActivityInfo)>,
+    mut work_processes: Query<&mut WorkProcess>,
+) {
+    for (worker_id, maybe_assigned, mut activity) in arriveds.iter_mut() {
+        match maybe_assigned {
+            Some(AssignedToWorkProcess { work_process_id }) => {
+                let mut work_process = work_processes.get_mut(*work_process_id).unwrap();
+                (*work_process)
+                    .tentative_worker_ids
+                    .retain(|x| *x != worker_id);
+                (*work_process).worker_ids.push(worker_id);
+                (*activity).title = "Working".to_string();
+            }
+            None => {
+                (*activity).title = "Idling".to_string();
+            }
+        }
     }
 }
 
@@ -159,7 +197,7 @@ fn advance_all_work_processes(
                     commands.entity(*worker_id).insert(NotAssignedToWorkProcess); // TODO: meybe we don't need this flag
 
                     let mut activity = activities.get_mut(*worker_id).unwrap();
-                    (*activity).title = "NotAssignedToWorkProcess";
+                    (*activity).title = "NotAssignedToWorkProcess".to_string();
                 }
             }
             incomplete_state => {
@@ -193,4 +231,5 @@ pub struct WorkProcess {
     pub state: WorkProcessState,
     pub worker_ids: Vec<Entity>,
     pub tentative_worker_ids: Vec<Entity>,
+    pub position: Vec3,
 }

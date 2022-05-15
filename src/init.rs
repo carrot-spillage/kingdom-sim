@@ -4,8 +4,8 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, AssetServer, Bundle, Commands, Component, OrthographicCameraBundle, Plugin, Res,
-        SystemSet, Transform, Entity,
+        App, AssetServer, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin,
+        Res, SystemSet, Transform,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -37,7 +37,7 @@ pub struct WorldParams {
 fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    for _ in 0..20 {
+    for _ in 0..5 {
         spawn_worker(
             &mut commands,
             get_random_pos_in_world(&world_params),
@@ -46,7 +46,7 @@ fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Re
     }
 }
 
-fn get_random_pos_in_world(world_params: &WorldParams) -> Position {
+pub fn get_random_pos_in_world(world_params: &WorldParams) -> Position {
     let mut rng = rand::thread_rng();
     let world_half = world_params.size / 2.0;
     Position(Vec3::new(
@@ -86,9 +86,16 @@ fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<
         .spawn_bundle(bundle)
         .insert(position)
         .with_children(|parent| {
-            id = Some(parent.spawn_bundle(create_activity_bundle(13.0, &asset_server)).id());
+            id = Some(
+                parent
+                    .spawn_bundle(create_activity_bundle(13.0, &asset_server))
+                    .id(),
+            );
         })
-        .insert(ActivityInfo { title: "", child: id.unwrap() });
+        .insert(ActivityInfo {
+            title: "".to_string(),
+            child: id.unwrap(),
+        });
 }
 
 #[derive(Component, Bundle)]

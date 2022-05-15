@@ -6,18 +6,19 @@ use bevy::{
     },
 };
 
-use crate::GameState;
+use crate::{
+    activity_info::ActivityInfo,
+    jobs::{AssignedToWorkProcess, WorkProcess},
+    GameState,
+};
 
-#[derive(Clone, Copy)]
-pub enum ArraivalHandlerData {
-    WorkerStartWorking(Entity),
-}
+#[derive(Component)]
+pub struct Arrived;
 
 #[derive(Component)]
 pub struct MovingToPosition {
     pub position: Vec3,
     pub sufficient_range: f32,
-    pub arrival_handler_data: ArraivalHandlerData,
 }
 
 #[derive(Component)]
@@ -48,8 +49,7 @@ pub struct MovementPlugin;
 /// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ArraivalHandlerData>()
-            .add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_to_position));
+        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_to_position));
     }
 }
 
@@ -57,36 +57,26 @@ fn move_to_position(
     mut moving: Query<(Entity, &mut Walker, &MovingToPosition)>,
     mut positions: Query<(&mut Position, &mut Transform)>,
     mut commands: Commands,
-    mut ev_arrival: EventWriter<ArraivalHandlerData>,
 ) {
     for (entity_id, mut walker, moving_to_position) in moving.iter_mut() {
         let (mut this_pos_res, mut this_transform) = positions.get_mut(entity_id).unwrap();
 
         let distance = this_pos_res.0.distance(moving_to_position.position);
         if distance > moving_to_position.sufficient_range {
+            println!("Distance {:?}", distance);
+
             this_pos_res.0 = this_pos_res
                 .0
                 .lerp(moving_to_position.position, walker.current_speed / distance);
             this_transform.translation = this_pos_res.0;
             walker.walk();
         } else {
-            commands.entity(entity_id).remove::<MovingToPosition>();
+            println!("Stopped");
+            commands
+                .entity(entity_id)
+                .remove::<MovingToPosition>()
+                .insert(Arrived);
             walker.stop();
-            ev_arrival.send(moving_to_position.arrival_handler_data);
-        }
-    }
-}
-
-fn handle_arrivals(
-    mut commands: Commands,
-    mut ev_arrival: EventReader<ArraivalHandlerData>,
-    mut workers: Query<Entity>,
-) {
-    for arrival_handler_data in ev_arrival.iter() {
-        match arrival_handler_data {
-            ArraivalHandlerData::WorkerStartWorking(worker_id) => {
-                let worker = workers.get(*worker_id).unwrap();
-            }
         }
     }
 }
