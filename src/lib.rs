@@ -47,10 +47,10 @@ impl Plugin for GamePlugin {
             .add_plugin(ActivityInfoPlugin)
             .add_plugin(InitPlugin);
 
-        #[cfg(debug_assertions)]
-        {
-            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin::default());
-        }
+        // #[cfg(debug_assertions)]
+        // {
+        //     app.add_plugin(FrameTimeDiagnosticsPlugin::default())
+        //         .add_plugin(LogDiagnosticsPlugin::default());
+        // }
     }
 }

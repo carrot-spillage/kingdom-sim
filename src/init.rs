@@ -37,7 +37,7 @@ pub struct WorldParams {
 fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    for _ in 0..5 {
+    for _ in 0..1 {
         spawn_worker(
             &mut commands,
             get_random_pos_in_world(&world_params),

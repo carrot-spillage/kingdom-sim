@@ -39,6 +39,7 @@ impl Plugin for JobsPlugin {
         app.add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
         )
+        .add_system_set(SystemSet::on_update(GameState::Playing).with_system(handle_arrivals))
         .add_system_set(
             SystemSet::on_update(GameState::Playing).with_system(advance_all_work_processes),
         );
@@ -129,6 +130,10 @@ fn assign_jobs_to_workers(
             }
         };
 
+        println!(
+            "AssignedToWorkProcess is added and moving to {:?}",
+            position
+        );
         commands
             .entity(worker_id)
             .insert(AssignedToWorkProcess { work_process_id })
@@ -145,7 +150,6 @@ fn assign_jobs_to_workers(
 fn handle_arrivals(
     mut commands: Commands,
     mut arriveds: Query<(Entity, Option<&AssignedToWorkProcess>, &mut ActivityInfo), With<Arrived>>,
-    mut assigned_workers: Query<(Option<&AssignedToWorkProcess>, &mut ActivityInfo)>,
     mut work_processes: Query<&mut WorkProcess>,
 ) {
     for (worker_id, maybe_assigned, mut activity) in arriveds.iter_mut() {
@@ -156,23 +160,28 @@ fn handle_arrivals(
                     .tentative_worker_ids
                     .retain(|x| *x != worker_id);
                 (*work_process).worker_ids.push(worker_id);
+                println!("Working {:?}", worker_id);
                 (*activity).title = "Working".to_string();
             }
             None => {
+                println!("Idling {:?}", worker_id);
+
                 (*activity).title = "Idling".to_string();
             }
         }
+
+        commands.entity(worker_id).remove::<Arrived>();
     }
 }
 
 fn advance_all_work_processes(
     mut commands: Commands,
-    mut work_processes: Query<&mut WorkProcess>,
+    mut work_processes: Query<(Entity, &mut WorkProcess)>,
     workers: Query<&Skilled>,
     job_queue: Res<JobQueue>,
     mut activities: Query<&mut ActivityInfo>,
 ) {
-    for mut work_process in work_processes.iter_mut() {
+    for (work_process_id, mut work_process) in work_processes.iter_mut() {
         let workers: Vec<&Skilled> = work_process
             .worker_ids
             .iter()
@@ -191,6 +200,7 @@ fn advance_all_work_processes(
                     .iter()
                     .chain(work_process.tentative_worker_ids.iter())
                 {
+                    println!("AssignedToWorkProcess is removed");
                     commands
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();
@@ -199,6 +209,8 @@ fn advance_all_work_processes(
                     let mut activity = activities.get_mut(*worker_id).unwrap();
                     (*activity).title = "NotAssignedToWorkProcess".to_string();
                 }
+
+                commands.entity(work_process_id).despawn();
             }
             incomplete_state => {
                 (*work_process).state = incomplete_state;

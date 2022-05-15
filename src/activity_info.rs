@@ -34,7 +34,7 @@ fn track_work_status(
 ) {
     for activity in activities.iter() {
         let mut text = texts.get_mut(activity.child).unwrap();
-        println!("tracking activity {:?}", activity.title);
+        // println!("tracking activity {:?}", activity.title);
         *text = create_text(&activity.title, &asset_server);
     }
 }

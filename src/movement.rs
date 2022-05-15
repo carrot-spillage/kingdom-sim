@@ -63,15 +63,13 @@ fn move_to_position(
 
         let distance = this_pos_res.0.distance(moving_to_position.position);
         if distance > moving_to_position.sufficient_range {
-            println!("Distance {:?}", distance);
-
             this_pos_res.0 = this_pos_res
                 .0
                 .lerp(moving_to_position.position, walker.current_speed / distance);
             this_transform.translation = this_pos_res.0;
             walker.walk();
         } else {
-            println!("Stopped");
+            println!("Stopped {:?}", entity_id);
             commands
                 .entity(entity_id)
                 .remove::<MovingToPosition>()
