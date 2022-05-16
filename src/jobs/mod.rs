@@ -14,13 +14,15 @@ use bevy::{
 use crate::{
     activity_info::ActivityInfo,
     init::{get_random_pos_in_world, WorldParams},
-    movement::{Arrived, MovingToPosition, Position},
+    movement::{Arrived, MovingToPosition},
     GameState,
 };
 
 use self::{
     helpers::{create_work_process, join_work_process, match_workers_with_jobs},
-    work_process::{advance_work_process_state, SkillType, Skilled, WorkProcessState},
+    work_process::{
+        advance_work_process_state, SkillType, Skilled, WorkProcessState, WorkProgress,
+    },
 };
 
 pub struct JobsPlugin;
@@ -193,7 +195,7 @@ fn advance_all_work_processes(
             .find(|j| j.id == work_process.job_id)
             .unwrap();
 
-        match advance_work_process_state(workers, &work_process.state, job.skill_type) {
+        match advance_work_process_state(workers, &work_process.progress, job.skill_type) {
             WorkProcessState::CompleteWorkProcessState { quality } => {
                 for worker_id in work_process
                     .worker_ids
@@ -212,8 +214,8 @@ fn advance_all_work_processes(
 
                 commands.entity(work_process_id).despawn();
             }
-            incomplete_state => {
-                (*work_process).state = incomplete_state;
+            WorkProcessState::IncompleteWorkProcessState(progress) => {
+                (*work_process).progress = progress;
             }
         }
     }
@@ -240,7 +242,7 @@ pub struct WorkProcess {
     pub job_id: u32,
     pub max_workers: u32,
 
-    pub state: WorkProcessState,
+    pub progress: WorkProgress,
     pub worker_ids: Vec<Entity>,
     pub tentative_worker_ids: Vec<Entity>,
     pub position: Vec3,

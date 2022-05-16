@@ -16,7 +16,7 @@ use bevy::{math::Vec3, prelude::Entity};
 use crate::jobs::JobQueue;
 
 use super::{
-    work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState},
+    work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState, WorkProgress},
     Job, WorkProcess,
 };
 
@@ -50,7 +50,7 @@ pub fn create_work_process(worker_id: Entity, position: Vec3, job: &Job) -> Work
     return WorkProcess {
         job_id: job.id,
         max_workers: if job.name == "Harvesting" { 2 } else { 1 }, // TODO: make this configurable
-        state: WorkProcessState::IncompleteWorkProcessState {
+        progress: WorkProgress {
             quality_counter: QualityCounter {
                 instances: 0,
                 points: 0.0,

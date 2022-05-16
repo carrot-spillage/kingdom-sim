@@ -5,15 +5,16 @@ pub struct QualityCounter {
 }
 
 #[derive(Clone)]
+pub struct WorkProgress {
+    pub units_of_work_left: f32,
+    pub quality_counter: QualityCounter,
+    pub work_chunks: Vec<WorkChunk>,
+}
+
+#[derive(Clone)]
 pub enum WorkProcessState {
-    IncompleteWorkProcessState {
-        units_of_work_left: f32,
-        quality_counter: QualityCounter,
-        work_chunks: Vec<WorkChunk>,
-    },
-    CompleteWorkProcessState {
-        quality: f32,
-    },
+    IncompleteWorkProcessState(WorkProgress),
+    CompleteWorkProcessState { quality: f32 },
 }
 
 #[derive(PartialEq, Clone, Copy, Hash, Eq)]
@@ -30,42 +31,36 @@ pub struct Skilled {
 
 pub fn advance_work_process_state(
     workers: Vec<&Skilled>,
-    state: &WorkProcessState,
+    state: &WorkProgress,
     skill_type: SkillType,
 ) -> WorkProcessState {
-    match state {
-        WorkProcessState::CompleteWorkProcessState { .. } => {
-            panic!("CompleteWorkProcessState must not be passed here")
-        }
-        WorkProcessState::IncompleteWorkProcessState {
+    let WorkProgress {
+        units_of_work_left,
+        quality_counter,
+        work_chunks,
+    } = state;
+
+    let mut new_work_chunks = calc_work_chunks(workers, skill_type);
+    let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
+    let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);
+
+    let quality_counter = QualityCounter {
+        instances: quality_counter.instances + new_work_chunks.len() as u32,
+        points: quality_counter.points + calc_work_chunks_quality(&new_work_chunks, 1.0),
+    };
+
+    if units_of_work_left > 0.0 {
+        let mut work_chunks_copy = work_chunks.clone(); // TODO: can we write something more elegant?
+        work_chunks_copy.append(&mut new_work_chunks);
+        return WorkProcessState::IncompleteWorkProcessState(WorkProgress {
             units_of_work_left,
             quality_counter,
-            work_chunks,
-        } => {
-            let mut new_work_chunks = calc_work_chunks(workers, skill_type);
-            let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
-            let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);
-
-            let quality_counter = QualityCounter {
-                instances: quality_counter.instances + new_work_chunks.len() as u32,
-                points: quality_counter.points
-                    + calc_work_chunks_quality(&new_work_chunks, 1.0),
-            };
-
-            if units_of_work_left > 0.0 {
-                let mut work_chunks_copy = work_chunks.clone(); // TODO: can we write something more elegant?
-                work_chunks_copy.append(&mut new_work_chunks);
-                return WorkProcessState::IncompleteWorkProcessState {
-                    units_of_work_left,
-                    quality_counter,
-                    work_chunks: work_chunks_copy,
-                };
-            } else {
-                return WorkProcessState::CompleteWorkProcessState {
-                    quality: quality_counter.points / quality_counter.instances as f32,
-                };
-            }
-        }
+            work_chunks: work_chunks_copy,
+        });
+    } else {
+        return WorkProcessState::CompleteWorkProcessState {
+            quality: quality_counter.points / quality_counter.instances as f32,
+        };
     }
 }
 
