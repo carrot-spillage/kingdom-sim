@@ -7,8 +7,8 @@ use std::{any::Any, collections::HashMap};
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Commands, Component, Entity, EventReader, Plugin, Query, Res, ResMut, SystemSet, With,
-        Without,
+        App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, Res, ResMut,
+        SystemSet, With, Without,
     },
 };
 
@@ -37,15 +37,16 @@ impl Plugin for JobsPlugin {
         }];
 
         let job_priorities = jobs.iter().map(|j| (j.id, 0.5)).collect();
-        app.insert_resource(JobQueue::new(jobs.clone(), job_priorities));
-        app.insert_resource(jobs);
-        app.add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
-        )
-        .add_system_set(SystemSet::on_update(GameState::Playing).with_system(handle_arrivals))
-        .add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(advance_all_work_processes),
-        );
+        app.insert_resource(JobQueue::new(jobs.clone(), job_priorities))
+            .insert_resource(jobs)
+            .add_event::<WorkCompletedEvent>()
+            .add_system_set(
+                SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
+            )
+            .add_system_set(SystemSet::on_update(GameState::Playing).with_system(handle_arrivals))
+            .add_system_set(
+                SystemSet::on_update(GameState::Playing).with_system(advance_all_work_processes),
+            );
     }
 
     fn name(&self) -> &str {
@@ -56,12 +57,12 @@ impl Plugin for JobsPlugin {
 pub struct JobQueue {
     pub jobs: Vec<Job>,
     counter: usize,
-    accumulated_value_per_job: HashMap<u32, f32>,
-    pub job_priorities: HashMap<u32, f32>,
+    accumulated_value_per_job: HashMap<usize, f32>,
+    pub job_priorities: HashMap<usize, f32>,
 }
 
 impl JobQueue {
-    pub fn new(jobs: Vec<Job>, job_priorities: HashMap<u32, f32>) -> Self {
+    pub fn new(jobs: Vec<Job>, job_priorities: HashMap<usize, f32>) -> Self {
         let accumulated_value_per_job = jobs.iter().map(|j| (j.id, 0.0)).collect();
         JobQueue {
             jobs,
@@ -114,8 +115,7 @@ fn assign_jobs_to_workers(
                 .iter_mut()
                 .find(|(_, work_process)| {
                     work_process.max_workers
-                        > ((work_process.worker_ids.len() as u32)
-                            + (work_process.tentative_worker_ids.len() as u32))
+                        > (work_process.worker_ids.len() + work_process.tentative_worker_ids.len())
                         && job.id == work_process.job_id
                 });
 
@@ -184,6 +184,7 @@ fn advance_all_work_processes(
     workers: Query<&Skilled>,
     job_queue: Res<JobQueue>,
     mut activities: Query<&mut ActivityInfo>,
+    mut work_completed_events: EventWriter<WorkCompletedEvent>,
 ) {
     for (work_process_id, mut work_process) in work_processes.iter_mut() {
         let workers: Vec<&Skilled> = work_process
@@ -208,10 +209,15 @@ fn advance_all_work_processes(
                     commands
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();
-                    commands.entity(*worker_id).insert(NotAssignedToWorkProcess); // TODO: meybe we don't need this flag
 
                     let mut activity = activities.get_mut(*worker_id).unwrap();
-                    (*activity).title = "NotAssignedToWorkProcess".to_string();
+                    (*activity).title = "Not AssignedToWorkProcess".to_string();
+
+                    work_completed_events.send(WorkCompletedEvent {
+                        job_id: work_process.job_id,
+                        worker_id: *worker_id,
+                        quality,
+                    });
                 }
 
                 commands.entity(work_process_id).despawn();
@@ -223,9 +229,15 @@ fn advance_all_work_processes(
     }
 }
 
+pub struct WorkCompletedEvent {
+    job_id: usize,
+    worker_id: Entity,
+    quality: f32,
+}
+
 #[derive(Clone, Copy)]
 pub struct Job {
-    pub id: u32,
+    pub id: usize,
     pub name: &'static str,
     pub skill_type: SkillType,
 }
@@ -235,14 +247,11 @@ pub struct AssignedToWorkProcess {
     pub work_process_id: Entity,
 }
 
-#[derive(Component)]
-pub struct NotAssignedToWorkProcess;
-
 #[derive(Component, Clone)]
 pub struct WorkProcess {
     pub units_of_work: f32,
-    pub job_id: u32,
-    pub max_workers: u32,
+    pub job_id: usize,
+    pub max_workers: usize,
 
     pub progress: WorkProgress,
     pub worker_ids: Vec<Entity>,
