@@ -2,19 +2,20 @@ pub mod helpers;
 pub mod work_process;
 
 use itertools::Itertools;
-use std::collections::HashMap;
+use std::{any::Any, collections::HashMap};
 
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Commands, Component, Entity, Plugin, Query, Res, ResMut, SystemSet, With, Without,
+        App, Commands, Component, Entity, EventReader, Plugin, Query, Res, ResMut, SystemSet, With,
+        Without,
     },
 };
 
 use crate::{
     activity_info::ActivityInfo,
     init::{get_random_pos_in_world, WorldParams},
-    movement::{Arrived, MovingToPosition},
+    movement::{ArrivalEvent, MovingToPosition},
     GameState,
 };
 
@@ -151,10 +152,13 @@ fn assign_jobs_to_workers(
 
 fn handle_arrivals(
     mut commands: Commands,
-    mut arriveds: Query<(Entity, Option<&AssignedToWorkProcess>, &mut ActivityInfo), With<Arrived>>,
+    mut arriveds: EventReader<ArrivalEvent>,
+    mut assigned_workers: Query<(Entity, Option<&AssignedToWorkProcess>, &mut ActivityInfo)>,
     mut work_processes: Query<&mut WorkProcess>,
 ) {
-    for (worker_id, maybe_assigned, mut activity) in arriveds.iter_mut() {
+    for ArrivalEvent(entity_id) in arriveds.iter() {
+        let (worker_id, maybe_assigned, mut activity) =
+            assigned_workers.get_mut(*entity_id).unwrap();
         match maybe_assigned {
             Some(AssignedToWorkProcess { work_process_id }) => {
                 let mut work_process = work_processes.get_mut(*work_process_id).unwrap();
@@ -171,8 +175,6 @@ fn handle_arrivals(
                 (*activity).title = "Idling".to_string();
             }
         }
-
-        commands.entity(worker_id).remove::<Arrived>();
     }
 }
 
@@ -221,7 +223,7 @@ fn advance_all_work_processes(
     }
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Job {
     pub id: u32,
     pub name: &'static str,

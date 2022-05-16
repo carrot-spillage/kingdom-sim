@@ -13,9 +13,6 @@ use crate::{
 };
 
 #[derive(Component)]
-pub struct Arrived;
-
-#[derive(Component)]
 pub struct MovingToPosition {
     pub position: Vec3,
     pub sufficient_range: f32,
@@ -43,13 +40,16 @@ impl Walker {
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Position(pub Vec3);
 
+pub struct ArrivalEvent(pub Entity);
+
 pub struct MovementPlugin;
 
 /// This plugin is responsible for the game menu (containing only one button...)
 /// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_to_position));
+        app.add_event::<ArrivalEvent>()
+            .add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_to_position));
     }
 }
 
@@ -57,6 +57,7 @@ fn move_to_position(
     mut moving: Query<(Entity, &mut Walker, &MovingToPosition)>,
     mut positions: Query<(&mut Position, &mut Transform)>,
     mut commands: Commands,
+    mut arrivals: EventWriter<ArrivalEvent>,
 ) {
     for (entity_id, mut walker, moving_to_position) in moving.iter_mut() {
         let (mut this_pos_res, mut this_transform) = positions.get_mut(entity_id).unwrap();
@@ -70,11 +71,10 @@ fn move_to_position(
             walker.walk();
         } else {
             println!("Stopped {:?}", entity_id);
-            commands
-                .entity(entity_id)
-                .remove::<MovingToPosition>()
-                .insert(Arrived);
             walker.stop();
+            commands.entity(entity_id).remove::<MovingToPosition>();
+
+            arrivals.send(ArrivalEvent(entity_id))
         }
     }
 }
