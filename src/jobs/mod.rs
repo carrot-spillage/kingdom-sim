@@ -30,11 +30,7 @@ pub struct JobsPlugin;
 
 impl Plugin for JobsPlugin {
     fn build(&self, app: &mut App) {
-        let jobs = vec![Job {
-            id: 1,
-            name: "PlantingCrops",
-            skill_type: SkillType::PlantingCrops,
-        }];
+        let jobs = vec![Job::new("PlantingCrops", SkillType::PlantingCrops)];
 
         let job_priorities = jobs.iter().map(|j| (j.id, 0.5)).collect();
         app.insert_resource(JobQueue::new(jobs.clone(), job_priorities))
@@ -72,6 +68,11 @@ impl JobQueue {
         }
     }
 
+    pub fn add(&mut self, job: Job) {
+        self.jobs.push(job);
+        self.accumulated_value_per_job.insert(job.id, 0.0);
+    }
+
     pub fn next(&mut self) -> Job {
         loop {
             let job = self.jobs[self.counter];
@@ -95,7 +96,7 @@ impl JobQueue {
     }
 }
 
-fn assign_jobs_to_workers(
+fn assign_jobs_to_workers( // this should be the brain of work assignment. it should be in its own module
     mut commands: Commands,
     mut job_queue: ResMut<JobQueue>,
     world_params: Res<WorldParams>,
@@ -125,7 +126,7 @@ fn assign_jobs_to_workers(
                 (work_process_id, work_process.position)
             }
             None => {
-                // big TODO: find a way to provide position
+                // big TODO: here should be some kind of AI to decide where to start the work process
                 let position = get_random_pos_in_world(&world_params).0;
                 let new_work_process = create_work_process(worker_id, position, &job);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
@@ -151,7 +152,6 @@ fn assign_jobs_to_workers(
 }
 
 fn handle_arrivals(
-    mut commands: Commands,
     mut arriveds: EventReader<ArrivalEvent>,
     mut assigned_workers: Query<(Entity, Option<&AssignedToWorkProcess>, &mut ActivityInfo)>,
     mut work_processes: Query<&mut WorkProcess>,
@@ -184,6 +184,7 @@ fn advance_all_work_processes(
     workers: Query<&Skilled>,
     job_queue: Res<JobQueue>,
     mut activities: Query<&mut ActivityInfo>,
+    mut work_progressed_events: EventWriter<WorkProgressedEvent>,
     mut work_completed_events: EventWriter<WorkCompletedEvent>,
 ) {
     for (work_process_id, mut work_process) in work_processes.iter_mut() {
@@ -215,6 +216,7 @@ fn advance_all_work_processes(
 
                     work_completed_events.send(WorkCompletedEvent {
                         job_id: work_process.job_id,
+                        work_process_id,
                         worker_id: *worker_id,
                         quality,
                     });
@@ -223,16 +225,36 @@ fn advance_all_work_processes(
                 commands.entity(work_process_id).despawn();
             }
             WorkProcessState::IncompleteWorkProcessState(progress) => {
+                work_progressed_events.send(WorkProgressedEvent {
+                    job_id: work_process.job_id,
+                    work_process_id,
+                    units_of_work: work_process.units_of_work,
+                    units_of_work_left: progress.units_of_work_left,
+                });
                 (*work_process).progress = progress;
             }
         }
     }
 }
 
+pub struct WorkProgressedEvent {
+    pub job_id: usize,
+    pub work_process_id: Entity,
+    pub units_of_work: f32,
+    pub units_of_work_left: f32,
+}
+
 pub struct WorkCompletedEvent {
-    job_id: usize,
-    worker_id: Entity,
-    quality: f32,
+    pub job_id: usize,
+    pub work_process_id: Entity,
+    pub worker_id: Entity,
+    pub quality: f32,
+}
+
+use std::sync::atomic::{AtomicUsize, Ordering};
+fn generate_job_id() -> usize {
+    static COUNTER: AtomicUsize = AtomicUsize::new(1);
+    COUNTER.fetch_add(1, Ordering::Relaxed)
 }
 
 #[derive(Clone, Copy)]
@@ -240,6 +262,16 @@ pub struct Job {
     pub id: usize,
     pub name: &'static str,
     pub skill_type: SkillType,
+}
+
+impl Job {
+    pub fn new(name: &'static str, skill_type: SkillType) -> Self {
+        Self {
+            id: generate_job_id(),
+            name,
+            skill_type,
+        }
+    }
 }
 
 #[derive(Component)]

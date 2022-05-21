@@ -1,9 +1,12 @@
 mod activity_info;
+mod building_job;
 mod init;
 mod jobs;
 mod loading;
 mod menu;
 mod movement;
+mod building;
+mod common;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -13,6 +16,7 @@ use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 use jobs::JobsPlugin;
 use movement::MovementPlugin;
@@ -45,6 +49,7 @@ impl Plugin for GamePlugin {
             .add_plugin(MovementPlugin)
             .add_plugin(JobsPlugin)
             .add_plugin(ActivityInfoPlugin)
+            .add_plugin(BuildingJobPlugin)
             .add_plugin(InitPlugin);
 
         // #[cfg(debug_assertions)]

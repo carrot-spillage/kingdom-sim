@@ -22,6 +22,7 @@ pub enum SkillType {
     PlantingCrops,
     Harvesting,
     Crafting,
+    Building,
 }
 
 #[derive(Component, Clone)]
