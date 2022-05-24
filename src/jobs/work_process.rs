@@ -17,7 +17,7 @@ pub enum WorkProcessState {
     CompleteWorkProcessState { quality: f32 },
 }
 
-#[derive(PartialEq, Clone, Copy, Hash, Eq)]
+#[derive(PartialEq, Clone, Copy, Hash, Eq, Debug)]
 pub enum SkillType {
     PlantingCrops,
     Harvesting,
@@ -25,7 +25,7 @@ pub enum SkillType {
     Building,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub struct Skilled {
     pub skills: HashMap<SkillType, f32>,
 }
@@ -41,6 +41,9 @@ pub fn advance_work_process_state(
         work_chunks,
     } = state;
 
+    if workers.len() > 0 {
+        println!("workers: {:?}", workers[0]);
+    }
     let mut new_work_chunks = calc_work_chunks(workers, skill_type);
     let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
     let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);

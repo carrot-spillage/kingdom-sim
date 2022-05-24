@@ -46,7 +46,7 @@ pub fn join_work_process(work_process: &WorkProcess, worker_id: Entity) -> WorkP
 }
 
 pub fn create_work_process(worker_id: Entity, position: Vec3, job: &Job) -> WorkProcess {
-    let units_of_work = 200.0; // TODO: make this configurable
+    let units_of_work = 20.0; // TODO: make this configurable
     return WorkProcess {
         job_id: job.id,
         max_workers: if job.name == "Harvesting" { 2 } else { 1 }, // TODO: make this configurable

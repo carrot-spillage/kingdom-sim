@@ -5,16 +5,16 @@ use itertools::Itertools;
 use std::{any::Any, collections::HashMap};
 
 use bevy::{
-    math::Vec3,
+    math::{Vec2, Vec3},
     prelude::{
-        App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, Res, ResMut,
-        SystemSet, With, Without,
+        App, Commands, Component, Entity, EventReader, EventWriter,
+        ParallelSystemDescriptorCoercion, Plugin, Query, Res, ResMut, SystemSet, With, Without,
     },
 };
 
 use crate::{
     activity_info::ActivityInfo,
-    init::{get_random_pos_in_world, WorldParams},
+    init::{get_random_pos, WorldParams},
     movement::{ArrivalEvent, MovingToPosition},
     GameState,
 };
@@ -30,18 +30,22 @@ pub struct JobsPlugin;
 
 impl Plugin for JobsPlugin {
     fn build(&self, app: &mut App) {
-        let jobs = vec![Job::new("PlantingCrops", SkillType::PlantingCrops)];
+        let jobs: Vec<Job> = vec![];
 
         let job_priorities = jobs.iter().map(|j| (j.id, 0.5)).collect();
         app.insert_resource(JobQueue::new(jobs.clone(), job_priorities))
             .insert_resource(jobs)
+            .add_event::<WorkScheduledEvent>()
+            .add_event::<WorkProgressedEvent>()
             .add_event::<WorkCompletedEvent>()
+            .add_event::<DespawnWorkProccessEvent>()
             .add_system_set(
-                SystemSet::on_update(GameState::Playing).with_system(assign_jobs_to_workers),
-            )
-            .add_system_set(SystemSet::on_update(GameState::Playing).with_system(handle_arrivals))
-            .add_system_set(
-                SystemSet::on_update(GameState::Playing).with_system(advance_all_work_processes),
+                SystemSet::on_update(GameState::Playing)
+                    .with_system(despawn_completed_processes)
+                    .with_system(mark_processes_despawnable.after(despawn_completed_processes))
+                    .with_system(advance_all_work_processes.after(mark_processes_despawnable))
+                    .with_system(assign_jobs_to_workers.after(advance_all_work_processes))
+                    .with_system(handle_arrivals),
             );
     }
 
@@ -53,12 +57,12 @@ impl Plugin for JobsPlugin {
 pub struct JobQueue {
     pub jobs: Vec<Job>,
     counter: usize,
-    accumulated_value_per_job: HashMap<usize, f32>,
-    pub job_priorities: HashMap<usize, f32>,
+    accumulated_value_per_job: HashMap<&'static str, f32>,
+    pub job_priorities: HashMap<&'static str, f32>,
 }
 
 impl JobQueue {
-    pub fn new(jobs: Vec<Job>, job_priorities: HashMap<usize, f32>) -> Self {
+    pub fn new(jobs: Vec<Job>, job_priorities: HashMap<&'static str, f32>) -> Self {
         let accumulated_value_per_job = jobs.iter().map(|j| (j.id, 0.0)).collect();
         JobQueue {
             jobs,
@@ -71,6 +75,7 @@ impl JobQueue {
     pub fn add(&mut self, job: Job) {
         self.jobs.push(job);
         self.accumulated_value_per_job.insert(job.id, 0.0);
+        self.job_priorities.insert(job.id, 0.5);
     }
 
     pub fn next(&mut self) -> Job {
@@ -96,13 +101,15 @@ impl JobQueue {
     }
 }
 
-fn assign_jobs_to_workers( // this should be the brain of work assignment. it should be in its own module
+fn assign_jobs_to_workers(
+    // this should be the brain of work assignment. it should be in its own module
     mut commands: Commands,
     mut job_queue: ResMut<JobQueue>,
     world_params: Res<WorldParams>,
     workers_looking_for_jobs: Query<(Entity, &Skilled), Without<AssignedToWorkProcess>>,
     mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
     mut activities: Query<&mut ActivityInfo>,
+    mut work_scheduled_events: EventWriter<WorkScheduledEvent>,
 ) {
     let all_workers = workers_looking_for_jobs
         .iter()
@@ -127,9 +134,19 @@ fn assign_jobs_to_workers( // this should be the brain of work assignment. it sh
             }
             None => {
                 // big TODO: here should be some kind of AI to decide where to start the work process
-                let position = get_random_pos_in_world(&world_params).0;
+                let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0 - 40.0);
                 let new_work_process = create_work_process(worker_id, position, &job);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
+
+                // TODO: maybe we need to refactor .send() away from here
+
+                println!("firing WorkScheduledEvent");
+                work_scheduled_events.send(WorkScheduledEvent {
+                    job_id: job.id,
+                    position,
+                    work_process_id,
+                });
+
                 (work_process_id, position)
             }
         };
@@ -147,7 +164,7 @@ fn assign_jobs_to_workers( // this should be the brain of work assignment. it sh
             });
 
         let mut activity = activities.get_mut(worker_id).unwrap();
-        (*activity).title = format!("Moving to {job_name}", job_name = job.name);
+        (*activity).title = format!("Moving to do '{job_name}'", job_name = job.name);
     }
 }
 
@@ -175,6 +192,31 @@ fn handle_arrivals(
                 (*activity).title = "Idling".to_string();
             }
         }
+    }
+}
+
+/**
+ * This is just to keep work_process alive for 1 more frame after it has been completed.
+ * It is to prevent external systems from using it after it is despawned.
+ */
+fn mark_processes_despawnable(
+    mut commands: Commands,
+    mut completed_events: EventReader<WorkCompletedEvent>,
+    mut despawn_events: EventWriter<DespawnWorkProccessEvent>,
+) {
+    for event in completed_events.iter() {
+        println!("mark_processes_despawnable");
+        despawn_events.send(DespawnWorkProccessEvent(event.work_process_id));
+    }
+}
+
+fn despawn_completed_processes(
+    mut commands: Commands,
+    mut despawn_events: EventReader<DespawnWorkProccessEvent>,
+) {
+    for event in despawn_events.iter() {
+        println!("despawn_completed_processes");
+        commands.entity(event.0).despawn();
     }
 }
 
@@ -211,6 +253,8 @@ fn advance_all_work_processes(
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();
 
+                    commands.entity(work_process_id).remove::<WorkProcess>(); // make it inaccessible for any the WP systems
+
                     let mut activity = activities.get_mut(*worker_id).unwrap();
                     (*activity).title = "Not AssignedToWorkProcess".to_string();
 
@@ -221,10 +265,10 @@ fn advance_all_work_processes(
                         quality,
                     });
                 }
-
-                commands.entity(work_process_id).despawn();
             }
             WorkProcessState::IncompleteWorkProcessState(progress) => {
+                println!("firing WorkProgressedEvent");
+
                 work_progressed_events.send(WorkProgressedEvent {
                     job_id: work_process.job_id,
                     work_process_id,
@@ -237,29 +281,31 @@ fn advance_all_work_processes(
     }
 }
 
+pub struct WorkScheduledEvent {
+    pub job_id: &'static str,
+    pub position: Vec3,
+    pub work_process_id: Entity,
+}
+
 pub struct WorkProgressedEvent {
-    pub job_id: usize,
+    pub job_id: &'static str,
     pub work_process_id: Entity,
     pub units_of_work: f32,
     pub units_of_work_left: f32,
 }
 
 pub struct WorkCompletedEvent {
-    pub job_id: usize,
+    pub job_id: &'static str,
     pub work_process_id: Entity,
     pub worker_id: Entity,
     pub quality: f32,
 }
 
-use std::sync::atomic::{AtomicUsize, Ordering};
-fn generate_job_id() -> usize {
-    static COUNTER: AtomicUsize = AtomicUsize::new(1);
-    COUNTER.fetch_add(1, Ordering::Relaxed)
-}
+struct DespawnWorkProccessEvent(pub Entity);
 
 #[derive(Clone, Copy)]
 pub struct Job {
-    pub id: usize,
+    pub id: &'static str,
     pub name: &'static str,
     pub skill_type: SkillType,
 }
@@ -267,7 +313,7 @@ pub struct Job {
 impl Job {
     pub fn new(name: &'static str, skill_type: SkillType) -> Self {
         Self {
-            id: generate_job_id(),
+            id: name, // TODO: maybe we just always use name, but for clarity I'm using id
             name,
             skill_type,
         }
@@ -282,7 +328,7 @@ pub struct AssignedToWorkProcess {
 #[derive(Component, Clone)]
 pub struct WorkProcess {
     pub units_of_work: f32,
-    pub job_id: usize,
+    pub job_id: &'static str,
     pub max_workers: usize,
 
     pub progress: WorkProgress,

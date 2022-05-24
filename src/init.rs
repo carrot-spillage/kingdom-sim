@@ -38,28 +38,24 @@ fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Re
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     for _ in 0..1 {
-        spawn_worker(
-            &mut commands,
-            get_random_pos_in_world(&world_params),
-            &asset_server,
-        );
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        spawn_worker(&mut commands, Position(pos), &asset_server);
     }
 }
 
-pub fn get_random_pos_in_world(world_params: &WorldParams) -> Position {
+pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
     let mut rng = rand::thread_rng();
-    let world_half = world_params.size / 2.0;
-    Position(Vec3::new(
-        rng.gen_range(-world_half.x..world_half.x),
-        rng.gen_range(-world_half.y..world_half.y),
-        0.0,
-    ))
+    (Vec2::new(
+        rng.gen_range(-range.x..range.x),
+        rng.gen_range(-range.y..range.y),
+    ) + origin)
+        .extend(0.0)
 }
 
 fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<AssetServer>) {
     let bundle = WorkerBundle {
         skilled: Skilled {
-            skills: HashMap::from([(SkillType::PlantingCrops, 0.5)]),
+            skills: HashMap::from([(SkillType::Building, 0.5)]),
         },
         walker: Walker {
             max_speed: 2.0,

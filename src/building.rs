@@ -1,12 +1,13 @@
 use bevy::{
     math::{Vec2, Vec3},
-    prelude::{
-        AssetServer, Commands, Component, Entity, Handle, Image, Query, Res, ResMut, Transform,
-    },
+    prelude::{AssetServer, Commands, Component, Entity, Handle, Image, Query, Res, Transform},
     sprite::{Sprite, SpriteBundle},
 };
 
-use crate::{common::CreationProgress, jobs::WorkProgressedEvent, movement::Position};
+use crate::{
+    building_job::BuildingReference, common::CreationProgress, jobs::WorkProgressedEvent,
+    movement::Position,
+};
 
 #[derive(Component)]
 pub struct ConstructionSite;
@@ -17,8 +18,8 @@ pub struct Building;
 pub fn spawn_construction_site(
     commands: &mut Commands,
     position: Vec3,
-    asset_server: Res<AssetServer>,
-) {
+    asset_server: &Res<AssetServer>,
+) -> Entity {
     commands
         .spawn()
         .insert(ConstructionSite)
@@ -35,17 +36,22 @@ pub fn spawn_construction_site(
                 ..Sprite::default()
             },
             ..Default::default()
-        });
+        })
+        .id()
 }
 
 pub fn update_construction_site(
     progress_event: &WorkProgressedEvent,
+    building_references: &Query<&BuildingReference>,
     construction_progresses: &mut Query<(&mut CreationProgress, &mut Handle<Image>)>,
     asset_server: &Res<AssetServer>,
 ) {
-    let (mut creation_progress, mut texture) = construction_progresses
-        .get_mut(progress_event.work_process_id)
-        .unwrap();
+    let building_id = building_references
+        .get(progress_event.work_process_id)
+        .unwrap()
+        .0;
+    let (mut creation_progress, mut texture) =
+        construction_progresses.get_mut(building_id).unwrap();
     let progress = progress_event.units_of_work_left / progress_event.units_of_work;
 
     *texture = asset_server.load("textures/construction_site_1.png");
