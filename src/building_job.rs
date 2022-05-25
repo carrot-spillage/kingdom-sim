@@ -51,7 +51,6 @@ fn handle_work_scheduled(
     for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let building_id =
             spawn_construction_site(&mut commands, scheduled_event.position, &asset_server);
-        println!("handle_work_scheduled");
         commands
             .entity(scheduled_event.work_process_id)
             .insert(BuildingReference(building_id));
@@ -65,8 +64,6 @@ fn handle_work_progressed(
     asset_server: Res<AssetServer>,
 ) {
     for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        println!("handle_work_progressed");
-
         update_construction_site(
             progress_event,
             &building_references,

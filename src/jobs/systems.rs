@@ -75,7 +75,6 @@ fn assign_jobs_to_workers(
 
                 // TODO: maybe we need to refactor .send() away from here
 
-                println!("firing WorkScheduledEvent");
                 work_scheduled_events.send(WorkScheduledEvent {
                     job_id: job.id,
                     position,
@@ -181,7 +180,6 @@ pub(crate) fn advance_all_work_processes(
                     .iter()
                     .chain(work_process.tentative_worker_ids.iter())
                 {
-                    println!("AssignedToWorkProcess is removed");
                     commands
                         .entity(*worker_id)
                         .remove::<AssignedToWorkProcess>();
@@ -200,8 +198,6 @@ pub(crate) fn advance_all_work_processes(
                 }
             }
             WorkProcessState::IncompleteWorkProcessState(progress) => {
-                println!("firing WorkProgressedEvent");
-
                 work_progressed_events.send(WorkProgressedEvent {
                     job_id: work_process.job_id,
                     work_process_id,
