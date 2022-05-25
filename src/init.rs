@@ -14,6 +14,7 @@ use rand::Rng;
 use crate::{
     activity_info::{create_activity_bundle, ActivityInfo},
     jobs::work_process::{SkillType, Skilled},
+    loading::{FontAssets, TextureAssets},
     movement::{Position, Walker},
     GameState,
 };
@@ -34,12 +35,17 @@ pub struct WorldParams {
     pub size: Vec2,
 }
 
-fn init(world_params: Res<WorldParams>, mut commands: Commands, asset_server: Res<AssetServer>) {
+fn init(
+    world_params: Res<WorldParams>,
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    fonts: Res<FontAssets>,
+) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     for _ in 0..1 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, Position(pos), &asset_server);
+        spawn_worker(&mut commands, Position(pos), &textures, &fonts);
     }
 }
 
@@ -52,7 +58,12 @@ pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
         .extend(0.0)
 }
 
-fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<AssetServer>) {
+fn spawn_worker(
+    commands: &mut Commands,
+    position: Position,
+    textures: &Res<TextureAssets>,
+    fonts: &Res<FontAssets>,
+) {
     let bundle = WorkerBundle {
         skilled: Skilled {
             skills: HashMap::from([(SkillType::Building, 0.5)]),
@@ -64,7 +75,7 @@ fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<
         },
         position,
         sprite: SpriteBundle {
-            texture: asset_server.load("textures/peasant.png"),
+            texture: textures.peasant.clone(),
             transform: Transform {
                 translation: position.0,
                 ..Transform::default()
@@ -84,7 +95,7 @@ fn spawn_worker(commands: &mut Commands, position: Position, asset_server: &Res<
         .with_children(|parent| {
             id = Some(
                 parent
-                    .spawn_bundle(create_activity_bundle(13.0, &asset_server))
+                    .spawn_bundle(create_activity_bundle(13.0, &fonts))
                     .id(),
             );
         })

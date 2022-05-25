@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::{
     building_job::BuildingReference, common::CreationProgress, jobs::systems::WorkProgressedEvent,
-    movement::Position,
+    loading::TextureAssets, movement::Position,
 };
 
 #[derive(Component)]
@@ -18,7 +18,7 @@ pub struct Building;
 pub fn spawn_construction_site(
     commands: &mut Commands,
     position: Vec3,
-    asset_server: &Res<AssetServer>,
+    textures: &Res<TextureAssets>,
 ) -> Entity {
     println!("Spawning construction site at {:?}", position);
     commands
@@ -26,7 +26,7 @@ pub fn spawn_construction_site(
         .insert(ConstructionSite)
         .insert(CreationProgress(0.0))
         .insert_bundle(SpriteBundle {
-            texture: asset_server.load("textures/construction_site_1.png"),
+            texture: textures.construction_site_1.clone(),
             transform: Transform {
                 translation: position,
                 ..Transform::default()
@@ -44,7 +44,7 @@ pub fn update_construction_site(
     progress_event: &WorkProgressedEvent,
     building_references: &Query<&BuildingReference>,
     construction_progresses: &mut Query<(&mut CreationProgress, &mut Handle<Image>)>,
-    asset_server: &Res<AssetServer>,
+    textures: &Res<TextureAssets>,
 ) {
     let building_id = building_references
         .get(progress_event.work_process_id)
@@ -62,10 +62,9 @@ pub fn update_construction_site(
 pub fn convert_construction_site_to_building(
     id: Entity,
     commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
+    textures: &Res<TextureAssets>,
 ) {
-    // make this stored statically
-    let texture: Handle<Image> = asset_server.load("textures/house.png");
+    let texture: Handle<Image> = textures.house.clone();
     commands
         .entity(id)
         .remove::<ConstructionSite>()

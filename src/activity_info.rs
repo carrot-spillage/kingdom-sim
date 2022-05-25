@@ -7,7 +7,7 @@ use bevy::{
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
 
-use crate::GameState;
+use crate::{loading::FontAssets, GameState};
 
 #[derive(Component)]
 pub struct ActivityInfo {
@@ -30,22 +30,21 @@ impl Plugin for ActivityInfoPlugin {
 fn track_work_status(
     activities: Query<&ActivityInfo, Changed<ActivityInfo>>,
     mut texts: Query<&mut Text>,
-    asset_server: Res<AssetServer>,
+    fonts: Res<FontAssets>,
 ) {
     for activity in activities.iter() {
         let mut text = texts.get_mut(activity.child).unwrap();
         // println!("tracking activity {:?}", activity.title);
-        *text = create_text(&activity.title, &asset_server);
+        *text = create_text(&activity.title, &fonts);
     }
 }
 
-fn create_text<S>(text: S, asset_server: &Res<AssetServer>) -> Text
+fn create_text<S>(text: S, fonts: &Res<FontAssets>) -> Text
 where
     S: Into<String>,
 {
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let text_style = TextStyle {
-        font,
+        font: fonts.fira_sans.clone(),
         font_size: 11.0,
         color: Color::ORANGE_RED,
     };
@@ -56,9 +55,9 @@ where
     Text::with_section(text, text_style.clone(), text_alignment)
 }
 
-pub fn create_activity_bundle(top: f32, asset_server: &Res<AssetServer>) -> Text2dBundle {
+pub fn create_activity_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle {
     Text2dBundle {
-        text: create_text("Dummy", asset_server),
+        text: create_text("Dummy", fonts),
         transform: Transform {
             translation: Vec3::new(0.0, top, 0.0),
             ..Transform::default()

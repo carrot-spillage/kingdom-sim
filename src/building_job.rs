@@ -3,17 +3,20 @@ use bevy::prelude::{
     SystemSet,
 };
 
+use crate::jobs::systems::Job;
+use crate::loading::TextureAssets;
 use crate::{
     building::{
         convert_construction_site_to_building, spawn_construction_site, update_construction_site,
     },
     common::CreationProgress,
     jobs::{
-        systems::{WorkScheduledEvent, WorkCompletedEvent, WorkProgressedEvent}, work_process::SkillType, JobQueue,
+        systems::{WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent},
+        work_process::SkillType,
+        JobQueue,
     },
     GameState,
 };
-use crate::jobs::systems::Job;
 
 #[derive(Component)]
 pub struct BuildingReference(pub Entity);
@@ -46,11 +49,11 @@ impl Plugin for BuildingJobPlugin {
 fn handle_work_scheduled(
     mut commands: Commands,
     mut events: EventReader<WorkScheduledEvent>,
-    asset_server: Res<AssetServer>,
+    textures: Res<TextureAssets>,
 ) {
     for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let building_id =
-            spawn_construction_site(&mut commands, scheduled_event.position, &asset_server);
+            spawn_construction_site(&mut commands, scheduled_event.position, &textures);
         commands
             .entity(scheduled_event.work_process_id)
             .insert(BuildingReference(building_id));
@@ -61,14 +64,14 @@ fn handle_work_progressed(
     mut events: EventReader<WorkProgressedEvent>,
     building_references: Query<&BuildingReference>,
     mut construction_progresses: Query<(&mut CreationProgress, &mut Handle<Image>)>,
-    asset_server: Res<AssetServer>,
+    textures: Res<TextureAssets>,
 ) {
     for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         update_construction_site(
             progress_event,
             &building_references,
             &mut construction_progresses,
-            &asset_server,
+            &textures,
         );
     }
 }
@@ -77,10 +80,10 @@ fn handle_work_completed(
     mut commands: Commands,
     mut events: EventReader<WorkCompletedEvent>,
     building_references: Query<&BuildingReference>,
-    asset_server: Res<AssetServer>,
+    textures: Res<TextureAssets>,
 ) {
     for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let building_id = building_references.get(event.work_process_id).unwrap().0;
-        convert_construction_site_to_building(building_id, &mut commands, &asset_server);
+        convert_construction_site_to_building(building_id, &mut commands, &textures);
     }
 }
