@@ -21,11 +21,9 @@ use crate::{
 };
 
 use self::{
-    helpers::{create_work_process, join_work_process, match_workers_with_jobs},
-    systems::{Job, add_work_systems},
-    work_process::{
-        advance_work_process_state, SkillType, Skilled, WorkProcessState, WorkProgress,
-    },
+    helpers::{join_work_process, match_workers_with_jobs},
+    systems::{add_work_systems, Job},
+    work_process::{QualityCounter, SkillType, Skilled, WorkProcessState, WorkProgress},
 };
 
 pub struct JobsPlugin;
@@ -108,4 +106,34 @@ pub struct WorkProcess {
     pub worker_ids: Vec<Entity>,
     pub tentative_worker_ids: Vec<Entity>,
     pub position: Vec3,
+}
+
+impl WorkProcess {
+    pub fn new(
+        position: Vec3,
+        job_id: &'static str,
+        units_of_work: f32,
+        max_workers: usize,
+    ) -> Self {
+        if max_workers == 0 {
+            panic!("max_workers must be greater than 0");
+        }
+
+        return Self {
+            job_id,
+            max_workers,
+            progress: WorkProgress {
+                quality_counter: QualityCounter {
+                    instances: 0,
+                    points: 0.0,
+                },
+                units_of_work_left: units_of_work,
+                work_chunks: vec![],
+            },
+            units_of_work,
+            tentative_worker_ids: vec![],
+            worker_ids: vec![],
+            position,
+        };
+    }
 }

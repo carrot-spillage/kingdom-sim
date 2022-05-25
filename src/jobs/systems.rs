@@ -17,7 +17,8 @@ use crate::{
 };
 
 use super::{
-    helpers::match_workers_with_jobs, work_process::{advance_work_process_state, SkillType, Skilled, WorkProcessState},
+    helpers::match_workers_with_jobs,
+    work_process::{advance_work_process_state, SkillType, Skilled, WorkProcessState},
     AssignedToWorkProcess, JobQueue, WorkProcess,
 };
 
@@ -69,8 +70,9 @@ fn assign_jobs_to_workers(
             }
             None => {
                 // big TODO: here should be some kind of AI to decide where to start the work process
-                let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0 - 40.0);
-                let new_work_process = create_work_process(worker_id, position, &job);
+                let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0 - 300.0);
+                let mut new_work_process = WorkProcess::new(position, job.id, 20.0, 2);
+                new_work_process.tentative_worker_ids.push(worker_id);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
 
                 // TODO: maybe we need to refactor .send() away from here
@@ -161,7 +163,11 @@ pub(crate) fn advance_all_work_processes(
     mut work_progressed_events: EventWriter<WorkProgressedEvent>,
     mut work_completed_events: EventWriter<WorkCompletedEvent>,
 ) {
-    for (work_process_id, mut work_process) in work_processes.iter_mut() {
+    let occupied_work_processes = work_processes
+        .iter_mut()
+        .filter(|(_, wp)| wp.worker_ids.len() > 0);
+
+    for (work_process_id, mut work_process) in occupied_work_processes {
         let workers: Vec<&Skilled> = work_process
             .worker_ids
             .iter()
