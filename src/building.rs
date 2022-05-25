@@ -5,8 +5,9 @@ use bevy::{
 };
 
 use crate::{
-    building_job::BuildingReference, common::CreationProgress, jobs::WorkProgressedEvent,
-    movement::Position,
+    building_job::BuildingReference,
+    common::CreationProgress,
+    movement::Position, jobs::systems::WorkProgressedEvent,
 };
 
 #[derive(Component)]

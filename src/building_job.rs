@@ -9,11 +9,11 @@ use crate::{
     },
     common::CreationProgress,
     jobs::{
-        work_process::SkillType, Job, JobQueue, WorkCompletedEvent, WorkProgressedEvent,
-        WorkScheduledEvent,
+        systems::{WorkScheduledEvent, WorkCompletedEvent, WorkProgressedEvent}, work_process::SkillType, JobQueue,
     },
     GameState,
 };
+use crate::jobs::systems::Job;
 
 #[derive(Component)]
 pub struct BuildingReference(pub Entity);
@@ -45,9 +45,7 @@ impl Plugin for BuildingJobPlugin {
 
 fn handle_work_scheduled(
     mut commands: Commands,
-
     mut events: EventReader<WorkScheduledEvent>,
-    //mut construction_progresses: Query<(&mut CreationProgress, &mut Handle<Image>)>,
     asset_server: Res<AssetServer>,
 ) {
     for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
