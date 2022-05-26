@@ -130,9 +130,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
+      # - name: Get tag
+      #   id: tag
+      #   uses: dawidd6/action-get-tag@v1
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Install rust toolchain
