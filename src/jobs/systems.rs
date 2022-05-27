@@ -63,6 +63,7 @@ fn assign_jobs_to_workers(
                         && job.id == work_process.job_id
                 });
 
+        let is_new_work_process = maybe_existing_work_process.is_none();
         let (work_process_id, position) = match maybe_existing_work_process {
             Some((work_process_id, mut work_process)) => {
                 *work_process = join_work_process(&work_process, worker_id);
@@ -75,14 +76,6 @@ fn assign_jobs_to_workers(
                 new_work_process.tentative_worker_ids.push(worker_id);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
 
-                // TODO: maybe we need to refactor .send() away from here
-
-                work_scheduled_events.send(WorkScheduledEvent {
-                    job_id: job.id,
-                    position,
-                    work_process_id,
-                });
-
                 (work_process_id, position)
             }
         };
@@ -91,6 +84,7 @@ fn assign_jobs_to_workers(
             "AssignedToWorkProcess is added and moving to {:?}",
             position
         );
+
         commands
             .entity(worker_id)
             .insert(AssignedToWorkProcess { work_process_id })
@@ -98,6 +92,14 @@ fn assign_jobs_to_workers(
                 position,
                 sufficient_range: 30.0,
             });
+
+        if is_new_work_process {
+            work_scheduled_events.send(WorkScheduledEvent {
+                job_id: job.id,
+                position,
+                work_process_id,
+            });
+        }
 
         let mut activity = activities.get_mut(worker_id).unwrap();
         (*activity).title = format!("Moving to do '{job_name}'", job_name = job.name);

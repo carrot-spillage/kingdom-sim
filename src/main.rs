@@ -3,7 +3,7 @@
 
 use bevy::prelude::{App, ClearColor, Color, Msaa, WindowDescriptor};
 use bevy::DefaultPlugins;
-use bevy_game::GamePlugin;
+use kingdom_sim::GamePlugin;
 
 fn main() {
     App::new()
@@ -12,7 +12,7 @@ fn main() {
         .insert_resource(WindowDescriptor {
             width: 800.,
             height: 600.,
-            title: "Bevy game".to_string(), // ToDo
+            title: "kingdom_sim".to_string(),
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)

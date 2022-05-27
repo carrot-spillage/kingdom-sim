@@ -1,8 +1,8 @@
 [package]
-name = "bevy_game" # ToDo
+name = "kingdom_sim" # ToDo
 version = "0.1.0"
 publish = false
-authors = ["Niklas Eicker <git@nikl.me>"] # ToDo: you are the author ;)
+authors = ["azuresplash@gmail.com"] # ToDo: you are the author ;)
 edition = "2021"
 
 [profile.dev.package."*"]
