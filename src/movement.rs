@@ -44,6 +44,10 @@ pub struct ArrivalEvent(pub Entity);
 
 pub struct MovementPlugin;
 
+pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
+    Vec3::new(position.x, position.y, position.y)
+}
+
 /// This plugin is responsible for the game menu (containing only one button...)
 /// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MovementPlugin {

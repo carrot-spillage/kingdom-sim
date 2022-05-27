@@ -11,7 +11,7 @@
 //   is_finished: boolean;
 // };
 
-use bevy::{math::Vec3, prelude::Entity};
+use bevy::{math::Vec3, prelude::{Entity, App}};
 
 use crate::jobs::JobQueue;
 
@@ -19,6 +19,10 @@ use super::{
     work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState, WorkProgress},
     Job, WorkProcess,
 };
+
+pub fn register_job(app: &mut App, job: Job) {
+    app.world.get_resource_mut::<JobQueue>().unwrap().add(job);
+}
 
 pub fn match_workers_with_jobs(
     workers_looking_for_jobs: &Vec<(Entity, Skilled)>,

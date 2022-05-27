@@ -15,7 +15,8 @@ use crate::{
     activity_info::{create_activity_bundle, ActivityInfo},
     jobs::work_process::{SkillType, Skilled},
     loading::{FontAssets, TextureAssets},
-    movement::{Position, Walker},
+    movement::{Position, Walker, hack_3d_position_to_2d},
+    tree::spawn_tree,
     GameState,
 };
 
@@ -45,7 +46,12 @@ fn init(
 
     for _ in 0..1 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, Position(pos), &textures, &fonts);
+        spawn_worker(&mut commands, &textures, &fonts, pos);
+    }
+
+    for _ in 0..40 {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        spawn_tree(&mut commands, &textures, pos);
     }
 }
 
@@ -60,24 +66,24 @@ pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
 
 fn spawn_worker(
     commands: &mut Commands,
-    position: Position,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
+    position: Vec3,
 ) {
     let bundle = WorkerBundle {
         skilled: Skilled {
-            skills: HashMap::from([(SkillType::Building, 0.5)]),
+            skills: HashMap::from([(SkillType::Building, 0.5), (SkillType::None, 0.5)]),
         },
         walker: Walker {
             max_speed: 2.0,
             current_speed: 0.0,
             acceleration: 0.5,
         },
-        position,
+        position: Position(position),
         sprite: SpriteBundle {
             texture: textures.peasant.clone(),
             transform: Transform {
-                translation: position.0,
+                translation: hack_3d_position_to_2d(position),
                 ..Transform::default()
             },
             sprite: Sprite {
@@ -91,7 +97,7 @@ fn spawn_worker(
     let mut id = None::<Entity>;
     commands
         .spawn_bundle(bundle)
-        .insert(position)
+        .insert(Position(position))
         .with_children(|parent| {
             id = Some(
                 parent

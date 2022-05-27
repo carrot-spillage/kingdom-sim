@@ -1,12 +1,15 @@
 mod activity_info;
+mod building;
 mod building_job;
+mod common;
 mod init;
 mod jobs;
 mod loading;
 mod menu;
 mod movement;
-mod building;
-mod common;
+mod resources;
+mod tree;
+mod tree_cutting_job;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -20,6 +23,7 @@ use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 use jobs::JobsPlugin;
 use movement::MovementPlugin;
+use tree_cutting_job::TreeCuttingJobPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -50,6 +54,7 @@ impl Plugin for GamePlugin {
             .add_plugin(JobsPlugin)
             .add_plugin(ActivityInfoPlugin)
             .add_plugin(BuildingJobPlugin)
+            .add_plugin(TreeCuttingJobPlugin)
             .add_plugin(InitPlugin);
 
         // #[cfg(debug_assertions)]

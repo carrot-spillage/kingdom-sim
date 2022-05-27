@@ -3,6 +3,7 @@ use bevy::prelude::{
     SystemSet,
 };
 
+use crate::jobs::helpers::register_job;
 use crate::jobs::systems::Job;
 use crate::loading::TextureAssets;
 use crate::{
@@ -22,10 +23,6 @@ use crate::{
 pub struct BuildingReference(pub Entity);
 
 pub struct BuildingJobPlugin;
-
-fn register_job(app: &mut App, job: Job) {
-    app.world.get_resource_mut::<JobQueue>().unwrap().add(job);
-}
 
 static JOB_NAME: &'static str = "Building";
 

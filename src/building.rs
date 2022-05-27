@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::{
     building_job::BuildingReference, common::CreationProgress, jobs::systems::WorkProgressedEvent,
-    loading::TextureAssets, movement::Position,
+    loading::TextureAssets, movement::{Position, hack_3d_position_to_2d},
 };
 
 #[derive(Component)]
@@ -28,7 +28,7 @@ pub fn spawn_construction_site(
         .insert_bundle(SpriteBundle {
             texture: textures.construction_site_1.clone(),
             transform: Transform {
-                translation: position,
+                translation: hack_3d_position_to_2d(position),
                 ..Transform::default()
             },
             sprite: Sprite {

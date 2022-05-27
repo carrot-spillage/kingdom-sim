@@ -23,6 +23,7 @@ pub enum SkillType {
     Harvesting,
     Crafting,
     Building,
+    None, // TODO: whis is a temp workaround. Can we have jobs that don't require any skills?
 }
 
 #[derive(Component, Clone, Debug)]

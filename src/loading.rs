@@ -47,4 +47,10 @@ pub struct TextureAssets {
 
     #[asset(path = "textures/peasant.png")]
     pub peasant: Handle<Image>,
+
+    #[asset(path = "textures/tree1.png")]
+    pub tree1: Handle<Image>,
+
+    #[asset(path = "textures/tree2.png")]
+    pub tree2: Handle<Image>,
 }
