@@ -153,10 +153,8 @@ jobs:
         uses: NiklasEi/wasm-opt-action@v2
         with:
           file: dist/*.wasm
-      - name: Zip release
-        uses: vimtor/action-zip@v1
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web/
+          publish_dir: dist
