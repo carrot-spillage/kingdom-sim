@@ -130,9 +130,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Get tag
-      #   id: tag
-      #   uses: dawidd6/action-get-tag@v1
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Install rust toolchain
@@ -142,21 +139,22 @@ jobs:
           override: true
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
-      - uses: davidB/rust-cargo-make@v1
+      - name: Install trunk
+        uses: jetli/trunk-action@v0.1.0
         with:
-          version: '0.23.0'
+          version: 'latest'
       - name: Add wasm target
         run: |
           rustup target add wasm32-unknown-unknown
       - name: Build Release
         run: |
-          cargo make release
+          trunk build --release
       - name: optimize Wasm
-        uses: NiklasEi/wasm-opt@v1
+        uses: NiklasEi/wasm-opt-action@v2
         with:
-          file: build/web/target/wasm_bg.wasm
-          output: build/web/target/wasm_bg.wasm
-
+          file: dist/*.wasm
+      - name: Zip release
+        uses: vimtor/action-zip@v1
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
