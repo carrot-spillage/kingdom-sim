@@ -13,7 +13,7 @@ on:
 env:
   GAME_EXECUTABLE_NAME: bevy_game
   GAME_OSX_APP_NAME: BevyGame
-  TOOLCHAIN: stable
+  TOOLCHAIN: nightly
 
 jobs:
   # build-macOS:
