@@ -142,9 +142,9 @@ jobs:
           override: true
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
-      - name: Install cargo-make
-        run: |
-          cargo install cargo-make
+      - uses: davidB/rust-cargo-make@v1
+        with:
+          version: '0.23.0'
       - name: Add wasm target
         run: |
           rustup target add wasm32-unknown-unknown
@@ -157,10 +157,8 @@ jobs:
           file: build/web/target/wasm_bg.wasm
           output: build/web/target/wasm_bg.wasm
 
-      - name: Publish
-        uses: netlify/actions/cli@master
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          args: deploy --dir=build/web --functions=functions --prod
-        env:
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/web/
