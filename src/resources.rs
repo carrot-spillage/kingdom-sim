@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use bevy::prelude::{App, Component, Entity, Plugin};
 
 pub enum ResourceKind {
     Wood,
@@ -11,3 +11,17 @@ pub struct ResourceChunk {
 
 #[derive(Component)]
 pub struct BreaksIntoResources(pub Vec<ResourceChunk>);
+
+pub struct BreaksIntoResourcesEvent(pub Entity);
+
+pub struct ResourcesPlugin;
+
+impl Plugin for ResourcesPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<BreaksIntoResourcesEvent>();
+    }
+
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+}

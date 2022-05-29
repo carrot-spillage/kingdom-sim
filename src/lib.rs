@@ -23,6 +23,7 @@ use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 use jobs::JobsPlugin;
 use movement::MovementPlugin;
+use resources::ResourcesPlugin;
 use tree_cutting_job::TreeCuttingJobPlugin;
 
 // This example game uses States to separate logic
@@ -51,6 +52,7 @@ impl Plugin for GamePlugin {
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)
+            .add_plugin(ResourcesPlugin)
             .add_plugin(JobsPlugin)
             .add_plugin(ActivityInfoPlugin)
             .add_plugin(BuildingJobPlugin)

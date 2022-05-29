@@ -3,6 +3,7 @@ use bevy::prelude::{
     SystemSet,
 };
 
+use crate::common::TargetOrPosition;
 use crate::jobs::helpers::register_job;
 use crate::jobs::systems::Job;
 use crate::loading::TextureAssets;
@@ -49,8 +50,11 @@ fn handle_work_scheduled(
     textures: Res<TextureAssets>,
 ) {
     for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let building_id =
-            spawn_construction_site(&mut commands, scheduled_event.position, &textures);
+        let position = match scheduled_event.target {
+            TargetOrPosition::Position(position) => position,
+            _ => panic!("Must have a position"),
+        };
+        let building_id = spawn_construction_site(&mut commands, position, &textures);
         commands
             .entity(scheduled_event.work_process_id)
             .insert(BuildingReference(building_id));

@@ -17,7 +17,7 @@ use crate::{
     activity_info::ActivityInfo,
     init::{get_random_pos, WorldParams},
     movement::{ArrivalEvent, MovingToPosition},
-    GameState,
+    GameState, common::TargetOrPosition,
 };
 
 use self::{
@@ -105,12 +105,12 @@ pub struct WorkProcess {
     pub progress: WorkProgress,
     pub worker_ids: Vec<Entity>,
     pub tentative_worker_ids: Vec<Entity>,
-    pub position: Vec3,
+    pub target: TargetOrPosition,
 }
 
 impl WorkProcess {
     pub fn new(
-        position: Vec3,
+        target: TargetOrPosition,
         job_id: &'static str,
         units_of_work: f32,
         max_workers: usize,
@@ -133,7 +133,7 @@ impl WorkProcess {
             units_of_work,
             tentative_worker_ids: vec![],
             worker_ids: vec![],
-            position,
+            target,
         };
     }
 }

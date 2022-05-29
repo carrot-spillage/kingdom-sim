@@ -11,7 +11,10 @@
 //   is_finished: boolean;
 // };
 
-use bevy::{math::Vec3, prelude::{Entity, App}};
+use bevy::{
+    math::Vec3,
+    prelude::{App, Entity},
+};
 
 use crate::jobs::JobQueue;
 
@@ -47,24 +50,4 @@ pub fn join_work_process(work_process: &WorkProcess, worker_id: Entity) -> WorkP
         tentative_worker_ids,
         ..work_process.clone()
     }
-}
-
-pub fn create_work_process(worker_id: Entity, position: Vec3, job: &Job) -> WorkProcess {
-    let units_of_work = 20.0; // TODO: make this configurable
-    return WorkProcess {
-        job_id: job.id,
-        max_workers: if job.name == "Harvesting" { 2 } else { 1 }, // TODO: make this configurable
-        progress: WorkProgress {
-            quality_counter: QualityCounter {
-                instances: 0,
-                points: 0.0,
-            },
-            units_of_work_left: units_of_work,
-            work_chunks: vec![],
-        },
-        units_of_work,
-        tentative_worker_ids: vec![worker_id],
-        worker_ids: vec![],
-        position,
-    };
 }

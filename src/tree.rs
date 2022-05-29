@@ -13,10 +13,17 @@ use crate::{
 #[derive(Component)]
 pub struct Tree;
 
+#[derive(Component)]
+pub struct SimpleDestructible {
+    pub current_health: f32,
+    pub max_health: f32,
+}
+
 pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) {
     commands
         .spawn()
         .insert(Tree)
+        .insert(Position(position))
         .insert(BreaksIntoResources(vec![ResourceChunk {
             kind: ResourceKind::Wood,
             quantity: 2.0,

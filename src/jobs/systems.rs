@@ -10,9 +10,11 @@ use bevy::{
 
 use crate::{
     activity_info::ActivityInfo,
+    common::TargetOrPosition,
     init::{get_random_pos, WorldParams},
-    jobs::helpers::{create_work_process, join_work_process},
-    movement::{ArrivalEvent, MovingToPosition},
+    jobs::helpers::join_work_process,
+    movement::{ArrivalEvent, MovingToPosition, Position},
+    tree::Tree,
     GameState,
 };
 
@@ -46,6 +48,8 @@ fn assign_jobs_to_workers(
     mut available_work_processess: Query<(Entity, &mut WorkProcess)>,
     mut activities: Query<&mut ActivityInfo>,
     mut work_scheduled_events: EventWriter<WorkScheduledEvent>,
+    trees: Query<Entity, With<Tree>>,
+    dummy_tree_positions: Query<&Position, With<Tree>>,
 ) {
     let all_workers = workers_looking_for_jobs
         .iter()
@@ -64,22 +68,33 @@ fn assign_jobs_to_workers(
                 });
 
         let is_new_work_process = maybe_existing_work_process.is_none();
-        let (work_process_id, position) = match maybe_existing_work_process {
+        let (work_process_id, target) = match maybe_existing_work_process {
             Some((work_process_id, mut work_process)) => {
                 *work_process = join_work_process(&work_process, worker_id);
-                (work_process_id, work_process.position)
+                (work_process_id, work_process.target)
             }
             None => {
                 // big TODO: here should be some kind of AI to decide where to start the work process
-                let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0 - 300.0);
-                let mut new_work_process = WorkProcess::new(position, job.id, 20.0, 2);
+                let target = match job.id {
+                    "Building" => TargetOrPosition::Position(get_random_pos(
+                        Vec2::ZERO,
+                        world_params.size / 2.0 - 300.0,
+                    )),
+                    "TreeCutting" => TargetOrPosition::Target(trees.iter().next().unwrap()),
+                    _ => panic!("Unknown job type"),
+                };
+                let mut new_work_process = WorkProcess::new(target, job.id, 20.0, 2);
                 new_work_process.tentative_worker_ids.push(worker_id);
                 let work_process_id = commands.spawn().insert(new_work_process).id();
 
-                (work_process_id, position)
+                (work_process_id, target)
             }
         };
 
+        let position = match target {
+            TargetOrPosition::Position(p) => p,
+            TargetOrPosition::Target(t) => dummy_tree_positions.get(t).unwrap().0,
+        };
         println!(
             "AssignedToWorkProcess is added and moving to {:?}",
             position
@@ -96,7 +111,7 @@ fn assign_jobs_to_workers(
         if is_new_work_process {
             work_scheduled_events.send(WorkScheduledEvent {
                 job_id: job.id,
-                position,
+                target,
                 work_process_id,
             });
         }
@@ -220,7 +235,7 @@ pub(crate) fn advance_all_work_processes(
 
 pub struct WorkScheduledEvent {
     pub job_id: &'static str,
-    pub position: Vec3,
+    pub target: TargetOrPosition,
     pub work_process_id: Entity,
 }
 
