@@ -1,6 +1,6 @@
 [package]
 name = "kingdom_sim" # ToDo
-version = "0.1.0"
+version = "0.0.1"
 publish = false
 authors = ["azuresplash@gmail.com"] # ToDo: you are the author ;)
 edition = "2021"
