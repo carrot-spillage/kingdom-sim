@@ -1,10 +1,8 @@
-use std::{any::Any, collections::HashMap};
-
 use bevy::{
-    math::{Vec2, Vec3},
+    math::Vec2,
     prelude::{
-        App, Commands, Component, Entity, EventReader, EventWriter,
-        ParallelSystemDescriptorCoercion, Plugin, Query, Res, ResMut, SystemSet, With, Without,
+        App, Commands, Entity, EventReader, EventWriter, ParallelSystemDescriptorCoercion, Query,
+        Res, ResMut, SystemSet, With, Without,
     },
 };
 
@@ -153,7 +151,6 @@ fn handle_arrivals(
  * It is to prevent external systems from using it after it is despawned.
  */
 fn mark_processes_despawnable(
-    mut commands: Commands,
     mut completed_events: EventReader<WorkCompletedEvent>,
     mut despawn_events: EventWriter<DespawnWorkProccessEvent>,
 ) {

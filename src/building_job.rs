@@ -1,6 +1,5 @@
 use bevy::prelude::{
-    App, AssetServer, Commands, Component, Entity, EventReader, Handle, Image, Plugin, Query, Res,
-    SystemSet,
+    App, Commands, Component, Entity, EventReader, Handle, Image, Plugin, Query, Res, SystemSet,
 };
 
 use crate::common::TargetOrPosition;
@@ -15,7 +14,6 @@ use crate::{
     jobs::{
         systems::{WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent},
         work_process::SkillType,
-        JobQueue,
     },
     GameState,
 };

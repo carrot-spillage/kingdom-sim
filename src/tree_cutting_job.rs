@@ -1,15 +1,12 @@
-use bevy::core::{Time, Timer};
 use bevy::prelude::{
-    App, AssetServer, Commands, Component, Entity, EventReader, EventWriter, Handle, Image, Plugin,
-    Query, Res, SystemSet, With,
+    App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet, With,
 };
 
 use crate::common::TargetOrPosition;
 use crate::jobs::helpers::register_job;
 use crate::jobs::systems::{Job, WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent};
 use crate::jobs::work_process::SkillType;
-use crate::loading::TextureAssets;
-use crate::resources::{BreaksIntoResources, BreaksIntoResourcesEvent};
+use crate::resources::BreaksIntoResourcesEvent;
 use crate::tree::{SimpleDestructible, Tree};
 use crate::GameState;
 
@@ -37,11 +34,7 @@ impl Plugin for TreeCuttingJobPlugin {
     }
 }
 
-fn handle_work_scheduled(
-    mut commands: Commands,
-    mut events: EventReader<WorkScheduledEvent>,
-    textures: Res<TextureAssets>,
-) {
+fn handle_work_scheduled(mut commands: Commands, mut events: EventReader<WorkScheduledEvent>) {
     for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let tree_id = match scheduled_event.target {
             TargetOrPosition::Target(tree_id) => tree_id,
@@ -56,7 +49,6 @@ fn handle_work_scheduled(
 fn handle_work_progressed(
     mut events: EventReader<WorkProgressedEvent>,
     tree_references: Query<&TreeReference>,
-    textures: Res<TextureAssets>,
     mut trees: Query<&mut SimpleDestructible, With<Tree>>,
 ) {
     for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
@@ -73,10 +65,8 @@ fn handle_work_progressed(
 }
 
 fn handle_work_completed(
-    mut commands: Commands,
     mut events: EventReader<WorkCompletedEvent>,
     tree_references: Query<&TreeReference>,
-    textures: Res<TextureAssets>,
     mut breakages: EventWriter<BreaksIntoResourcesEvent>,
 ) {
     for event in events.iter().filter(|e| e.job_id == JOB_NAME) {

@@ -19,9 +19,9 @@ pub enum WorkProcessState {
 
 #[derive(PartialEq, Clone, Copy, Hash, Eq, Debug)]
 pub enum SkillType {
-    PlantingCrops,
-    Harvesting,
-    Crafting,
+    //PlantingCrops,
+    //Harvesting,
+    //Crafting,
     Building,
     None, // TODO: whis is a temp workaround. Can we have jobs that don't require any skills?
 }

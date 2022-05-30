@@ -2,28 +2,15 @@ pub mod helpers;
 pub mod systems;
 pub mod work_process;
 
-use itertools::Itertools;
-use std::{any::Any, collections::HashMap};
+use std::collections::HashMap;
 
-use bevy::{
-    math::{Vec2, Vec3},
-    prelude::{
-        App, Commands, Component, Entity, EventReader, EventWriter,
-        ParallelSystemDescriptorCoercion, Plugin, Query, Res, ResMut, SystemSet, With, Without,
-    },
-};
+use bevy::prelude::{App, Component, Entity, Plugin};
 
-use crate::{
-    activity_info::ActivityInfo,
-    init::{get_random_pos, WorldParams},
-    movement::{ArrivalEvent, MovingToPosition},
-    GameState, common::TargetOrPosition,
-};
+use crate::common::TargetOrPosition;
 
 use self::{
-    helpers::{join_work_process, match_workers_with_jobs},
     systems::{add_work_systems, Job},
-    work_process::{QualityCounter, SkillType, Skilled, WorkProcessState, WorkProgress},
+    work_process::{QualityCounter, WorkProgress},
 };
 
 pub struct JobsPlugin;

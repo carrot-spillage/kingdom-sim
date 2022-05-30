@@ -16,8 +16,8 @@ use crate::menu::MenuPlugin;
 
 use activity_info::ActivityInfoPlugin;
 use bevy::app::App;
-#[cfg(debug_assertions)]
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+// #[cfg(debug_assertions)]
+// use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};

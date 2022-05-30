@@ -4,8 +4,8 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, AssetServer, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin,
-        Res, SystemSet, Transform,
+        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
+        Transform,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -15,7 +15,7 @@ use crate::{
     activity_info::{create_activity_bundle, ActivityInfo},
     jobs::work_process::{SkillType, Skilled},
     loading::{FontAssets, TextureAssets},
-    movement::{Position, Walker, hack_3d_position_to_2d},
+    movement::{hack_3d_position_to_2d, Position, Walker},
     tree::spawn_tree,
     GameState,
 };

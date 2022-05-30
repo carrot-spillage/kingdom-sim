@@ -1,16 +1,9 @@
 use bevy::{
     math::Vec3,
-    prelude::{
-        App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet,
-        Transform,
-    },
+    prelude::{App, Commands, Component, Entity, EventWriter, Plugin, Query, SystemSet, Transform},
 };
 
-use crate::{
-    activity_info::ActivityInfo,
-    jobs::{AssignedToWorkProcess, WorkProcess},
-    GameState,
-};
+use crate::GameState;
 
 #[derive(Component)]
 pub struct MovingToPosition {

@@ -1,15 +1,12 @@
 use bevy::{
-    math::{Vec2, Vec3},
-    prelude::{AssetServer, Commands, Component, Entity, Handle, Image, Query, Res, Transform},
-    sprite::{Sprite, SpriteBundle},
+    math::Vec3,
+    prelude::{Commands, Component, Entity, Handle, Image, Query, Res, Transform},
+    sprite::SpriteBundle,
 };
 
 use crate::{
-    building_job::BuildingReference,
-    common::CreationProgress,
-    jobs::systems::WorkProgressedEvent,
-    loading::TextureAssets,
-    movement::{hack_3d_position_to_2d, Position},
+    building_job::BuildingReference, common::CreationProgress, jobs::systems::WorkProgressedEvent,
+    loading::TextureAssets, movement::hack_3d_position_to_2d,
 };
 
 #[derive(Component)]
@@ -44,18 +41,17 @@ pub fn update_construction_site(
     progress_event: &WorkProgressedEvent,
     building_references: &Query<&BuildingReference>,
     construction_progresses: &mut Query<(&mut CreationProgress, &mut Handle<Image>)>,
-    textures: &Res<TextureAssets>,
+    _textures: &Res<TextureAssets>,
 ) {
+    // TODO: provide several frames of house building progress
+
     let building_id = building_references
         .get(progress_event.work_process_id)
         .unwrap()
         .0;
-    let (mut creation_progress, mut texture) =
-        construction_progresses.get_mut(building_id).unwrap();
+    let (mut creation_progress, _) = construction_progresses.get_mut(building_id).unwrap();
     let progress = progress_event.units_of_work_left / progress_event.units_of_work;
 
-    // TODO: provide several frames of house building progress
-    //*texture = asset_server.load(format!("textures/{name}_{variant}_{frame_index}.png"));
     (*creation_progress).0 = progress;
 }
 

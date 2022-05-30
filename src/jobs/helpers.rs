@@ -11,15 +11,12 @@
 //   is_finished: boolean;
 // };
 
-use bevy::{
-    math::Vec3,
-    prelude::{App, Entity},
-};
+use bevy::prelude::{App, Entity};
 
 use crate::jobs::JobQueue;
 
 use super::{
-    work_process::{get_most_skilled, QualityCounter, Skilled, WorkProcessState, WorkProgress},
+    work_process::{get_most_skilled, Skilled},
     Job, WorkProcess,
 };
 

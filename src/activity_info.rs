@@ -1,8 +1,7 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        default, App, AssetServer, Changed, Color, Component, Entity, Plugin, Query, Res,
-        SystemSet, Transform,
+        default, App, Changed, Color, Component, Entity, Plugin, Query, Res, SystemSet, Transform,
     },
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
