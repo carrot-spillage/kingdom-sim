@@ -23,6 +23,10 @@ pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, positi
     commands
         .spawn()
         .insert(Tree)
+        .insert(SimpleDestructible {
+            current_health: 1000.0,
+            max_health: 1000.0,
+        })
         .insert(Position(position))
         .insert(BreaksIntoResources(vec![ResourceChunk {
             kind: ResourceKind::Wood,

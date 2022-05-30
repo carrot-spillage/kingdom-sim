@@ -49,7 +49,7 @@ fn assign_jobs_to_workers(
     mut activities: Query<&mut ActivityInfo>,
     mut work_scheduled_events: EventWriter<WorkScheduledEvent>,
     trees: Query<Entity, With<Tree>>,
-    dummy_tree_positions: Query<&Position, With<Tree>>,
+    dummy_tree_positions: Query<&Position>,
 ) {
     let all_workers = workers_looking_for_jobs
         .iter()
