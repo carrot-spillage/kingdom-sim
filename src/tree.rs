@@ -1,7 +1,7 @@
 use bevy::{
-    math::{Vec2, Vec3},
+    math::Vec3,
     prelude::{Commands, Component, Res, Transform},
-    sprite::{Sprite, SpriteBundle},
+    sprite::SpriteBundle,
 };
 
 use crate::{
@@ -36,11 +36,8 @@ pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, positi
             texture: textures.tree2.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
+                scale: Vec3::new(1.0, 1.0, 1.0),
                 ..Transform::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(16.0, 16.0)),
-                ..Sprite::default()
             },
             ..Default::default()
         });

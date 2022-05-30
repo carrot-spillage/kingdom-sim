@@ -103,7 +103,7 @@ fn assign_jobs_to_workers(
             .insert(AssignedToWorkProcess { work_process_id })
             .insert(MovingToPosition {
                 position,
-                sufficient_range: 30.0,
+                sufficient_range: 15.0,
             });
 
         if is_new_work_process {

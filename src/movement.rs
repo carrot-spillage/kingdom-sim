@@ -38,7 +38,7 @@ pub struct ArrivalEvent(pub Entity);
 pub struct MovementPlugin;
 
 pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
-    Vec3::new(position.x, position.y, position.y + 500.0) // z cannot be negative so adding 1000.0 just to be sure
+    Vec3::new(position.x, position.y, 500.0 - position.y) // z cannot be negative so adding 1000.0 just to be sure
 }
 
 /// This plugin is responsible for the game menu (containing only one button...)

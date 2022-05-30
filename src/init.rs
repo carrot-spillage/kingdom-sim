@@ -7,7 +7,7 @@ use bevy::{
         App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
         Transform,
     },
-    sprite::{Sprite, SpriteBundle},
+    sprite::SpriteBundle,
 };
 use rand::Rng;
 
@@ -84,11 +84,8 @@ fn spawn_worker(
             texture: textures.peasant.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
+                scale: Vec3::new(0.05, 0.05, 1.0),
                 ..Transform::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(12.0, 16.0)),
-                ..Sprite::default()
             },
             ..Default::default()
         },
