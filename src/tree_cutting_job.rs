@@ -81,8 +81,6 @@ fn handle_work_completed(
 ) {
     for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let tree_id = tree_references.get(event.work_process_id).unwrap().0;
-        commands.entity(tree_id).despawn();
-        println!("Despawning tree {:?}", tree_id);
         breakages.send(BreaksIntoResourcesEvent(tree_id));
     }
 }

@@ -5,8 +5,11 @@ use bevy::{
 };
 
 use crate::{
-    building_job::BuildingReference, common::CreationProgress, jobs::systems::WorkProgressedEvent,
-    loading::TextureAssets, movement::{Position, hack_3d_position_to_2d},
+    building_job::BuildingReference,
+    common::CreationProgress,
+    jobs::systems::WorkProgressedEvent,
+    loading::TextureAssets,
+    movement::{hack_3d_position_to_2d, Position},
 };
 
 #[derive(Component)]
@@ -29,11 +32,8 @@ pub fn spawn_construction_site(
             texture: textures.construction_site_1.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
+                scale: Vec3::new(0.03, 0.03, 1.0),
                 ..Transform::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(12.0, 16.0)),
-                ..Sprite::default()
             },
             ..Default::default()
         })
