@@ -12,6 +12,7 @@ use crate::{
     init::{get_random_pos, WorldParams},
     jobs::helpers::join_work_process,
     movement::{ArrivalEvent, MovingToPosition, Position},
+    planting_crops::FarmField,
     tree::Tree,
     GameState,
 };
@@ -47,6 +48,7 @@ fn assign_jobs_to_workers(
     mut activities: Query<&mut ActivityInfo>,
     mut work_scheduled_events: EventWriter<WorkScheduledEvent>,
     trees: Query<Entity, With<Tree>>,
+    farm_fields: Query<Entity, With<FarmField>>,
     dummy_tree_positions: Query<&Position>,
 ) {
     let all_workers = workers_looking_for_jobs
@@ -79,6 +81,7 @@ fn assign_jobs_to_workers(
                         world_params.size / 2.0 - 300.0,
                     )),
                     "TreeCutting" => TargetOrPosition::Target(trees.iter().next().unwrap()),
+                    "PlantingCrops" => TargetOrPosition::Target(farm_fields.iter().next().unwrap()),
                     _ => panic!("Unknown job type"),
                 };
                 let mut new_work_process = WorkProcess::new(target, job.id, 20.0, 2);

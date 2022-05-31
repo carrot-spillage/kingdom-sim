@@ -18,7 +18,7 @@ pub struct Building;
 pub fn spawn_construction_site(
     commands: &mut Commands,
     position: Vec3,
-    textures: &Res<TextureAssets>,
+    texture: Handle<Image>,
 ) -> Entity {
     println!("Spawning construction site at {:?}", position);
     commands
@@ -26,7 +26,7 @@ pub fn spawn_construction_site(
         .insert(ConstructionSite)
         .insert(CreationProgress(0.0))
         .insert_bundle(SpriteBundle {
-            texture: textures.construction_site_1.clone(),
+            texture,
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
                 scale: Vec3::new(0.03, 0.03, 1.0),
@@ -58,9 +58,8 @@ pub fn update_construction_site(
 pub fn convert_construction_site_to_building(
     id: Entity,
     commands: &mut Commands,
-    textures: &Res<TextureAssets>,
+    texture: Handle<Image>,
 ) {
-    let texture: Handle<Image> = textures.house.clone();
     commands
         .entity(id)
         .remove::<ConstructionSite>()

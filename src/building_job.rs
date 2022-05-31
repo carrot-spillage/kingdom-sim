@@ -52,7 +52,11 @@ fn handle_work_scheduled(
             TargetOrPosition::Position(position) => position,
             _ => panic!("Must have a position"),
         };
-        let building_id = spawn_construction_site(&mut commands, position, &textures);
+        let building_id = spawn_construction_site(
+            &mut commands,
+            position,
+            textures.construction_site_1.clone(),
+        );
         commands
             .entity(scheduled_event.work_process_id)
             .insert(BuildingReference(building_id));
@@ -83,6 +87,6 @@ fn handle_work_completed(
 ) {
     for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
         let building_id = building_references.get(event.work_process_id).unwrap().0;
-        convert_construction_site_to_building(building_id, &mut commands, &textures);
+        convert_construction_site_to_building(building_id, &mut commands, textures.house.clone());
     }
 }

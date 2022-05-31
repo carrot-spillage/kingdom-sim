@@ -49,6 +49,11 @@ fn init(
         spawn_worker(&mut commands, &textures, &fonts, pos);
     }
 
+    for _ in 0..3 {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        spawn_worker(&mut commands, &textures, &fonts, pos);
+    }
+
     for _ in 0..40 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         spawn_tree(&mut commands, &textures, pos);

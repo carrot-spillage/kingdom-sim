@@ -10,6 +10,7 @@ mod movement;
 mod resources;
 mod tree;
 mod tree_cutting_job;
+mod planting_crops;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -23,6 +24,7 @@ use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 use jobs::JobsPlugin;
 use movement::MovementPlugin;
+use planting_crops::PlantingCropsPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting_job::TreeCuttingJobPlugin;
 
@@ -57,6 +59,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ActivityInfoPlugin)
             .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingJobPlugin)
+            .add_plugin(PlantingCropsPlugin)
             .add_plugin(InitPlugin);
 
         // #[cfg(debug_assertions)]
