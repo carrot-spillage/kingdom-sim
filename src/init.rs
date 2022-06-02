@@ -13,6 +13,9 @@ use rand::Rng;
 
 use crate::{
     activity_info::{create_activity_bundle, ActivityInfo},
+    building::{
+        convert_construction_site_to_building, spawn_construction_site, BuildingTextureSet,
+    },
     jobs::work_process::{SkillType, Skilled},
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
@@ -49,9 +52,38 @@ fn init(
         spawn_worker(&mut commands, &textures, &fonts, pos);
     }
 
+    let house_textures = BuildingTextureSet {
+        in_progress: vec![textures.house_in_progress.clone()],
+        completed: textures.house.clone(),
+        scale: 0.03,
+    };
+
+    let farm_field_textures = BuildingTextureSet {
+        in_progress: vec![
+            textures.farm_field_in_progress_1.clone(),
+            textures.farm_field_in_progress_2.clone(),
+        ],
+        completed: textures.farm_field.clone(),
+        scale: 0.2,
+    };
+
+    for _ in 0..5 {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+
+        let construction_site_id = spawn_construction_site(&mut commands, pos, &house_textures);
+        convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
+    }
+
     for _ in 0..3 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, &textures, &fonts, pos);
+
+        let construction_site_id =
+            spawn_construction_site(&mut commands, pos, &farm_field_textures);
+        convert_construction_site_to_building(
+            construction_site_id,
+            &mut commands,
+            &farm_field_textures,
+        );
     }
 
     for _ in 0..40 {

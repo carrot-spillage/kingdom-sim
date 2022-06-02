@@ -23,11 +23,11 @@ pub struct BuildingReference(pub Entity);
 
 pub struct BuildingJobPlugin;
 
-static JOB_NAME: &'static str = "Building";
+pub static BUILDING_JOB_NAME: &'static str = "Building";
 
 impl Plugin for BuildingJobPlugin {
     fn build(&self, app: &mut App) {
-        register_job(app, Job::new(JOB_NAME, SkillType::Building));
+        register_job(app, Job::new(COMNSTRUCTION_JOB_NAME, SkillType::Building));
 
         app.add_system_set(
             SystemSet::on_update(GameState::Playing)
@@ -47,16 +47,13 @@ fn handle_work_scheduled(
     mut events: EventReader<WorkScheduledEvent>,
     textures: Res<TextureAssets>,
 ) {
-    for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
+    for scheduled_event in events.iter().filter(|e| e.job_id == COMNSTRUCTION_JOB_NAME) {
         let position = match scheduled_event.target {
             TargetOrPosition::Position(position) => position,
             _ => panic!("Must have a position"),
         };
-        let building_id = spawn_construction_site(
-            &mut commands,
-            position,
-            textures.construction_site_1.clone(),
-        );
+        let building_id =
+            spawn_construction_site(&mut commands, position, textures.house_in_progress.clone());
         commands
             .entity(scheduled_event.work_process_id)
             .insert(BuildingReference(building_id));
@@ -69,7 +66,7 @@ fn handle_work_progressed(
     mut construction_progresses: Query<(&mut CreationProgress, &mut Handle<Image>)>,
     textures: Res<TextureAssets>,
 ) {
-    for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
+    for progress_event in events.iter().filter(|e| e.job_id == COMNSTRUCTION_JOB_NAME) {
         update_construction_site(
             progress_event,
             &building_references,
@@ -85,7 +82,7 @@ fn handle_work_completed(
     building_references: Query<&BuildingReference>,
     textures: Res<TextureAssets>,
 ) {
-    for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
+    for event in events.iter().filter(|e| e.job_id == COMNSTRUCTION_JOB_NAME) {
         let building_id = building_references.get(event.work_process_id).unwrap().0;
         convert_construction_site_to_building(building_id, &mut commands, textures.house.clone());
     }
