@@ -5,8 +5,8 @@ use bevy::{
 };
 
 use crate::{
-    jobs::systems::WorkProgressedEvent, loading::TextureAssets, monkey_planner::BuildingReference,
-    movement::hack_3d_position_to_2d,
+    jobs::systems::WorkProgressedEvent, loading::TextureAssets, movement::hack_3d_position_to_2d,
+    planned_work::BuildingReference,
 };
 
 #[derive(Component)]

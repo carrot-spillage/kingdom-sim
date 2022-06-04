@@ -7,6 +7,7 @@ mod loading;
 mod menu;
 mod monkey_planner;
 mod movement;
+mod planned_work;
 mod planting_crops;
 mod resources;
 mod tree;
@@ -25,7 +26,7 @@ use init::{InitPlugin, WorldParams};
 use jobs::JobsPlugin;
 use movement::MovementPlugin;
 
-use monkey_planner::WorkOnArrivalPlugin;
+use planned_work::{BuildingJobPlugin, WorkOnArrivalPlugin};
 use planting_crops::PlantingCropsPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting_job::TreeCuttingJobPlugin;
@@ -65,7 +66,8 @@ impl Plugin for GamePlugin {
             // .add_plugin(TreeCuttingJobPlugin)
             // .add_plugin(PlantingCropsPlugin)
             .add_plugin(InitPlugin)
-            .add_plugin(WorkOnArrivalPlugin);
+            .add_plugin(WorkOnArrivalPlugin)
+            .add_plugin(BuildingJobPlugin);
 
         // #[cfg(debug_assertions)]
         // {
