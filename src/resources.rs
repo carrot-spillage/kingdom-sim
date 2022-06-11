@@ -20,7 +20,7 @@ pub enum ResourceKind {
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ResourceChunk {
     pub kind: ResourceKind,
-    pub quantity: f32,
+    pub quantity: usize,
 }
 
 #[derive(Component)]

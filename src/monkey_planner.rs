@@ -1,30 +1,43 @@
 use bevy::{
     math::Vec3,
-    prelude::{
-        App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, Res, SystemSet,
-    },
+    prelude::{Commands, Entity, Query, Res, With, Without},
 };
 
 use crate::{
     building::{BuildingBlueprint, BuildingTextureSet},
+    building_job::plan_building,
     loading::TextureAssets,
-    movement::MovingToPosition,
-    planned_work::plan_building,
-};
-use crate::{
-    movement::{ArrivalEvent, Position},
-    GameState,
+    movement::MovingToEntity,
+    planned_work::{PlannedWork, WorksOn, BUILDING_JOB_NAME},
+    skills::Skilled,
 };
 
 pub struct MonkeyPlanner;
 
 impl MonkeyPlanner {
-    pub fn plan_house(
+    pub fn recruit_workers(
         commands: &mut Commands,
-        textures: &Res<TextureAssets>,
-        worker_id: Entity,
-        position: Vec3,
+        work_id: Entity,
+        work_query: &mut Query<&mut PlannedWork>,
+        workers: Query<Entity, (With<Skilled>, Without<WorksOn>)>,
     ) {
+        let work = work_query.get(work_id).unwrap();
+
+        for worker_id in workers.iter().take(work.max_workers) {
+            commands
+                .entity(worker_id)
+                .insert(WorksOn {
+                    work_id,
+                    job_id: BUILDING_JOB_NAME,
+                })
+                .insert(MovingToEntity {
+                    destination_entity: work_id,
+                    sufficient_range: 15.0,
+                });
+        }
+    }
+
+    pub fn plan_house(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) {
         let building_blueprint = BuildingBlueprint {
             name: "House",
             max_hp: 2000.0,
@@ -34,31 +47,9 @@ impl MonkeyPlanner {
                 completed: textures.house.clone(),
                 scale: 0.03,
             },
+            max_workers: 2,
         };
-        plan_building(commands, worker_id, building_blueprint, position);
-    }
-
-    pub fn plan_farm_field(
-        commands: &mut Commands,
-        textures: &Res<TextureAssets>,
-        worker_id: Entity,
-        position: Vec3,
-    ) {
-        let building_blueprint = BuildingBlueprint {
-            name: "Farm field",
-            max_hp: 200.0,
-            units_of_work: 100.0,
-            texture_set: BuildingTextureSet {
-                in_progress: vec![
-                    textures.farm_field_in_progress_1.clone(),
-                    textures.farm_field_in_progress_2.clone(),
-                ],
-                completed: textures.farm_field.clone(),
-                scale: 0.2,
-            },
-        };
-
-        plan_building(commands, worker_id, building_blueprint, position);
+        plan_building(commands, building_blueprint, position);
     }
 
     pub fn plan_training_ground() {
@@ -73,3 +64,5 @@ impl MonkeyPlanner {
         println!("Planning to build a factory");
     }
 }
+
+fn recruit_worker(worker_id: Entity) {}

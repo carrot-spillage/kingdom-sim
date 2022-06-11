@@ -1,13 +1,10 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Query, Res, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, Transform},
     sprite::SpriteBundle,
 };
 
-use crate::{
-    jobs::systems::WorkProgressedEvent, loading::TextureAssets, movement::hack_3d_position_to_2d,
-    planned_work::BuildingReference,
-};
+use crate::movement::hack_3d_position_to_2d;
 
 #[derive(Component)]
 pub struct ConstructionSite;
@@ -21,6 +18,7 @@ pub struct BuildingBlueprint {
     pub texture_set: BuildingTextureSet,
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
+    pub max_workers: usize,
 }
 
 pub struct BuildingTextureSet {
@@ -28,9 +26,6 @@ pub struct BuildingTextureSet {
     pub completed: Handle<Image>,
     pub scale: f32,
 }
-
-#[derive(Component)]
-pub struct ConstructionProgress(pub f32);
 
 pub fn spawn_construction_site(
     commands: &mut Commands,
@@ -41,7 +36,6 @@ pub fn spawn_construction_site(
     commands
         .spawn()
         .insert(ConstructionSite)
-        .insert(ConstructionProgress(0.0))
         .insert_bundle(SpriteBundle {
             texture: texture_set.in_progress[0].clone(),
             transform: Transform {
@@ -54,29 +48,19 @@ pub fn spawn_construction_site(
         .id()
 }
 
-pub fn update_construction_site(
-    progress_event: &WorkProgressedEvent,
-    building_references: &Query<&BuildingReference>,
-    construction_progresses: &mut Query<(&mut ConstructionProgress, &mut Handle<Image>)>,
-    texture_set: &BuildingTextureSet,
-) {
-    // TODO: provide several frames of house building progress
+pub fn get_construction_site_texture(
+    progress: f32,
+    building_blueprint: &BuildingBlueprint,
+) -> Option<Handle<Image>> {
+    let old_index =
+        ((building_blueprint.texture_set.in_progress.len() - 1) as f32 * progress) as usize;
+    let index = ((building_blueprint.texture_set.in_progress.len() - 1) as f32 * progress) as usize;
 
-    let building_id = building_references
-        .get(progress_event.work_process_id)
-        .unwrap()
-        .0;
-    let (mut construction_progress, mut texture) =
-        construction_progresses.get_mut(building_id).unwrap();
-    let progress = progress_event.units_of_work_left / progress_event.units_of_work;
-    let old_index = ((texture_set.in_progress.len() - 1) as f32 * construction_progress.0) as usize;
-    let index = ((texture_set.in_progress.len() - 1) as f32 * progress) as usize;
-
-    if index > 0 && index > old_index {
-        *texture = texture_set.in_progress[index].clone();
+    if index == old_index {
+        return None;
+    } else {
+        return Some(building_blueprint.texture_set.in_progress[index].clone());
     }
-
-    (*construction_progress) = ConstructionProgress(progress);
 }
 
 pub fn convert_construction_site_to_building(
@@ -87,7 +71,6 @@ pub fn convert_construction_site_to_building(
     commands
         .entity(id)
         .remove::<ConstructionSite>()
-        .remove::<ConstructionProgress>()
         .insert(Building)
         .insert(texture_set.completed.clone());
 }

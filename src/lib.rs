@@ -1,17 +1,17 @@
 mod activity_info;
 mod building;
+mod building_job;
 mod common;
 mod init;
-mod jobs;
 mod loading;
 mod menu;
 mod monkey_planner;
 mod movement;
 mod planned_work;
-mod planting_crops;
 mod resources;
 mod tree;
-mod tree_cutting_job;
+mod work_progress;
+mod skills;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -21,15 +21,13 @@ use bevy::app::App;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-// use building_job::BuildingJobPlugin;
+use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
-use jobs::JobsPlugin;
+
 use movement::MovementPlugin;
 
-use planned_work::{BuildingJobPlugin, WorkOnArrivalPlugin};
-use planting_crops::PlantingCropsPlugin;
+use planned_work::WorkOnArrivalPlugin;
 use resources::ResourcesPlugin;
-use tree_cutting_job::TreeCuttingJobPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html

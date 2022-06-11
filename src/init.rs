@@ -16,9 +16,10 @@ use crate::{
     building::{
         convert_construction_site_to_building, spawn_construction_site, BuildingTextureSet,
     },
-    jobs::work_process::{SkillType, Skilled},
     loading::{FontAssets, TextureAssets},
+    monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
+    skills::{SkillType, Skilled},
     tree::spawn_tree,
     GameState,
 };
@@ -49,7 +50,13 @@ fn init(
 
     for _ in 0..1 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, &textures, &fonts, pos);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
+
+        MonkeyPlanner::plan_house(
+            &mut commands,
+            &textures,
+            get_random_pos(Vec2::ZERO, world_params.size / 4.0),
+        );
     }
 
     let house_textures = BuildingTextureSet {
@@ -58,32 +65,11 @@ fn init(
         scale: 0.03,
     };
 
-    let farm_field_textures = BuildingTextureSet {
-        in_progress: vec![
-            textures.farm_field_in_progress_1.clone(),
-            textures.farm_field_in_progress_2.clone(),
-        ],
-        completed: textures.farm_field.clone(),
-        scale: 0.2,
-    };
-
     for _ in 0..5 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
 
         let construction_site_id = spawn_construction_site(&mut commands, pos, &house_textures);
         convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
-    }
-
-    for _ in 0..3 {
-        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-
-        let construction_site_id =
-            spawn_construction_site(&mut commands, pos, &farm_field_textures);
-        convert_construction_site_to_building(
-            construction_site_id,
-            &mut commands,
-            &farm_field_textures,
-        );
     }
 
     for _ in 0..40 {
@@ -106,7 +92,7 @@ fn spawn_worker(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
     position: Vec3,
-) {
+) -> Entity {
     let bundle = WorkerBundle {
         skilled: Skilled {
             skills: HashMap::from([(SkillType::Building, 0.5), (SkillType::None, 0.5)]),
@@ -142,7 +128,8 @@ fn spawn_worker(
         .insert(ActivityInfo {
             title: "".to_string(),
             child: id.unwrap(),
-        });
+        })
+        .id()
 }
 
 #[derive(Component, Bundle)]
