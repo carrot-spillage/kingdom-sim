@@ -1,8 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{
-        App, Commands, Entity, EventReader, EventWriter, Plugin, Query, SystemSet,
-    },
+    prelude::{App, Commands, Entity, EventReader, EventWriter, Plugin, Query, SystemSet},
 };
 
 use crate::{
@@ -40,18 +38,12 @@ fn handle_arrived_to_work(
         .map(|x| x.0.work_id)
     {
         let mut work = work_query.get_mut(work_id).unwrap();
-
     }
 }
 
 fn handle_work_process(
     mut commands: Commands,
-    mut construction_sites: Query<(
-        Entity,
-        &PlannedWork,
-        &mut WorkProgress,
-        &BuildingBlueprint,
-    )>,
+    mut construction_sites: Query<(Entity, &PlannedWork, &mut WorkProgress, &BuildingBlueprint)>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
@@ -65,6 +57,10 @@ fn handle_work_process(
             .iter()
             .map(|worker_id| workers.get(*worker_id).unwrap())
             .collect();
+
+        if workers.is_empty() {
+            continue;
+        }
 
         match advance_work_process_state(workers, &work_progress, SkillType::Building) {
             WorkProgressUpdate::Complete { .. } => {

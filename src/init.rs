@@ -4,8 +4,8 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
-        Transform,
+        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Query, Res,
+        SystemSet, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -19,6 +19,7 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
+    planned_work::{PlannedWork, WorksOn},
     skills::{SkillType, Skilled},
     tree::spawn_tree,
     GameState,
@@ -52,11 +53,13 @@ fn init(
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
 
-        MonkeyPlanner::plan_house(
+        let work_id = MonkeyPlanner::plan_house(
             &mut commands,
             &textures,
             get_random_pos(Vec2::ZERO, world_params.size / 4.0),
         );
+
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
     }
 
     let house_textures = BuildingTextureSet {

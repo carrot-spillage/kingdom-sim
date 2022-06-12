@@ -37,7 +37,26 @@ impl MonkeyPlanner {
         }
     }
 
-    pub fn plan_house(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) {
+    pub fn temp_recruit_workers(commands: &mut Commands, work_id: Entity, worker_ids: Vec<Entity>) {
+        for worker_id in worker_ids {
+            commands
+                .entity(worker_id)
+                .insert(WorksOn {
+                    work_id,
+                    job_id: BUILDING_JOB_NAME,
+                })
+                .insert(MovingToEntity {
+                    destination_entity: work_id,
+                    sufficient_range: 15.0,
+                });
+        }
+    }
+
+    pub fn plan_house(
+        commands: &mut Commands,
+        textures: &Res<TextureAssets>,
+        position: Vec3,
+    ) -> Entity {
         let building_blueprint = BuildingBlueprint {
             name: "House",
             max_hp: 2000.0,
@@ -49,7 +68,7 @@ impl MonkeyPlanner {
             },
             max_workers: 2,
         };
-        plan_building(commands, building_blueprint, position);
+        plan_building(commands, building_blueprint, position)
     }
 
     pub fn plan_training_ground() {
