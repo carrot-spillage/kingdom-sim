@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Entity, EventReader, EventWriter, Plugin, Query, SystemSet},
+    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet},
 };
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
         spawn_construction_site, BuildingBlueprint,
     },
     movement::Position,
-    planned_work::{ArrivedToWorkEvent, PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
+    planned_work::{PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
     skills::{SkillType, Skilled},
     work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate},
     GameState,
@@ -20,27 +20,12 @@ pub struct BuildingJobPlugin;
 impl Plugin for BuildingJobPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(handle_arrived_to_work)
-                .with_system(handle_work_process),
+            SystemSet::on_update(GameState::Playing).with_system(handle_work_process),
         );
     }
 
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
-    }
-}
-
-fn handle_arrived_to_work(
-    mut work_ref_events: EventReader<ArrivedToWorkEvent>,
-    mut work_query: Query<&mut PlannedWork>,
-) {
-    for work_id in work_ref_events
-        .iter()
-        .filter(|x| x.0.job_id == BUILDING_JOB_NAME)
-        .map(|x| x.0.work_id)
-    {
-        let mut work = work_query.get_mut(work_id).unwrap();
     }
 }
 

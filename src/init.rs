@@ -4,10 +4,10 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Query, Res,
-        SystemSet, Transform, With, Without,
+        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
+        Transform,
     },
-    sprite::SpriteBundle,
+    sprite::{Sprite, SpriteBundle},
 };
 use rand::Rng;
 
@@ -19,7 +19,6 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
-    planned_work::{PlannedWork, WorksOn},
     skills::{SkillType, Skilled},
     tree::spawn_tree,
     GameState,
@@ -111,8 +110,11 @@ fn spawn_worker(
             texture: textures.peasant.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
-                scale: Vec3::new(0.05, 0.05, 1.0),
                 ..Transform::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(8.0, 12.25)),
+                ..Sprite::default()
             },
             ..Default::default()
         },
