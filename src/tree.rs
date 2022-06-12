@@ -30,7 +30,7 @@ pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, positi
         .insert(Position(position))
         .insert(BreaksIntoResources(vec![ResourceChunk {
             kind: ResourceKind::Wood,
-            quantity: 2.0,
+            quantity: 2,
         }]))
         .insert_bundle(SpriteBundle {
             texture: textures.tree2.clone(),

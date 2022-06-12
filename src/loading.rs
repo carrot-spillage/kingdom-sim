@@ -42,8 +42,17 @@ pub struct TextureAssets {
     #[asset(path = "textures/house.png")]
     pub house: Handle<Image>,
 
-    #[asset(path = "textures/construction_site_1.png")]
-    pub construction_site_1: Handle<Image>,
+    #[asset(path = "textures/house_in_progress.png")]
+    pub house_in_progress: Handle<Image>,
+
+    #[asset(path = "textures/farm_field.png")]
+    pub farm_field: Handle<Image>,
+
+    #[asset(path = "textures/farm_field_in_progress_1.png")]
+    pub farm_field_in_progress_1: Handle<Image>,
+
+    #[asset(path = "textures/farm_field_in_progress_2.png")]
+    pub farm_field_in_progress_2: Handle<Image>,
 
     #[asset(path = "textures/peasant.png")]
     pub peasant: Handle<Image>,

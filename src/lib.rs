@@ -3,14 +3,15 @@ mod building;
 mod building_job;
 mod common;
 mod init;
-mod jobs;
 mod loading;
 mod menu;
+mod monkey_planner;
 mod movement;
+mod planned_work;
 mod resources;
 mod tree;
-mod tree_cutting_job;
-mod planting_crops;
+mod work_progress;
+mod skills;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -22,11 +23,11 @@ use bevy::app::App;
 use bevy::prelude::*;
 use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
-use jobs::JobsPlugin;
+
 use movement::MovementPlugin;
-use planting_crops::PlantingCropsPlugin;
+
+use planned_work::WorkOnArrivalPlugin;
 use resources::ResourcesPlugin;
-use tree_cutting_job::TreeCuttingJobPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -43,6 +44,8 @@ enum GameState {
 
 pub struct GamePlugin;
 
+pub struct Dummy;
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let world_params = WorldParams {
@@ -55,12 +58,14 @@ impl Plugin for GamePlugin {
             .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(ResourcesPlugin)
-            .add_plugin(JobsPlugin)
+            //.add_plugin(JobsPlugin)
             .add_plugin(ActivityInfoPlugin)
-            .add_plugin(BuildingJobPlugin)
-            .add_plugin(TreeCuttingJobPlugin)
-            .add_plugin(PlantingCropsPlugin)
-            .add_plugin(InitPlugin);
+            // .add_plugin(BuildingJobPlugin)
+            // .add_plugin(TreeCuttingJobPlugin)
+            // .add_plugin(PlantingCropsPlugin)
+            .add_plugin(InitPlugin)
+            .add_plugin(WorkOnArrivalPlugin)
+            .add_plugin(BuildingJobPlugin);
 
         // #[cfg(debug_assertions)]
         // {

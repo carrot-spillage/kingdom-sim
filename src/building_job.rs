@@ -1,39 +1,26 @@
-use bevy::prelude::{
-    App, Commands, Component, Entity, EventReader, Handle, Image, Plugin, Query, Res, SystemSet,
+use bevy::{
+    math::Vec3,
+    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet},
 };
 
-use crate::common::TargetOrPosition;
-use crate::jobs::helpers::register_job;
-use crate::jobs::systems::Job;
-use crate::loading::TextureAssets;
 use crate::{
     building::{
-        convert_construction_site_to_building, spawn_construction_site, update_construction_site,
+        convert_construction_site_to_building, get_construction_site_texture,
+        spawn_construction_site, BuildingBlueprint,
     },
-    common::CreationProgress,
-    jobs::{
-        systems::{WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent},
-        work_process::SkillType,
-    },
+    movement::Position,
+    planned_work::{PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
+    skills::{SkillType, Skilled},
+    work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate},
     GameState,
 };
 
-#[derive(Component)]
-pub struct BuildingReference(pub Entity);
-
 pub struct BuildingJobPlugin;
-
-static JOB_NAME: &'static str = "Building";
 
 impl Plugin for BuildingJobPlugin {
     fn build(&self, app: &mut App) {
-        register_job(app, Job::new(JOB_NAME, SkillType::Building));
-
         app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(handle_work_scheduled)
-                .with_system(handle_work_progressed)
-                .with_system(handle_work_completed),
+            SystemSet::on_update(GameState::Playing).with_system(handle_work_process),
         );
     }
 
@@ -42,51 +29,98 @@ impl Plugin for BuildingJobPlugin {
     }
 }
 
-fn handle_work_scheduled(
+fn handle_work_process(
     mut commands: Commands,
-    mut events: EventReader<WorkScheduledEvent>,
-    textures: Res<TextureAssets>,
+    mut construction_sites: Query<(
+        Entity,
+        &PlannedWork,
+        &Position,
+        &mut WorkProgress,
+        &BuildingBlueprint,
+    )>,
+    workers: Query<&Skilled>,
+    mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let position = match scheduled_event.target {
-            TargetOrPosition::Position(position) => position,
-            _ => panic!("Must have a position"),
-        };
-        let building_id = spawn_construction_site(
-            &mut commands,
-            position,
-            textures.construction_site_1.clone(),
-        );
-        commands
-            .entity(scheduled_event.work_process_id)
-            .insert(BuildingReference(building_id));
+    for (planned_work_id, work, position, mut work_progress, building_blueprint) in
+        construction_sites.iter_mut()
+    {
+        let building_id = planned_work_id; // building is the planned work
+
+        let workers: Vec<&Skilled> = work
+            .worker_ids
+            .iter()
+            .map(|worker_id| workers.get(*worker_id).unwrap())
+            .collect();
+
+        if workers.is_empty() {
+            continue;
+        }
+
+        if work_progress.units_of_work_left == work.units_of_work {
+            spawn_construction_site(
+                &mut commands,
+                building_id,
+                position.0,
+                &building_blueprint.texture_set,
+            );
+        }
+
+        match advance_work_process_state(workers, &work_progress, SkillType::Building) {
+            WorkProgressUpdate::Complete { .. } => {
+                for worker_id in work
+                    .worker_ids
+                    .iter()
+                    .chain(work.tentative_worker_ids.iter())
+                {
+                    remove_planned_work(&mut commands, planned_work_id);
+
+                    worker_completion_events.send(WorkerCompletedWorkEvent {
+                        worker_id: *worker_id,
+                    })
+                }
+
+                convert_construction_site_to_building(
+                    building_id,
+                    &mut commands,
+                    &building_blueprint.texture_set,
+                );
+            }
+            WorkProgressUpdate::Incomplete { progress, delta } => {
+                if let Some(new_texture) = get_construction_site_texture(
+                    1.0 - (progress.units_of_work_left + delta) / work.units_of_work,
+                    1.0 - progress.units_of_work_left / work.units_of_work,
+                    building_blueprint,
+                ) {
+                    commands.entity(building_id).insert(new_texture);
+                }
+
+                *work_progress = progress;
+            }
+        }
     }
 }
 
-fn handle_work_progressed(
-    mut events: EventReader<WorkProgressedEvent>,
-    building_references: Query<&BuildingReference>,
-    mut construction_progresses: Query<(&mut CreationProgress, &mut Handle<Image>)>,
-    textures: Res<TextureAssets>,
-) {
-    for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        update_construction_site(
-            progress_event,
-            &building_references,
-            &mut construction_progresses,
-            &textures,
-        );
-    }
+pub fn plan_building(
+    commands: &mut Commands,
+    building_blueprint: BuildingBlueprint,
+    position: Vec3,
+) -> Entity {
+    commands
+        .spawn()
+        .insert(PlannedWork::new(
+            BUILDING_JOB_NAME,
+            building_blueprint.units_of_work,
+            building_blueprint.max_workers,
+        ))
+        .insert(WorkProgress::new(building_blueprint.units_of_work))
+        .insert(Position(position))
+        .insert(building_blueprint)
+        .id()
 }
 
-fn handle_work_completed(
-    mut commands: Commands,
-    mut events: EventReader<WorkCompletedEvent>,
-    building_references: Query<&BuildingReference>,
-    textures: Res<TextureAssets>,
-) {
-    for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let building_id = building_references.get(event.work_process_id).unwrap().0;
-        convert_construction_site_to_building(building_id, &mut commands, textures.house.clone());
-    }
+fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
+    commands
+        .entity(planned_work_id)
+        .remove::<WorkProgress>()
+        .remove::<PlannedWork>();
 }

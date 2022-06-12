@@ -7,15 +7,19 @@ use bevy::{
         App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
         Transform,
     },
-    sprite::SpriteBundle,
+    sprite::{Sprite, SpriteBundle},
 };
 use rand::Rng;
 
 use crate::{
     activity_info::{create_activity_bundle, ActivityInfo},
-    jobs::work_process::{SkillType, Skilled},
+    building::{
+        convert_construction_site_to_building, spawn_construction_site, BuildingTextureSet,
+    },
     loading::{FontAssets, TextureAssets},
+    monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
+    skills::{SkillType, Skilled},
     tree::spawn_tree,
     GameState,
 };
@@ -46,12 +50,29 @@ fn init(
 
     for _ in 0..1 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, &textures, &fonts, pos);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
+
+        let work_id = MonkeyPlanner::plan_house(
+            &mut commands,
+            &textures,
+            get_random_pos(Vec2::ZERO, world_params.size / 4.0),
+        );
+
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
     }
 
-    for _ in 0..3 {
+    let house_textures = BuildingTextureSet {
+        in_progress: vec![textures.house_in_progress.clone()],
+        completed: textures.house.clone(),
+        scale: 0.03,
+    };
+
+    for _ in 0..5 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_worker(&mut commands, &textures, &fonts, pos);
+
+        let construction_site_id = commands.spawn().id();
+        spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
+        convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
     }
 
     for _ in 0..40 {
@@ -74,7 +95,7 @@ fn spawn_worker(
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
     position: Vec3,
-) {
+) -> Entity {
     let bundle = WorkerBundle {
         skilled: Skilled {
             skills: HashMap::from([(SkillType::Building, 0.5), (SkillType::None, 0.5)]),
@@ -89,8 +110,11 @@ fn spawn_worker(
             texture: textures.peasant.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
-                scale: Vec3::new(0.05, 0.05, 1.0),
                 ..Transform::default()
+            },
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(8.0, 12.25)),
+                ..Sprite::default()
             },
             ..Default::default()
         },
@@ -110,7 +134,8 @@ fn spawn_worker(
         .insert(ActivityInfo {
             title: "".to_string(),
             child: id.unwrap(),
-        });
+        })
+        .id()
 }
 
 #[derive(Component, Bundle)]
