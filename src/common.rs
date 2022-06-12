@@ -5,9 +5,3 @@ use bevy::{
 
 #[derive(Component)]
 pub struct CreationProgress(pub f32);
-
-#[derive(Clone, Copy)]
-pub enum TargetOrPosition {
-    Target(Entity),
-    Position(Vec3),
-}

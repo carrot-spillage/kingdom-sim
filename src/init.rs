@@ -71,7 +71,8 @@ fn init(
     for _ in 0..5 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
 
-        let construction_site_id = spawn_construction_site(&mut commands, pos, &house_textures);
+        let construction_site_id = commands.spawn().id();
+        spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
         convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
     }
 

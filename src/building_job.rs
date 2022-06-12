@@ -4,7 +4,10 @@ use bevy::{
 };
 
 use crate::{
-    building::{get_construction_site_texture, BuildingBlueprint},
+    building::{
+        convert_construction_site_to_building, get_construction_site_texture,
+        spawn_construction_site, BuildingBlueprint,
+    },
     movement::Position,
     planned_work::{ArrivedToWorkEvent, PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
     skills::{SkillType, Skilled},
@@ -43,11 +46,17 @@ fn handle_arrived_to_work(
 
 fn handle_work_process(
     mut commands: Commands,
-    mut construction_sites: Query<(Entity, &PlannedWork, &mut WorkProgress, &BuildingBlueprint)>,
+    mut construction_sites: Query<(
+        Entity,
+        &PlannedWork,
+        &Position,
+        &mut WorkProgress,
+        &BuildingBlueprint,
+    )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for (planned_work_id, work, mut work_progress, building_blueprint) in
+    for (planned_work_id, work, position, mut work_progress, building_blueprint) in
         construction_sites.iter_mut()
     {
         let building_id = planned_work_id; // building is the planned work
@@ -62,26 +71,39 @@ fn handle_work_process(
             continue;
         }
 
+        if work_progress.units_of_work_left == work.units_of_work {
+            spawn_construction_site(
+                &mut commands,
+                building_id,
+                position.0,
+                &building_blueprint.texture_set,
+            );
+        }
+
         match advance_work_process_state(workers, &work_progress, SkillType::Building) {
             WorkProgressUpdate::Complete { .. } => {
-                println!("advance_work_process_state is completed");
-
                 for worker_id in work
                     .worker_ids
                     .iter()
                     .chain(work.tentative_worker_ids.iter())
                 {
                     remove_planned_work(&mut commands, planned_work_id);
+
                     worker_completion_events.send(WorkerCompletedWorkEvent {
                         worker_id: *worker_id,
                     })
                 }
-            }
-            WorkProgressUpdate::Incomplete(progress) => {
-                println!("IncompleteWorkProcessState {:?}", progress);
 
+                convert_construction_site_to_building(
+                    building_id,
+                    &mut commands,
+                    &building_blueprint.texture_set,
+                );
+            }
+            WorkProgressUpdate::Incomplete { progress, delta } => {
                 if let Some(new_texture) = get_construction_site_texture(
-                    progress.units_of_work_left / work.units_of_work,
+                    1.0 - (progress.units_of_work_left + delta) / work.units_of_work,
+                    1.0 - progress.units_of_work_left / work.units_of_work,
                     building_blueprint,
                 ) {
                     commands.entity(building_id).insert(new_texture);

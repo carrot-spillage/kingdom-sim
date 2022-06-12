@@ -62,7 +62,10 @@ impl MonkeyPlanner {
             max_hp: 2000.0,
             units_of_work: 100.0,
             texture_set: BuildingTextureSet {
-                in_progress: vec![textures.house_in_progress.clone()],
+                in_progress: vec![
+                    textures.house_in_progress.clone(),
+                    textures.house_in_progress.clone(),
+                ],
                 completed: textures.house.clone(),
                 scale: 0.03,
             },

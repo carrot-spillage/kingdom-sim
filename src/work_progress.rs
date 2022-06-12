@@ -17,7 +17,7 @@ pub struct WorkProgress {
 
 #[derive(Clone)]
 pub enum WorkProgressUpdate {
-    Incomplete(WorkProgress),
+    Incomplete { progress: WorkProgress, delta: f32 },
     Complete { quality: f32 },
 }
 
@@ -57,11 +57,14 @@ pub fn advance_work_process_state(
     if units_of_work_left > 0.0 {
         let mut work_chunks_copy = work_chunks.clone(); // TODO: can we write something more elegant?
         work_chunks_copy.append(&mut new_work_chunks);
-        return WorkProgressUpdate::Incomplete(WorkProgress {
-            units_of_work_left,
-            quality_counter,
-            work_chunks: work_chunks_copy,
-        });
+        return WorkProgressUpdate::Incomplete {
+            progress: WorkProgress {
+                units_of_work_left,
+                quality_counter,
+                work_chunks: work_chunks_copy,
+            },
+            delta: progress,
+        };
     } else {
         return WorkProgressUpdate::Complete {
             quality: quality_counter.points / quality_counter.instances as f32,

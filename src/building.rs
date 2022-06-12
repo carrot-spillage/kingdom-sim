@@ -29,37 +29,37 @@ pub struct BuildingTextureSet {
 
 pub fn spawn_construction_site(
     commands: &mut Commands,
+    construction_site_id: Entity,
     position: Vec3,
     texture_set: &BuildingTextureSet,
-) -> Entity {
+) {
     println!("Spawning construction site at {:?}", position);
     commands
-        .spawn()
+        .entity(construction_site_id)
         .insert(ConstructionSite)
         .insert_bundle(SpriteBundle {
-            texture: texture_set.in_progress[0].clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
                 scale: Vec3::new(texture_set.scale, texture_set.scale, 1.0),
                 ..Transform::default()
             },
             ..Default::default()
-        })
-        .id()
+        });
 }
 
 pub fn get_construction_site_texture(
+    previous_progress: f32,
     progress: f32,
     building_blueprint: &BuildingBlueprint,
 ) -> Option<Handle<Image>> {
-    let old_index =
-        ((building_blueprint.texture_set.in_progress.len() - 1) as f32 * progress) as usize;
-    let index = ((building_blueprint.texture_set.in_progress.len() - 1) as f32 * progress) as usize;
+    let max_index = (building_blueprint.texture_set.in_progress.len() - 1) as f32;
+    let old_index = (max_index * previous_progress).round() as usize;
+    let index = (max_index * progress).round() as usize;
 
-    if index == old_index {
-        return None;
-    } else {
+    if previous_progress == 0.0 || index != old_index {
         return Some(building_blueprint.texture_set.in_progress[index].clone());
+    } else {
+        return None;
     }
 }
 
