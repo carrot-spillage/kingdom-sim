@@ -78,12 +78,12 @@ impl MonkeyPlanner {
         println!("Planning to build a mine");
     }
 
-    pub fn plan_buildingshop() {
-        println!("Planning to build a factory");
+    pub fn plan_workshop() {
+        println!("Planning to build a workshop");
     }
 
     pub fn plan_shrine() {
-        println!("Planning to build a factory");
+        println!("Planning to build a shrine");
     }
 }
 
