@@ -1,35 +1,40 @@
-use bevy::prelude::{App, Commands, Component, Entity, EventReader, Plugin, Query, SystemSet};
+use bevy::{
+    math::{Vec2, Vec3},
+    prelude::{
+        App, Commands, Component, Entity, EventWriter, Handle, Image, Plugin, Query, Res,
+        SystemSet, Transform,
+    },
+    sprite::{Sprite, SpriteBundle},
+};
 
-use crate::common::TargetOrPosition;
-use crate::jobs::helpers::register_job;
-use crate::jobs::systems::{Job, WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent};
-use crate::jobs::work_process::SkillType;
-use crate::GameState;
+use crate::{
+    loading::TextureAssets,
+    movement::{hack_3d_position_to_2d, Position},
+    planned_work::{PlannedWork, WorkerCompletedWorkEvent},
+    skills::{SkillType, Skilled},
+    work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate},
+    GameState,
+};
 
 pub struct PlantingCropsPlugin;
 
+#[derive(Component)]
+pub struct OccupiedArea(pub Vec2);
+
+#[derive(Component)]
+struct FarmFieldMaturity(pub f32);
+
+#[derive(Component)]
+struct MatureCrops;
+
 static JOB_NAME: &'static str = "PlantingCrops";
-
-#[derive(Component)]
-pub struct FarmFieldReference(pub Entity);
-
-#[derive(Component)]
-pub struct FarmFieldHarvestable;
-
-#[derive(Component)]
-pub struct FarmField {
-    readiness: f32,
-}
 
 impl Plugin for PlantingCropsPlugin {
     fn build(&self, app: &mut App) {
-        register_job(app, Job::new(JOB_NAME, SkillType::None));
-
         app.add_system_set(
             SystemSet::on_update(GameState::Playing)
-                .with_system(handle_work_scheduled)
-                .with_system(handle_work_progressed)
-                .with_system(handle_work_completed),
+                .with_system(handle_work_process)
+                .with_system(grow),
         );
     }
 
@@ -38,78 +43,124 @@ impl Plugin for PlantingCropsPlugin {
     }
 }
 
-fn handle_work_scheduled(mut commands: Commands, mut events: EventReader<WorkScheduledEvent>) {
-    for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let farm_field_id = match scheduled_event.target {
-            TargetOrPosition::Target(tree_id) => tree_id,
-            _ => panic!("Must have a target"),
-        };
-        commands
-            .entity(scheduled_event.work_process_id)
-            .insert(FarmFieldReference(farm_field_id));
-    }
-}
-
-fn handle_work_progressed(
-    mut events: EventReader<WorkProgressedEvent>,
-    farm_field_references: Query<&FarmFieldReference>,
-    mut farm_fields: Query<&mut FarmField>,
-) {
-    for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let farm_field_id = farm_field_references
-            .get(progress_event.work_process_id)
-            .unwrap()
-            .0;
-
-        let mut farm_field = farm_fields.get_mut(farm_field_id).unwrap();
-        farm_field.readiness = progress_event.units_of_work_left / progress_event.units_of_work;
-    }
-}
-
-fn handle_work_completed(
+fn handle_work_process(
     mut commands: Commands,
-    mut events: EventReader<WorkCompletedEvent>,
-    target_references: Query<&FarmFieldReference>,
+    mut farm_fields: Query<(Entity, &PlannedWork, &Position, &mut WorkProgress)>,
+    mut textured: Query<&mut Handle<Image>>,
+    workers: Query<&Skilled>,
+    mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
+    textures: Res<TextureAssets>,
 ) {
-    for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let target_id = target_references.get(event.work_process_id).unwrap().0;
-        commands.entity(target_id).insert(FarmFieldHarvestable);
+    for (planned_work_id, work, position, mut work_progress) in farm_fields.iter_mut() {
+        let farm_field_id = planned_work_id;
+        let workers: Vec<&Skilled> = work
+            .worker_ids
+            .iter()
+            .map(|worker_id| workers.get(*worker_id).unwrap())
+            .collect();
+
+        if workers.is_empty() {
+            continue;
+        }
+
+        if work_progress.units_of_work_left == work.units_of_work {
+            spawn_farm_field_for_sowing(&mut commands, position.0, farm_field_id, &textures);
+        }
+
+        match advance_work_process_state(workers, &work_progress, SkillType::GrowingPlants) {
+            WorkProgressUpdate::Complete { .. } => {
+                for worker_id in work
+                    .worker_ids
+                    .iter()
+                    .chain(work.tentative_worker_ids.iter())
+                {
+                    remove_planned_work(&mut commands, planned_work_id);
+
+                    commands
+                        .entity(planned_work_id)
+                        .insert(FarmFieldMaturity(0.0));
+
+                    worker_completion_events.send(WorkerCompletedWorkEvent {
+                        worker_id: *worker_id,
+                    })
+                }
+            }
+            WorkProgressUpdate::Incomplete { progress, .. } => {
+                if let Ok(mut texture) = textured.get_mut(planned_work_id) {
+                    (*texture) = get_farm_field_texture_based_on_sowing_progress(
+                        1.0 - progress.units_of_work_left / work.units_of_work,
+                        &textures,
+                    );
+                    // TODO: need some simpler visual representation of the progress then different textures
+                }
+
+                *work_progress = progress;
+            }
+        }
     }
 }
 
-// #[derive(Component)]
-// struct AxeSwing {
-//     timer: Timer,
-// }
+fn grow(mut commands: Commands, mut crops: Query<(Entity, &mut FarmFieldMaturity)>) {
+    for (entity, mut crop) in crops.iter_mut() {
+        crop.0 += 0.01;
+        if crop.0 >= 1.0 {
+            commands
+                .entity(entity)
+                .remove::<FarmFieldMaturity>()
+                .insert(MatureCrops);
+        }
+    }
+}
 
-// #[derive(Component)]
-// pub struct Cutting(Entity);
+pub fn plan_farm_field(commands: &mut Commands, position: Vec3) -> Entity {
+    let units_of_work = 70.0;
+    let size = Vec2::new(160.0, 160.0);
 
-// struct Damage(f32);
+    commands
+        .spawn()
+        .insert(PlannedWork::new(JOB_NAME, units_of_work, 1))
+        .insert(WorkProgress::new(units_of_work))
+        .insert(Position(position))
+        .insert(OccupiedArea(size))
+        .id()
+}
 
-// fn advance_strikes(
-//     mut commands: Commands,
-//     mut q: Query<(Entity, &mut AxeSwing, &Cutting)>,
-//     time: Res<Time>,
-//     mut trees: Query<&mut SimpleDestructible, (With<Tree>, With<BreaksIntoResources>)>,
-//     mut breakages: EventWriter<BreaksIntoResourcesEvent>,
-// ) {
-//     for (entity, mut swing, Cutting(tree_id)) in q.iter_mut() {
-//         swing.timer.tick(time.delta());
+fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
+    commands
+        .entity(planned_work_id)
+        .remove::<WorkProgress>()
+        .remove::<PlannedWork>();
+}
 
-//         if swing.timer.finished() {
-//             commands.entity(entity).despawn();
-//             let mut simple_destructible = trees.get_mut(*tree_id).unwrap();
+fn spawn_farm_field_for_sowing(
+    commands: &mut Commands,
+    position: Vec3,
+    farm_field_id: Entity,
+    textures: &Res<TextureAssets>,
+) {
+    commands.entity(farm_field_id).insert_bundle(SpriteBundle {
+        texture: textures.farm_field_sowing_1.clone(),
+        transform: Transform {
+            translation: hack_3d_position_to_2d(position),
+            ..Transform::default()
+        },
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(32.0, 32.0)),
+            ..Sprite::default()
+        },
+        ..Default::default()
+    });
+}
 
-//             let probability = 0.95;
-//             let damage = 10.0;
-
-//             (*simple_destructible).0 .0 = (simple_destructible.0 .0 - damage).max(0.0);
-
-//             if simple_destructible.0 .0 <= 0.0 {
-//                 commands.entity(*tree_id).despawn();
-//                 breakages.send(BreaksIntoResourcesEvent(*tree_id));
-//             }
-//         }
-//     }
-// }
+fn get_farm_field_texture_based_on_sowing_progress(
+    progress: f32,
+    textures: &Res<TextureAssets>,
+) -> Handle<Image> {
+    if progress < 0.5 {
+        return textures.farm_field_sowing_1.clone();
+    } else if progress < 0.75 {
+        return textures.farm_field_sowing_2.clone();
+    } else {
+        return textures.farm_field_sowing_3.clone();
+    }
+}

@@ -4,7 +4,7 @@ use bevy::prelude::Component;
 
 #[derive(PartialEq, Clone, Copy, Hash, Eq, Debug)]
 pub enum SkillType {
-    //PlantingCrops,
+    GrowingPlants,
     //Harvesting,
     //Crafting,
     Building,

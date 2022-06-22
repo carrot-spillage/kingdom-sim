@@ -19,6 +19,7 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
+    planting_crops::plan_farm_field,
     skills::{SkillType, Skilled},
     tree::spawn_tree,
     GameState,
@@ -55,6 +56,18 @@ fn init(
         let work_id = MonkeyPlanner::plan_house(
             &mut commands,
             &textures,
+            get_random_pos(Vec2::ZERO, world_params.size / 4.0),
+        );
+
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+    }
+
+    for _ in 0..1 {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
+
+        let work_id = plan_farm_field(
+            &mut commands,
             get_random_pos(Vec2::ZERO, world_params.size / 4.0),
         );
 
@@ -98,7 +111,11 @@ fn spawn_worker(
 ) -> Entity {
     let bundle = WorkerBundle {
         skilled: Skilled {
-            skills: HashMap::from([(SkillType::Building, 0.5), (SkillType::None, 0.5)]),
+            skills: HashMap::from([
+                (SkillType::Building, 0.5),
+                (SkillType::GrowingPlants, 0.5),
+                (SkillType::None, 0.5),
+            ]),
         },
         walker: Walker {
             max_speed: 2.0,

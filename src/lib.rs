@@ -8,10 +8,11 @@ mod menu;
 mod monkey_planner;
 mod movement;
 mod planned_work;
+mod planting_crops;
 mod resources;
+mod skills;
 mod tree;
 mod work_progress;
-mod skills;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -27,6 +28,7 @@ use init::{InitPlugin, WorldParams};
 use movement::MovementPlugin;
 
 use planned_work::WorkOnArrivalPlugin;
+use planting_crops::PlantingCropsPlugin;
 use resources::ResourcesPlugin;
 
 // This example game uses States to separate logic
@@ -62,7 +64,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ActivityInfoPlugin)
             // .add_plugin(BuildingJobPlugin)
             // .add_plugin(TreeCuttingJobPlugin)
-            // .add_plugin(PlantingCropsPlugin)
+            .add_plugin(PlantingCropsPlugin)
             .add_plugin(InitPlugin)
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin);

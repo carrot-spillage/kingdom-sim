@@ -45,6 +45,15 @@ pub struct TextureAssets {
     #[asset(path = "textures/house_in_progress.png")]
     pub house_in_progress: Handle<Image>,
 
+    #[asset(path = "textures/farm_field_in_progress_1.png")]
+    pub farm_field_sowing_1: Handle<Image>,
+
+    #[asset(path = "textures/farm_field_in_progress_2.png")]
+    pub farm_field_sowing_2: Handle<Image>,
+
+    #[asset(path = "textures/farm_field.png")]
+    pub farm_field_sowing_3: Handle<Image>,
+
     #[asset(path = "textures/farm_field.png")]
     pub farm_field: Handle<Image>,
 
