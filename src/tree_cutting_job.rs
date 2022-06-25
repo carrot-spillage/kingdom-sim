@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    App, Commands, Entity, EventWriter, Plugin, Query, SystemSet, With,
-};
+use bevy::prelude::{App, Commands, Entity, EventWriter, Mut, Plugin, Query, SystemSet, With};
 
 use crate::planned_work::{PlannedWork, WorkerCompletedWorkEvent};
 use crate::resources::BreaksIntoResourcesEvent;
@@ -22,12 +20,7 @@ impl Plugin for TreeCuttingJobPlugin {
     }
 }
 
-fn update_destructable(
-    tree_id: Entity,
-    delta: f32,
-    trees: &mut Query<&mut SimpleDestructible, With<Tree>>,
-) {
-    let mut simple_destructible = trees.get_mut(tree_id).unwrap();
+fn update_destructable(simple_destructible: &mut Mut<SimpleDestructible>, delta: f32) {
     let progress_factor = 2.0;
     (*simple_destructible).current_health =
         (simple_destructible.current_health - progress_factor * delta).max(0.0);
@@ -42,6 +35,9 @@ fn handle_work(
     mut trees: Query<&mut SimpleDestructible, With<Tree>>,
 ) {
     for (work_id, work, mut work_progress) in work_query.iter_mut() {
+        if work.job_id != JOB_NAME {
+            continue;
+        }
         let tree_id = work_id;
         let workers: Vec<&Skilled> = work
             .worker_ids
@@ -70,7 +66,9 @@ fn handle_work(
                 }
             }
             WorkProgressUpdate::Incomplete { progress, delta } => {
-                update_destructable(work_id, delta, &mut trees);
+                let mut simple_destructible = trees.get_mut(tree_id).unwrap();
+
+                update_destructable(&mut simple_destructible, delta);
 
                 *work_progress = progress;
             }

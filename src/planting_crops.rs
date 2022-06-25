@@ -52,6 +52,9 @@ fn handle_work_process(
     textures: Res<TextureAssets>,
 ) {
     for (work_id, work, position, mut work_progress) in farm_fields.iter_mut() {
+        if work.job_id != JOB_NAME {
+            continue;
+        }
         let farm_field_id = work_id;
         let workers: Vec<&Skilled> = work
             .worker_ids
@@ -76,9 +79,7 @@ fn handle_work_process(
                 {
                     remove_work(&mut commands, work_id);
 
-                    commands
-                        .entity(work_id)
-                        .insert(FarmFieldMaturity(0.0));
+                    commands.entity(work_id).insert(FarmFieldMaturity(0.0));
 
                     worker_completion_events.send(WorkerCompletedWorkEvent {
                         worker_id: *worker_id,
