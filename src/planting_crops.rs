@@ -51,8 +51,8 @@ fn handle_work_process(
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
     textures: Res<TextureAssets>,
 ) {
-    for (planned_work_id, work, position, mut work_progress) in farm_fields.iter_mut() {
-        let farm_field_id = planned_work_id;
+    for (work_id, work, position, mut work_progress) in farm_fields.iter_mut() {
+        let farm_field_id = work_id;
         let workers: Vec<&Skilled> = work
             .worker_ids
             .iter()
@@ -74,10 +74,10 @@ fn handle_work_process(
                     .iter()
                     .chain(work.tentative_worker_ids.iter())
                 {
-                    remove_planned_work(&mut commands, planned_work_id);
+                    remove_work(&mut commands, work_id);
 
                     commands
-                        .entity(planned_work_id)
+                        .entity(work_id)
                         .insert(FarmFieldMaturity(0.0));
 
                     worker_completion_events.send(WorkerCompletedWorkEvent {
@@ -86,7 +86,7 @@ fn handle_work_process(
                 }
             }
             WorkProgressUpdate::Incomplete { progress, .. } => {
-                if let Ok(mut texture) = textured.get_mut(planned_work_id) {
+                if let Ok(mut texture) = textured.get_mut(work_id) {
                     (*texture) = get_farm_field_texture_based_on_sowing_progress(
                         1.0 - progress.units_of_work_left / work.units_of_work,
                         &textures,
@@ -125,9 +125,9 @@ pub fn plan_farm_field(commands: &mut Commands, position: Vec3) -> Entity {
         .id()
 }
 
-fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
+fn remove_work(commands: &mut Commands, work_id: Entity) {
     commands
-        .entity(planned_work_id)
+        .entity(work_id)
         .remove::<WorkProgress>()
         .remove::<PlannedWork>();
 }

@@ -22,6 +22,7 @@ use crate::{
     planting_crops::plan_farm_field,
     skills::{SkillType, Skilled},
     tree::spawn_tree,
+    tree_cutting_job::plan_tree_cutting,
     GameState,
 };
 
@@ -70,6 +71,17 @@ fn init(
             &mut commands,
             get_random_pos(Vec2::ZERO, world_params.size / 4.0),
         );
+
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+    }
+
+    for _ in 0..1 {
+        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+        let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+
+        let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
+        let work_id = plan_tree_cutting(&mut commands, tree_id);
 
         MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
     }

@@ -1,32 +1,20 @@
 use bevy::prelude::{
-    App, Commands, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet, With,
+    App, Commands, Entity, EventWriter, Plugin, Query, SystemSet, With,
 };
 
-use crate::common::TargetOrPosition;
-use crate::jobs::helpers::register_job;
-use crate::jobs::systems::{Job, WorkCompletedEvent, WorkProgressedEvent, WorkScheduledEvent};
-use crate::jobs::work_process::SkillType;
+use crate::planned_work::{PlannedWork, WorkerCompletedWorkEvent};
 use crate::resources::BreaksIntoResourcesEvent;
+use crate::skills::{SkillType, Skilled};
 use crate::tree::{SimpleDestructible, Tree};
+use crate::work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate};
 use crate::GameState;
-
 pub struct TreeCuttingJobPlugin;
-
-#[derive(Component)]
-pub struct TreeReference(pub Entity);
 
 static JOB_NAME: &'static str = "TreeCutting";
 
 impl Plugin for TreeCuttingJobPlugin {
     fn build(&self, app: &mut App) {
-        register_job(app, Job::new(JOB_NAME, SkillType::None));
-
-        app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(handle_work_scheduled)
-                .with_system(handle_work_progressed)
-                .with_system(handle_work_completed),
-        );
+        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(handle_work));
     }
 
     fn name(&self) -> &str {
@@ -34,80 +22,75 @@ impl Plugin for TreeCuttingJobPlugin {
     }
 }
 
-fn handle_work_scheduled(mut commands: Commands, mut events: EventReader<WorkScheduledEvent>) {
-    for scheduled_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let tree_id = match scheduled_event.target {
-            TargetOrPosition::Target(tree_id) => tree_id,
-            _ => panic!("Must have a target"),
-        };
-        commands
-            .entity(scheduled_event.work_process_id)
-            .insert(TreeReference(tree_id));
-    }
+fn update_destructable(
+    tree_id: Entity,
+    delta: f32,
+    trees: &mut Query<&mut SimpleDestructible, With<Tree>>,
+) {
+    let mut simple_destructible = trees.get_mut(tree_id).unwrap();
+    let progress_factor = 2.0;
+    (*simple_destructible).current_health =
+        (simple_destructible.current_health - progress_factor * delta).max(0.0);
 }
 
-fn handle_work_progressed(
-    mut events: EventReader<WorkProgressedEvent>,
-    tree_references: Query<&TreeReference>,
+fn handle_work(
+    mut commands: Commands,
+    mut work_query: Query<(Entity, &PlannedWork, &mut WorkProgress)>,
+    workers: Query<&Skilled>,
+    mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
+    mut breakages: EventWriter<BreaksIntoResourcesEvent>,
     mut trees: Query<&mut SimpleDestructible, With<Tree>>,
 ) {
-    for progress_event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let tree_id = tree_references
-            .get(progress_event.work_process_id)
-            .unwrap()
-            .0;
-        let mut simple_destructible = trees.get_mut(tree_id).unwrap();
+    for (work_id, work, mut work_progress) in work_query.iter_mut() {
+        let tree_id = work_id;
+        let workers: Vec<&Skilled> = work
+            .worker_ids
+            .iter()
+            .map(|worker_id| workers.get(*worker_id).unwrap())
+            .collect();
 
-        let progress_percentage = progress_event.units_of_work_left / progress_event.units_of_work;
-        (*simple_destructible).current_health =
-            (simple_destructible.max_health * progress_percentage).max(0.0);
+        if workers.is_empty() {
+            continue;
+        }
+
+        match advance_work_process_state(workers, &work_progress, SkillType::None) {
+            WorkProgressUpdate::Complete { .. } => {
+                for worker_id in work
+                    .worker_ids
+                    .iter()
+                    .chain(work.tentative_worker_ids.iter())
+                {
+                    remove_work(&mut commands, work_id);
+
+                    breakages.send(BreaksIntoResourcesEvent(tree_id));
+
+                    worker_completion_events.send(WorkerCompletedWorkEvent {
+                        worker_id: *worker_id,
+                    })
+                }
+            }
+            WorkProgressUpdate::Incomplete { progress, delta } => {
+                update_destructable(work_id, delta, &mut trees);
+
+                *work_progress = progress;
+            }
+        }
     }
 }
 
-fn handle_work_completed(
-    mut events: EventReader<WorkCompletedEvent>,
-    tree_references: Query<&TreeReference>,
-    mut breakages: EventWriter<BreaksIntoResourcesEvent>,
-) {
-    for event in events.iter().filter(|e| e.job_id == JOB_NAME) {
-        let tree_id = tree_references.get(event.work_process_id).unwrap().0;
-        breakages.send(BreaksIntoResourcesEvent(tree_id));
-    }
+pub fn plan_tree_cutting(commands: &mut Commands, tree_id: Entity) -> Entity {
+    let units_of_work = 20.0;
+
+    commands
+        .entity(tree_id)
+        .insert(PlannedWork::new(JOB_NAME, units_of_work, 1))
+        .insert(WorkProgress::new(units_of_work))
+        .id()
 }
 
-// #[derive(Component)]
-// struct AxeSwing {
-//     timer: Timer,
-// }
-
-// #[derive(Component)]
-// pub struct Cutting(Entity);
-
-// struct Damage(f32);
-
-// fn advance_strikes(
-//     mut commands: Commands,
-//     mut q: Query<(Entity, &mut AxeSwing, &Cutting)>,
-//     time: Res<Time>,
-//     mut trees: Query<&mut SimpleDestructible, (With<Tree>, With<BreaksIntoResources>)>,
-//     mut breakages: EventWriter<BreaksIntoResourcesEvent>,
-// ) {
-//     for (entity, mut swing, Cutting(tree_id)) in q.iter_mut() {
-//         swing.timer.tick(time.delta());
-
-//         if swing.timer.finished() {
-//             commands.entity(entity).despawn();
-//             let mut simple_destructible = trees.get_mut(*tree_id).unwrap();
-
-//             let probability = 0.95;
-//             let damage = 10.0;
-
-//             (*simple_destructible).0 .0 = (simple_destructible.0 .0 - damage).max(0.0);
-
-//             if simple_destructible.0 .0 <= 0.0 {
-//                 commands.entity(*tree_id).despawn();
-//                 breakages.send(BreaksIntoResourcesEvent(*tree_id));
-//             }
-//         }
-//     }
-// }
+fn remove_work(commands: &mut Commands, work_id: Entity) {
+    commands
+        .entity(work_id)
+        .remove::<WorkProgress>()
+        .remove::<PlannedWork>();
+}

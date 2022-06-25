@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Res, Transform},
+    prelude::{Commands, Component, Res, Transform, Entity},
     sprite::SpriteBundle,
 };
 
@@ -19,7 +19,7 @@ pub struct SimpleDestructible {
     pub max_health: f32,
 }
 
-pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) {
+pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) -> Entity {
     commands
         .spawn()
         .insert(Tree)
@@ -40,5 +40,6 @@ pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, positi
                 ..Transform::default()
             },
             ..Default::default()
-        });
+        })
+        .id()
 }
