@@ -26,6 +26,9 @@ pub struct ResourceChunk {
 #[derive(Component)]
 pub struct BreaksIntoResources(pub Vec<ResourceChunk>);
 
+#[derive(Component)]
+pub struct CarryingResources(pub Vec<ResourceChunk>);
+
 pub struct BreaksIntoResourcesEvent(pub Entity);
 
 pub struct ResourcesPlugin;

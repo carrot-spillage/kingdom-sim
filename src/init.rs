@@ -20,6 +20,7 @@ use crate::{
     monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting_crops::plan_farm_field,
+    resource_gathering::plan_resource_gathering,
     skills::{SkillType, Skilled},
     tree::spawn_tree,
     tree_cutting_job::plan_tree_cutting,
@@ -75,7 +76,7 @@ fn init(
         MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
     }
 
-    for _ in 0..1 {
+    for _ in 0..2 {
         let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
         let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
@@ -84,6 +85,12 @@ fn init(
         let work_id = plan_tree_cutting(&mut commands, tree_id);
 
         MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+    }
+
+    for _ in 0..1 {
+        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+        plan_resource_gathering(&mut commands, worker_id);
     }
 
     let house_textures = BuildingTextureSet {

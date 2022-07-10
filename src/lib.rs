@@ -9,11 +9,12 @@ mod monkey_planner;
 mod movement;
 mod planned_work;
 mod planting_crops;
+mod resource_gathering;
 mod resources;
 mod skills;
 mod tree;
-mod work_progress;
 mod tree_cutting_job;
+mod work_progress;
 
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
@@ -30,6 +31,7 @@ use movement::MovementPlugin;
 
 use planned_work::WorkOnArrivalPlugin;
 use planting_crops::PlantingCropsPlugin;
+use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting_job::TreeCuttingJobPlugin;
 
@@ -69,7 +71,8 @@ impl Plugin for GamePlugin {
             .add_plugin(PlantingCropsPlugin)
             .add_plugin(InitPlugin)
             .add_plugin(WorkOnArrivalPlugin)
-            .add_plugin(BuildingJobPlugin);
+            .add_plugin(BuildingJobPlugin)
+            .add_plugin(ResourceGatheringJobPlugin);
 
         // #[cfg(debug_assertions)]
         // {
