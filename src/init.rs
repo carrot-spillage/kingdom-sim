@@ -21,7 +21,9 @@ use crate::{
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting_crops::plan_farm_field,
     resource_gathering::plan_resource_gathering,
+    resources::ResourceCarrier,
     skills::{SkillType, Skilled},
+    stockpile::spawn_stockpile,
     tree::spawn_tree,
     tree_cutting_job::plan_tree_cutting,
     GameState,
@@ -62,6 +64,12 @@ fn init(
         );
 
         MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+    }
+
+    {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        spawn_stockpile(&mut commands, pos, Vec2::new(100.0, 100.0));
+        
     }
 
     for _ in 0..1 {
@@ -160,6 +168,7 @@ fn spawn_worker(
     commands
         .spawn_bundle(bundle)
         .insert(Position(position))
+        .insert(ResourceCarrier { max_volume: 120 })
         .with_children(|parent| {
             id = Some(
                 parent
