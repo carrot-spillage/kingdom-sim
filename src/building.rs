@@ -37,7 +37,7 @@ pub fn spawn_construction_site(
     commands
         .entity(construction_site_id)
         .insert(ConstructionSite)
-        .insert_bundle(SpriteBundle {
+        .insert(SpriteBundle {
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
                 scale: Vec3::new(texture_set.scale, texture_set.scale, 1.0),

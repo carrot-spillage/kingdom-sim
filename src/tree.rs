@@ -21,7 +21,7 @@ pub struct SimpleDestructible {
 
 pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, position: Vec3) -> Entity {
     commands
-        .spawn()
+        .spawn_empty()
         .insert(Tree)
         .insert(SimpleDestructible {
             current_health: 1000.0,
@@ -32,7 +32,7 @@ pub fn spawn_tree(commands: &mut Commands, textures: &Res<TextureAssets>, positi
             kind: ResourceKind::Wood,
             quantity: 2,
         }]))
-        .insert_bundle(SpriteBundle {
+        .insert(SpriteBundle {
             texture: textures.tree2.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),

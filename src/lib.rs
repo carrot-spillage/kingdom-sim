@@ -4,7 +4,7 @@ mod building_job;
 mod common;
 mod init;
 mod loading;
-mod menu;
+// mod menu;
 mod monkey_planner;
 mod movement;
 mod planned_work;
@@ -18,7 +18,7 @@ mod work_progress;
 mod stockpile;
 
 use crate::loading::LoadingPlugin;
-use crate::menu::MenuPlugin;
+// use crate::menu::MenuPlugin;
 
 use activity_info::ActivityInfoPlugin;
 use bevy::app::App;
@@ -62,7 +62,7 @@ impl Plugin for GamePlugin {
 
         app.add_state(GameState::Loading)
             .add_plugin(LoadingPlugin)
-            .add_plugin(MenuPlugin)
+            // .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)

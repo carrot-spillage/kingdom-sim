@@ -15,8 +15,8 @@ impl Plugin for MenuPlugin {
 }
 
 struct ButtonColors {
-    normal: UiColor,
-    hovered: UiColor,
+    normal: Color,
+    hovered: Color,
 }
 
 impl Default for ButtonColors {
@@ -36,7 +36,7 @@ fn setup_menu(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn(Camera2dBundle::default());
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -46,12 +46,12 @@ fn setup_menu(
                 align_items: AlignItems::Center,
                 ..Default::default()
             },
-            color: button_colors.normal,
+            background_color: button_colors.normal,
             ..Default::default()
         })
         .insert(PlayButton)
         .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
+            parent.spawn(TextBundle {
                 text: Text {
                     sections: vec![TextSection {
                         value: "Play".to_string(),
@@ -68,7 +68,7 @@ fn setup_menu(
         });
 }
 
-type ButtonInteraction<'a> = (Entity, &'a Interaction, &'a mut UiColor, &'a Children);
+type ButtonInteraction<'a> = (Entity, &'a Interaction, &'a mut Color, &'a Children);
 
 fn click_play_button(
     mut commands: Commands,

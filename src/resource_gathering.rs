@@ -1,7 +1,7 @@
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Commands, Component, Entity, EventReader, Or, Plugin, Query, Res, SystemSet, With,
+        App, Commands, Component, Entity, EventReader, Plugin, Query, Res, SystemSet, With,
         Without,
     },
 };

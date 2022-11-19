@@ -127,10 +127,10 @@ pub fn spawn_resource(
 ) {
     println!("Spawning resource");
     let resource_id = commands
-        .spawn()
+        .spawn_empty()
         .insert(Position(position))
         .insert(resource_chunk)
-        .insert_bundle(SpriteBundle {
+        .insert(SpriteBundle {
             texture: textures.logs.clone(),
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),

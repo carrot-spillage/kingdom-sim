@@ -1,9 +1,10 @@
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Commands, Component, Entity, EventWriter, Handle, Image, Plugin, Query, Res,
+        App, Commands, Component, Entity, EventWriter, Image, Plugin, Query, Res,
         SystemSet, Transform,
     },
+    asset::Handle,
     sprite::{Sprite, SpriteBundle},
 };
 
@@ -118,7 +119,7 @@ pub fn plan_farm_field(commands: &mut Commands, position: Vec3) -> Entity {
     let size = Vec2::new(160.0, 160.0);
 
     commands
-        .spawn()
+        .spawn_empty()
         .insert(PlannedWork::new(JOB_NAME, units_of_work, 1))
         .insert(WorkProgress::new(units_of_work))
         .insert(Position(position))
@@ -139,7 +140,7 @@ fn spawn_farm_field_for_sowing(
     farm_field_id: Entity,
     textures: &Res<TextureAssets>,
 ) {
-    commands.entity(farm_field_id).insert_bundle(SpriteBundle {
+    commands.entity(farm_field_id).insert(SpriteBundle {
         texture: textures.farm_field_sowing_1.clone(),
         transform: Transform {
             translation: hack_3d_position_to_2d(position),

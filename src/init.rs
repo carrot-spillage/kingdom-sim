@@ -4,8 +4,8 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Commands, Component, Entity, OrthographicCameraBundle, Plugin, Res, SystemSet,
-        Transform,
+        App, Bundle, Commands, Entity, Plugin, Res, SystemSet,
+        Transform, Camera2dBundle, Resource,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -41,6 +41,7 @@ impl Plugin for InitPlugin {
     }
 }
 
+#[derive(Resource)]
 pub struct WorldParams {
     pub size: Vec2,
 }
@@ -51,7 +52,7 @@ fn init(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
 ) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn(Camera2dBundle::default());
 
     for _ in 0..1 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
@@ -166,13 +167,13 @@ fn spawn_worker(
 
     let mut id = None::<Entity>;
     commands
-        .spawn_bundle(bundle)
+        .spawn(bundle)
         .insert(Position(position))
         .insert(ResourceCarrier { max_volume: 120 })
         .with_children(|parent| {
             id = Some(
                 parent
-                    .spawn_bundle(create_activity_bundle(13.0, &fonts))
+                    .spawn(create_activity_bundle(13.0, &fonts))
                     .id(),
             );
         })
@@ -183,13 +184,11 @@ fn spawn_worker(
         .id()
 }
 
-#[derive(Component, Bundle)]
+#[derive(Bundle)]
 
 struct WorkerBundle {
     skilled: Skilled,
     walker: Walker,
     position: Position,
-
-    #[bundle]
     sprite: SpriteBundle,
 }

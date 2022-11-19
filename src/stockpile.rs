@@ -21,10 +21,10 @@ pub fn spawn_stockpile(commands: &mut Commands, position: Vec3, size: Vec2) -> E
         flip_x: false,
         flip_y: false,
         custom_size: Some(size),
-        anchor: Default::default(),
+        ..Default::default()
     };
     commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             sprite,
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
