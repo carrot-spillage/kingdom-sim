@@ -51,7 +51,7 @@ where
         vertical: VerticalAlign::Center,
         horizontal: HorizontalAlign::Center,
     };
-    Text::with_section(text, text_style.clone(), text_alignment)
+    Text::from_section(text, text_style.clone()).with_alignment(text_alignment)
 }
 
 pub fn create_activity_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle {

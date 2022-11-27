@@ -106,7 +106,7 @@ pub fn plan_building(
     position: Vec3,
 ) -> Entity {
     commands
-        .spawn()
+        .spawn_empty()
         .insert(PlannedWork::new(
             BUILDING_JOB_NAME,
             building_blueprint.units_of_work,
