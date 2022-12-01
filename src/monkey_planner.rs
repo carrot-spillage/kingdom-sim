@@ -15,7 +15,7 @@ use crate::{
 pub struct MonkeyPlanner;
 
 impl MonkeyPlanner {
-    pub fn recruit_workers(
+    pub fn recruit_workers_to_build(
         commands: &mut Commands,
         work_id: Entity,
         work_query: &mut Query<&mut PlannedWork>,
@@ -37,13 +37,13 @@ impl MonkeyPlanner {
         }
     }
 
-    pub fn temp_recruit_workers(commands: &mut Commands, work_id: Entity, worker_ids: Vec<Entity>) {
+    pub fn temp_recruit_workers(commands: &mut Commands, work_id: Entity, worker_ids: Vec<Entity>, job_id: &'static str) {
         for worker_id in worker_ids {
             commands
                 .entity(worker_id)
                 .insert(WorksOn {
                     work_id,
-                    job_id: BUILDING_JOB_NAME,
+                    job_id,
                 })
                 .insert(MovingToEntity {
                     destination_entity: work_id,
@@ -87,4 +87,3 @@ impl MonkeyPlanner {
     }
 }
 
-fn recruit_worker(worker_id: Entity) {}

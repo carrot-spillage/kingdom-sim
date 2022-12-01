@@ -8,7 +8,7 @@ use crate::work_progress::{advance_work_process_state, WorkProgress, WorkProgres
 use crate::GameState;
 pub struct TreeCuttingJobPlugin;
 
-static JOB_NAME: &'static str = "TreeCutting";
+pub static TREE_CUTTING_JOB_NAME: &'static str = "TreeCutting";
 
 impl Plugin for TreeCuttingJobPlugin {
     fn build(&self, app: &mut App) {
@@ -35,7 +35,7 @@ fn handle_work(
     mut trees: Query<&mut SimpleDestructible, With<Tree>>,
 ) {
     for (work_id, work, mut work_progress) in work_query.iter_mut() {
-        if work.job_id != JOB_NAME {
+        if work.job_id != TREE_CUTTING_JOB_NAME {
             continue;
         }
         let tree_id = work_id;
@@ -81,7 +81,7 @@ pub fn plan_tree_cutting(commands: &mut Commands, tree_id: Entity) -> Entity {
 
     commands
         .entity(tree_id)
-        .insert(PlannedWork::new(JOB_NAME, units_of_work, 1))
+        .insert(PlannedWork::new(TREE_CUTTING_JOB_NAME, units_of_work, 1))
         .insert(WorkProgress::new(units_of_work))
         .id()
 }

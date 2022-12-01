@@ -1,6 +1,6 @@
 use bevy::prelude::{App, Component, Entity, EventReader, Plugin, Query, SystemSet};
 
-use crate::{activity_info::ActivityInfo, movement::ArrivedToEntityEvent, GameState};
+use crate::{worker_job_tooltip::WorkerJobTooltip, movement::ArrivedToEntityEvent, GameState};
 
 pub static BUILDING_JOB_NAME: &'static str = "Building";
 
@@ -55,7 +55,7 @@ impl Plugin for WorkOnArrivalPlugin {
 
 fn make_arrivals_work(
     mut arrival_events: EventReader<ArrivedToEntityEvent>,
-    mut activities: Query<&mut ActivityInfo>,
+    mut worker_job_tooltip: Query<&mut WorkerJobTooltip>,
     workers: Query<&WorksOn>,
     mut work_query: Query<&mut PlannedWork>,
 ) {
@@ -67,8 +67,8 @@ fn make_arrivals_work(
             (*work).tentative_worker_ids.retain(|x| *x != worker_id);
 
             let job_id = work.job_id;
-            let mut activity = activities.get_mut(worker_id).unwrap();
-            (*activity).title = format!("Working: {job_id}");
+            let mut worker_job_tooltip = worker_job_tooltip.get_mut(worker_id).unwrap();
+            (*worker_job_tooltip).title = format!("Working: {job_id}");
         }
     }
 }

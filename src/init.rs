@@ -12,21 +12,21 @@ use bevy::{
 use rand::Rng;
 
 use crate::{
-    activity_info::{create_activity_bundle, ActivityInfo},
+    worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
     building::{
         convert_construction_site_to_building, spawn_construction_site, BuildingTextureSet,
     },
     loading::{FontAssets, TextureAssets},
     monkey_planner::MonkeyPlanner,
     movement::{hack_3d_position_to_2d, Position, Walker},
-    planting_crops::plan_farm_field,
+    planting_crops::{plan_farm_field, PLANTING_JOB_NAME},
     resource_gathering::plan_resource_gathering,
     resources::ResourceCarrier,
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
     tree::spawn_tree,
-    tree_cutting_job::plan_tree_cutting,
-    GameState,
+    tree_cutting_job::{plan_tree_cutting, TREE_CUTTING_JOB_NAME},
+    GameState, planned_work::BUILDING_JOB_NAME,
 };
 
 pub struct InitPlugin;
@@ -64,7 +64,7 @@ fn init(
             get_random_pos(Vec2::ZERO, world_params.size / 4.0),
         );
 
-        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id], BUILDING_JOB_NAME)
     }
 
     {
@@ -82,7 +82,7 @@ fn init(
             get_random_pos(Vec2::ZERO, world_params.size / 4.0),
         );
 
-        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id], PLANTING_JOB_NAME)
     }
 
     for _ in 0..2 {
@@ -93,7 +93,7 @@ fn init(
         let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
         let work_id = plan_tree_cutting(&mut commands, tree_id);
 
-        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id])
+        MonkeyPlanner::temp_recruit_workers(&mut commands, work_id, vec![worker_id], TREE_CUTTING_JOB_NAME)
     }
 
     for _ in 0..1 {
@@ -173,11 +173,11 @@ fn spawn_worker(
         .with_children(|parent| {
             id = Some(
                 parent
-                    .spawn(create_activity_bundle(13.0, &fonts))
+                    .spawn(create_tooltip_bundle(13.0, &fonts))
                     .id(),
             );
         })
-        .insert(ActivityInfo {
+        .insert(WorkerJobTooltip {
             title: "".to_string(),
             child: id.unwrap(),
         })

@@ -28,7 +28,7 @@ struct FarmFieldMaturity(pub f32);
 #[derive(Component)]
 struct MatureCrops;
 
-static JOB_NAME: &'static str = "PlantingCrops";
+pub static PLANTING_JOB_NAME: &'static str = "PlantingCrops";
 
 impl Plugin for PlantingCropsPlugin {
     fn build(&self, app: &mut App) {
@@ -53,7 +53,7 @@ fn handle_work_process(
     textures: Res<TextureAssets>,
 ) {
     for (work_id, work, position, mut work_progress) in farm_fields.iter_mut() {
-        if work.job_id != JOB_NAME {
+        if work.job_id != PLANTING_JOB_NAME {
             continue;
         }
         let farm_field_id = work_id;
@@ -120,7 +120,7 @@ pub fn plan_farm_field(commands: &mut Commands, position: Vec3) -> Entity {
 
     commands
         .spawn_empty()
-        .insert(PlannedWork::new(JOB_NAME, units_of_work, 1))
+        .insert(PlannedWork::new(PLANTING_JOB_NAME, units_of_work, 1))
         .insert(WorkProgress::new(units_of_work))
         .insert(Position(position))
         .insert(OccupiedArea(size))

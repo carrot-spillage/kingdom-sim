@@ -1,4 +1,4 @@
-mod activity_info;
+mod worker_job_tooltip;
 mod building;
 mod building_job;
 mod common;
@@ -20,7 +20,7 @@ mod stockpile;
 use crate::loading::LoadingPlugin;
 // use crate::menu::MenuPlugin;
 
-use activity_info::ActivityInfoPlugin;
+use worker_job_tooltip::WorkerJobTooltipPlugin;
 use bevy::app::App;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -66,7 +66,7 @@ impl Plugin for GamePlugin {
             .add_plugin(MovementPlugin)
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)
-            .add_plugin(ActivityInfoPlugin)
+            .add_plugin(WorkerJobTooltipPlugin)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingJobPlugin)
             .add_plugin(PlantingCropsPlugin)
