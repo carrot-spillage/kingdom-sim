@@ -2,9 +2,10 @@ use bevy::{
     math::Vec3,
     prelude::{Commands, Component, Entity, Handle, Image, Transform},
     sprite::SpriteBundle,
+    utils::HashMap,
 };
 
-use crate::movement::hack_3d_position_to_2d;
+use crate::{movement::hack_3d_position_to_2d, resources::ResourceKind};
 
 #[derive(Component)]
 pub struct ConstructionSite;
@@ -19,6 +20,7 @@ pub struct BuildingBlueprint {
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
     pub max_workers: usize,
+    pub required_resources: HashMap<ResourceKind, usize>,
 }
 
 pub struct BuildingTextureSet {

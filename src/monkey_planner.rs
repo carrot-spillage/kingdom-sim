@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Entity, Query, Res, With, Without},
+    prelude::{Commands, Entity, Query, Res, With, Without}, utils::HashMap,
 };
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     loading::TextureAssets,
     movement::MovingToEntity,
     planned_work::{PlannedWork, WorksOn, BUILDING_JOB_NAME},
-    skills::Skilled,
+    skills::Skilled, resources::ResourceKind,
 };
 
 pub struct MonkeyPlanner;
@@ -57,6 +57,8 @@ impl MonkeyPlanner {
         textures: &Res<TextureAssets>,
         position: Vec3,
     ) -> Entity {
+        let mut required_resources = HashMap::new();
+        required_resources.insert(ResourceKind::Wood, 4);
         let building_blueprint = BuildingBlueprint {
             name: "House",
             max_hp: 2000.0,
@@ -70,6 +72,7 @@ impl MonkeyPlanner {
                 scale: 0.03,
             },
             max_workers: 2,
+            required_resources
         };
         plan_building(commands, building_blueprint, position)
     }
