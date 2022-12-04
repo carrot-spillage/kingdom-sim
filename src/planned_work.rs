@@ -1,6 +1,6 @@
-use bevy::prelude::{App, Component, Entity, EventReader, Plugin, Query, SystemSet};
+use bevy::prelude::{App, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet};
 
-use crate::{worker_job_tooltip::WorkerJobTooltip, movement::ArrivedToEntityEvent, GameState};
+use crate::{movement::ArrivedToEntityEvent, GameState};
 
 pub static BUILDING_JOB_NAME: &'static str = "Building";
 
@@ -39,13 +39,20 @@ pub struct WorkerCompletedWorkEvent {
     pub worker_id: Entity,
 }
 
+pub struct WorkerStartedWorkEvent {
+    pub job_id: &'static str,
+    pub worker_id: Entity,
+}
+
 pub struct WorkOnArrivalPlugin;
 
 impl Plugin for WorkOnArrivalPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<WorkerCompletedWorkEvent>().add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(make_arrivals_work),
-        );
+        app.add_event::<WorkerCompletedWorkEvent>()
+            .add_event::<WorkerStartedWorkEvent>()
+            .add_system_set(
+                SystemSet::on_update(GameState::Playing).with_system(make_arrivals_work),
+            );
     }
 
     fn name(&self) -> &str {
@@ -55,7 +62,7 @@ impl Plugin for WorkOnArrivalPlugin {
 
 fn make_arrivals_work(
     mut arrival_events: EventReader<ArrivedToEntityEvent>,
-    mut worker_job_tooltip: Query<&mut WorkerJobTooltip>,
+    mut worker_started_work_events: EventWriter<WorkerStartedWorkEvent>,
     workers: Query<&WorksOn>,
     mut work_query: Query<&mut PlannedWork>,
 ) {
@@ -65,10 +72,10 @@ fn make_arrivals_work(
             let mut work = work_query.get_mut(works_on.work_id).unwrap();
             (*work).worker_ids.push(worker_id);
             (*work).tentative_worker_ids.retain(|x| *x != worker_id);
-
-            let job_id = work.job_id;
-            let mut worker_job_tooltip = worker_job_tooltip.get_mut(worker_id).unwrap();
-            (*worker_job_tooltip).title = format!("Working: {job_id}");
+            worker_started_work_events.send(WorkerStartedWorkEvent {
+                job_id: work.job_id,
+                worker_id,
+            })
         }
     }
 }

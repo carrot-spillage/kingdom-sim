@@ -1,12 +1,17 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        default, App, Changed, Color, Component, Entity, Plugin, Query, Res, SystemSet, Transform,
+        default, App, Changed, Color, Component, Entity, EventReader, Plugin, Query, Res,
+        SystemSet, Transform,
     },
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
 
-use crate::{loading::FontAssets, GameState};
+use crate::{
+    loading::FontAssets,
+    planned_work::{WorkerCompletedWorkEvent, WorkerStartedWorkEvent},
+    GameState,
+};
 
 #[derive(Component)]
 pub struct WorkerJobTooltip {
@@ -18,7 +23,7 @@ pub struct WorkerJobTooltipPlugin;
 
 impl Plugin for WorkerJobTooltipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(track_work_status));
+        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(update_work_tooltip_text).with_system(update_title));
     }
 
     fn name(&self) -> &str {
@@ -26,7 +31,7 @@ impl Plugin for WorkerJobTooltipPlugin {
     }
 }
 
-fn track_work_status(
+fn update_work_tooltip_text(
     job_labels: Query<&WorkerJobTooltip, Changed<WorkerJobTooltip>>,
     mut texts: Query<&mut Text>,
     fonts: Res<FontAssets>,
@@ -62,5 +67,22 @@ pub fn create_tooltip_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle 
             ..Transform::default()
         },
         ..default()
+    }
+}
+
+fn update_title(
+    mut work_started_events: EventReader<WorkerStartedWorkEvent>,
+    mut work_completed_events: EventReader<WorkerCompletedWorkEvent>,
+    mut worker_job_tooltip: Query<&mut WorkerJobTooltip>,
+) {
+    for event in work_started_events.iter() {
+        let job_id = event.job_id;
+        let mut worker_job_tooltip = worker_job_tooltip.get_mut(event.worker_id).unwrap();
+        (*worker_job_tooltip).title = format!("Working: {job_id}");
+    }
+
+    for event in work_completed_events.iter() {
+        let mut worker_job_tooltip = worker_job_tooltip.get_mut(event.worker_id).unwrap();
+        (*worker_job_tooltip).title = format!("");
     }
 }
