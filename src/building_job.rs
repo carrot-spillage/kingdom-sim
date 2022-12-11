@@ -8,10 +8,10 @@ use crate::{
         convert_construction_site_to_building, get_construction_site_texture,
         spawn_construction_site, BuildingBlueprint,
     },
+    crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     movement::Position,
     planned_work::{PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
     skills::{SkillType, Skilled},
-    work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate},
     GameState,
 };
 
@@ -20,7 +20,7 @@ pub struct BuildingJobPlugin;
 impl Plugin for BuildingJobPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(handle_work_process),
+            SystemSet::on_update(GameState::Playing).with_system(handle_building_process),
         );
     }
 
@@ -29,19 +29,19 @@ impl Plugin for BuildingJobPlugin {
     }
 }
 
-fn handle_work_process(
+fn handle_building_process(
     mut commands: Commands,
     mut construction_sites: Query<(
         Entity,
         &PlannedWork,
         &Position,
-        &mut WorkProgress,
+        &mut CraftingProgress,
         &BuildingBlueprint,
     )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for (planned_work_id, work, position, mut work_progress, building_blueprint) in
+    for (planned_work_id, work, position, mut crafting_progress, building_blueprint) in
         construction_sites.iter_mut()
     {
         let building_id = planned_work_id; // building is the planned work
@@ -56,7 +56,7 @@ fn handle_work_process(
             continue;
         }
 
-        if work_progress.units_of_work_left == work.units_of_work {
+        if crafting_progress.units_of_work_left == work.units_of_work {
             spawn_construction_site(
                 &mut commands,
                 building_id,
@@ -65,8 +65,14 @@ fn handle_work_process(
             );
         }
 
-        match advance_work_process_state(workers, &work_progress, SkillType::Building) {
-            WorkProgressUpdate::Complete { .. } => {
+        match advance_crafting_process_state(
+            workers,
+            &mut crafting_progress,
+            SkillType::Building,
+            work.units_of_work,
+            1.0,
+        ) {
+            CraftingProgressUpdate::Complete { .. } => {
                 for worker_id in work
                     .worker_ids
                     .iter()
@@ -85,7 +91,7 @@ fn handle_work_process(
                     &building_blueprint.texture_set,
                 );
             }
-            WorkProgressUpdate::Incomplete { progress, delta } => {
+            CraftingProgressUpdate::Incomplete { progress, delta } => {
                 if let Some(new_texture) = get_construction_site_texture(
                     1.0 - (progress.units_of_work_left + delta) / work.units_of_work,
                     1.0 - progress.units_of_work_left / work.units_of_work,
@@ -94,7 +100,10 @@ fn handle_work_process(
                     commands.entity(building_id).insert(new_texture);
                 }
 
-                *work_progress = progress;
+                *crafting_progress = progress;
+            }
+            CraftingProgressUpdate::NotEnoughResources => {
+                todo!()
             }
         }
     }
@@ -112,7 +121,7 @@ pub fn plan_building(
             building_blueprint.units_of_work,
             building_blueprint.max_workers,
         ))
-        .insert(WorkProgress::new(building_blueprint.units_of_work))
+        .insert(CraftingProgress::new(building_blueprint.units_of_work, building_blueprint.required_resources.clone()))
         .insert(Position(position))
         .insert(building_blueprint)
         .id()
@@ -121,6 +130,6 @@ pub fn plan_building(
 fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
     commands
         .entity(planned_work_id)
-        .remove::<WorkProgress>()
+        .remove::<CraftingProgress>()
         .remove::<PlannedWork>();
 }

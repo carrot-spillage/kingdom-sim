@@ -20,7 +20,7 @@ pub struct BuildingBlueprint {
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
     pub max_workers: usize,
-    pub required_resources: HashMap<ResourceKind, usize>,
+    pub required_resources: Vec<(ResourceKind, usize)>,
 }
 
 pub struct BuildingTextureSet {

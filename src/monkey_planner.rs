@@ -1,6 +1,7 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Entity, Query, Res, With, Without}, utils::HashMap,
+    prelude::{Commands, Entity, Query, Res, With, Without},
+    utils::HashMap,
 };
 
 use crate::{
@@ -9,7 +10,8 @@ use crate::{
     loading::TextureAssets,
     movement::MovingToEntity,
     planned_work::{PlannedWork, WorksOn, BUILDING_JOB_NAME},
-    skills::Skilled, resources::ResourceKind,
+    resources::ResourceKind,
+    skills::Skilled,
 };
 
 pub struct MonkeyPlanner;
@@ -37,14 +39,16 @@ impl MonkeyPlanner {
         }
     }
 
-    pub fn temp_recruit_workers(commands: &mut Commands, work_id: Entity, worker_ids: Vec<Entity>, job_id: &'static str) {
+    pub fn temp_recruit_workers(
+        commands: &mut Commands,
+        work_id: Entity,
+        worker_ids: Vec<Entity>,
+        job_id: &'static str,
+    ) {
         for worker_id in worker_ids {
             commands
                 .entity(worker_id)
-                .insert(WorksOn {
-                    work_id,
-                    job_id,
-                })
+                .insert(WorksOn { work_id, job_id })
                 .insert(MovingToEntity {
                     destination_entity: work_id,
                     sufficient_range: 15.0,
@@ -57,8 +61,6 @@ impl MonkeyPlanner {
         textures: &Res<TextureAssets>,
         position: Vec3,
     ) -> Entity {
-        let mut required_resources = HashMap::new();
-        required_resources.insert(ResourceKind::Wood, 4);
         let building_blueprint = BuildingBlueprint {
             name: "House",
             max_hp: 2000.0,
@@ -72,7 +74,7 @@ impl MonkeyPlanner {
                 scale: 0.03,
             },
             max_workers: 2,
-            required_resources
+            required_resources: vec![(ResourceKind::Wood, 4)],
         };
         plan_building(commands, building_blueprint, position)
     }
@@ -89,4 +91,3 @@ impl MonkeyPlanner {
         println!("Planning to build a shrine");
     }
 }
-
