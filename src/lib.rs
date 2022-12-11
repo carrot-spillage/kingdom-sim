@@ -16,6 +16,7 @@ mod tree;
 mod tree_cutting_job;
 mod work_progress;
 mod stockpile;
+mod crafting_progress;
 
 use crate::loading::LoadingPlugin;
 // use crate::menu::MenuPlugin;
