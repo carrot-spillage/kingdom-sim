@@ -6,7 +6,7 @@ use bevy::{
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, BuildingBlueprint, ConstructionSite,
+        spawn_construction_site, BuildingBlueprint,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     movement::{MovingToEntity, Position},
@@ -34,15 +34,13 @@ fn handle_building_process(
     mut construction_sites: Query<(
         Entity,
         &PlannedWork,
-        &Position,
         &mut CraftingProgress,
         &BuildingBlueprint,
-        Option<&ConstructionSite>
     )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for (planned_work_id, work, position, mut crafting_progress, building_blueprint, maybe_construction_site) in
+    for (planned_work_id, work, mut crafting_progress, building_blueprint) in
         construction_sites.iter_mut()
     {
         let building_id = planned_work_id; // building is the planned work
@@ -55,16 +53,6 @@ fn handle_building_process(
 
         if workers.is_empty() {
             continue;
-        }
-
-        // TODO: I don't like how ConstructionSite component leaked into the building job
-        if crafting_progress.units_of_work_left == work.units_of_work && maybe_construction_site.is_none() {
-            spawn_construction_site(
-                &mut commands,
-                building_id,
-                position.0,
-                &building_blueprint.texture_set,
-            );
         }
 
         match advance_crafting_process_state(
@@ -104,7 +92,9 @@ fn handle_building_process(
 
                 *crafting_progress = progress;
             }
-            CraftingProgressUpdate::NotEnoughResources => free_workers(&mut commands, &work.worker_ids),
+            CraftingProgressUpdate::NotEnoughResources => {
+                free_workers(&mut commands, &work.worker_ids)
+            }
         }
     }
 }
@@ -114,7 +104,7 @@ pub fn plan_building(
     building_blueprint: BuildingBlueprint,
     position: Vec3,
 ) -> Entity {
-    commands
+    let id = commands
         .spawn_empty()
         .insert(PlannedWork::new(
             BUILDING_JOB_NAME,
@@ -126,8 +116,13 @@ pub fn plan_building(
             building_blueprint.required_resources.clone(),
         ))
         .insert(Position(position))
-        .insert(building_blueprint)
-        .id()
+        .id();
+
+    spawn_construction_site(commands, id, position, &building_blueprint.texture_set);
+
+    commands.entity(id).insert(building_blueprint);
+
+    return id;
 }
 
 fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
