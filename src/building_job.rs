@@ -6,11 +6,11 @@ use bevy::{
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, BuildingBlueprint,
+        spawn_construction_site, BuildingBlueprint, ConstructionSite,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
-    movement::Position,
-    planned_work::{PlannedWork, WorkerCompletedWorkEvent, BUILDING_JOB_NAME},
+    movement::{MovingToEntity, Position},
+    planned_work::{PlannedWork, WorkerCompletedWorkEvent, WorksOn, BUILDING_JOB_NAME},
     skills::{SkillType, Skilled},
     GameState,
 };
@@ -37,11 +37,12 @@ fn handle_building_process(
         &Position,
         &mut CraftingProgress,
         &BuildingBlueprint,
+        Option<&ConstructionSite>
     )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for (planned_work_id, work, position, mut crafting_progress, building_blueprint) in
+    for (planned_work_id, work, position, mut crafting_progress, building_blueprint, maybe_construction_site) in
         construction_sites.iter_mut()
     {
         let building_id = planned_work_id; // building is the planned work
@@ -56,7 +57,8 @@ fn handle_building_process(
             continue;
         }
 
-        if crafting_progress.units_of_work_left == work.units_of_work {
+        // TODO: I don't like how ConstructionSite component leaked into the building job
+        if crafting_progress.units_of_work_left == work.units_of_work && maybe_construction_site.is_none() {
             spawn_construction_site(
                 &mut commands,
                 building_id,
@@ -102,9 +104,7 @@ fn handle_building_process(
 
                 *crafting_progress = progress;
             }
-            CraftingProgressUpdate::NotEnoughResources => {
-                todo!()
-            }
+            CraftingProgressUpdate::NotEnoughResources => free_workers(&mut commands, &work.worker_ids),
         }
     }
 }
@@ -121,7 +121,10 @@ pub fn plan_building(
             building_blueprint.units_of_work,
             building_blueprint.max_workers,
         ))
-        .insert(CraftingProgress::new(building_blueprint.units_of_work, building_blueprint.required_resources.clone()))
+        .insert(CraftingProgress::new(
+            building_blueprint.units_of_work,
+            building_blueprint.required_resources.clone(),
+        ))
         .insert(Position(position))
         .insert(building_blueprint)
         .id()
@@ -132,4 +135,13 @@ fn remove_planned_work(commands: &mut Commands, planned_work_id: Entity) {
         .entity(planned_work_id)
         .remove::<CraftingProgress>()
         .remove::<PlannedWork>();
+}
+
+fn free_workers(commands: &mut Commands, workers: &Vec<Entity>) {
+    for worker_id in workers {
+        commands
+            .entity(*worker_id)
+            .remove::<WorksOn>()
+            .remove::<MovingToEntity>();
+    }
 }
