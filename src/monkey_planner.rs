@@ -9,7 +9,7 @@ use crate::{
     building_job::plan_building,
     loading::TextureAssets,
     movement::MovingToEntity,
-    planned_work::{PlannedWork, WorksOn, BUILDING_JOB_NAME},
+    planned_work::{PlannedWork, WorkingOn, BUILDING_JOB_NAME, NotWorking},
     resources::ResourceKind,
     skills::Skilled,
 };
@@ -21,14 +21,15 @@ impl MonkeyPlanner {
         commands: &mut Commands,
         work_id: Entity,
         work_query: &mut Query<&mut PlannedWork>,
-        workers: Query<Entity, (With<Skilled>, Without<WorksOn>)>,
+        workers: Query<Entity, (With<Skilled>, Without<WorkingOn>)>,
     ) {
         let work = work_query.get(work_id).unwrap();
 
         for worker_id in workers.iter().take(work.max_workers) {
             commands
                 .entity(worker_id)
-                .insert(WorksOn {
+                .remove::<NotWorking>()
+                .insert(WorkingOn {
                     work_id,
                     job_id: BUILDING_JOB_NAME,
                 })
@@ -48,7 +49,7 @@ impl MonkeyPlanner {
         for worker_id in worker_ids {
             commands
                 .entity(worker_id)
-                .insert(WorksOn { work_id, job_id })
+                .insert(WorkingOn { work_id, job_id })
                 .insert(MovingToEntity {
                     destination_entity: work_id,
                     sufficient_range: 15.0,

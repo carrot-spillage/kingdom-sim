@@ -30,10 +30,13 @@ impl PlannedWork {
 }
 
 #[derive(Component, Clone, Copy)]
-pub struct WorksOn {
+pub struct WorkingOn {
     pub work_id: Entity,
     pub job_id: &'static str,
 }
+
+#[derive(Component)]
+pub struct NotWorking;
 
 pub struct WorkerCompletedWorkEvent {
     pub worker_id: Entity,
@@ -63,7 +66,7 @@ impl Plugin for WorkOnArrivalPlugin {
 fn make_arrivals_work(
     mut arrival_events: EventReader<ArrivedToEntityEvent>,
     mut worker_started_work_events: EventWriter<WorkerStartedWorkEvent>,
-    workers: Query<&WorksOn>,
+    workers: Query<&WorkingOn>,
     mut work_query: Query<&mut PlannedWork>,
 ) {
     for event in arrival_events.iter() {

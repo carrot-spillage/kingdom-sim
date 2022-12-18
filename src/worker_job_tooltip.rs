@@ -2,14 +2,14 @@ use bevy::{
     math::Vec3,
     prelude::{
         default, App, Changed, Color, Component, Entity, EventReader, Plugin, Query, Res,
-        SystemSet, Transform,
+        SystemSet, Transform, Added,
     },
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
 
 use crate::{
     loading::FontAssets,
-    planned_work::{WorkerCompletedWorkEvent, WorkerStartedWorkEvent},
+    planned_work::{WorkerCompletedWorkEvent, WorkerStartedWorkEvent, WorkingOn, NotWorking},
     GameState,
 };
 
@@ -70,7 +70,7 @@ pub fn create_tooltip_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle 
     }
 }
 
-fn update_title(
+fn update_title_2(
     mut work_started_events: EventReader<WorkerStartedWorkEvent>,
     mut work_completed_events: EventReader<WorkerCompletedWorkEvent>,
     mut worker_job_tooltip: Query<&mut WorkerJobTooltip>,
@@ -83,6 +83,24 @@ fn update_title(
 
     for event in work_completed_events.iter() {
         let mut worker_job_tooltip = worker_job_tooltip.get_mut(event.worker_id).unwrap();
+        (*worker_job_tooltip).title = format!("");
+    }
+}
+
+
+fn update_title(
+    started_working: Query<(Entity, &WorkingOn), Added<WorkingOn>>,
+    stopped_working: Query<Entity, Added<NotWorking>>,
+    mut worker_job_tooltip: Query<&mut WorkerJobTooltip>,
+) {
+    for (worker_id, works_on) in started_working.iter() {
+        let mut worker_job_tooltip = worker_job_tooltip.get_mut(worker_id).unwrap();
+        let job_id = works_on.job_id;
+        (*worker_job_tooltip).title = format!("Working: {job_id}");
+    }
+
+    for worker_id in stopped_working.iter() {
+        let mut worker_job_tooltip = worker_job_tooltip.get_mut(worker_id).unwrap();
         (*worker_job_tooltip).title = format!("");
     }
 }

@@ -10,7 +10,7 @@ use crate::{
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     movement::{MovingToEntity, Position},
-    planned_work::{PlannedWork, WorkerCompletedWorkEvent, WorksOn, BUILDING_JOB_NAME},
+    planned_work::{PlannedWork, WorkerCompletedWorkEvent, WorkingOn, BUILDING_JOB_NAME, NotWorking},
     skills::{SkillType, Skilled},
     GameState,
 };
@@ -69,7 +69,7 @@ fn handle_building_process(
                     .chain(work.tentative_worker_ids.iter())
                 {
                     remove_planned_work(&mut commands, planned_work_id);
-
+                    free_workers(&mut commands, &work.worker_ids);
                     worker_completion_events.send(WorkerCompletedWorkEvent {
                         worker_id: *worker_id,
                     })
@@ -136,7 +136,8 @@ fn free_workers(commands: &mut Commands, workers: &Vec<Entity>) {
     for worker_id in workers {
         commands
             .entity(*worker_id)
-            .remove::<WorksOn>()
+            .remove::<WorkingOn>()
+            .insert(NotWorking)
             .remove::<MovingToEntity>();
     }
 }
