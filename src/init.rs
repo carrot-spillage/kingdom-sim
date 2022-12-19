@@ -16,7 +16,7 @@ use crate::{
         spawn_construction_site, BuildingTextureSet, BuildingBlueprint,
     },
     loading::{FontAssets, TextureAssets},
-    monkey_planner::MonkeyPlanner,
+    monkey_planner::{MonkeyPlanner, move_to_work},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planned_work::BUILDING_JOB_NAME,
     planting_crops::{plan_farm_field, PLANTING_JOB_NAME},
@@ -117,6 +117,7 @@ fn init(
     //     plan_resource_gathering(&mut commands, worker_id);
     // }
 
+    // RESOURCES
     for _ in 0..10 {
         let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         spawn_resource(
@@ -137,6 +138,7 @@ fn init(
         scale: 0.03,
     };
 
+    // CONSTRUCTION SITES
     for _ in 0..5 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 4.0);
 
@@ -164,10 +166,15 @@ fn init(
         // convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
     }
 
+    // MOVE TO THE WORK ENTITY 
+    // Use move_to_work()
+
     for _ in 0..40 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         spawn_tree(&mut commands, &textures, pos);
     }
+
+
 }
 
 pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
