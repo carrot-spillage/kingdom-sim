@@ -25,7 +25,6 @@ use crate::{
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
     tree::spawn_tree,
-    tree_cutting_job::{plan_tree_cutting, TREE_CUTTING_JOB_NAME},
     worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
     GameState,
 };
@@ -95,21 +94,22 @@ fn init(
     //     )
     // }
 
-    for _ in 0..2 {
-        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
-        let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    // TODO: new tree cutting
+    // for _ in 0..2 {
+    //     let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+    //     let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
 
-        let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
-        let work_id = plan_tree_cutting(&mut commands, tree_id);
+    //     let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
+    //     let work_id = plan_tree_cutting(&mut commands, tree_id);
 
-        // MonkeyPlanner::temp_recruit_workers(
-        //     &mut commands,
-        //     work_id,
-        //     vec![worker_id],
-        //     TREE_CUTTING_JOB_NAME,
-        // )
-    }
+    //     // MonkeyPlanner::temp_recruit_workers(
+    //     //     &mut commands,
+    //     //     work_id,
+    //     //     vec![worker_id],
+    //     //     TREE_CUTTING_JOB_NAME,
+    //     // )
+    // }
 
     // for _ in 0..1 {
     //     let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);

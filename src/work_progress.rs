@@ -34,7 +34,7 @@ impl WorkProgress {
     }
 }
 
-pub fn advance_work_process_state(
+pub fn advance_work_progress(
     workers: Vec<&Skilled>,
     state: &WorkProgress,
     skill_type: SkillType,

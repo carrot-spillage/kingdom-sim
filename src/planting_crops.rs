@@ -13,7 +13,7 @@ use crate::{
     movement::{hack_3d_position_to_2d, Position},
     planned_work::{PlannedWork, WorkerCompletedWorkEvent},
     skills::{SkillType, Skilled},
-    work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate},
+    work_progress::{advance_work_progress, WorkProgress, WorkProgressUpdate},
     GameState,
 };
 
@@ -71,7 +71,7 @@ fn handle_work_process(
             spawn_farm_field_for_sowing(&mut commands, position.0, farm_field_id, &textures);
         }
 
-        match advance_work_process_state(workers, &work_progress, SkillType::GrowingPlants) {
+        match advance_work_progress(workers, &work_progress, SkillType::GrowingPlants) {
             WorkProgressUpdate::Complete { .. } => {
                 for worker_id in work
                     .worker_ids

@@ -10,13 +10,15 @@ mod movement;
 mod planned_work;
 mod planting_crops;
 mod resource_gathering;
+
 mod resources;
 mod skills;
 mod tree;
-mod tree_cutting_job;
+mod tree_cutting;
 mod work_progress;
 mod stockpile;
 mod crafting_progress;
+mod items;
 
 use crate::loading::LoadingPlugin;
 // use crate::menu::MenuPlugin;
@@ -35,7 +37,7 @@ use planned_work::WorkOnArrivalPlugin;
 use planting_crops::PlantingCropsPlugin;
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
-use tree_cutting_job::TreeCuttingJobPlugin;
+use tree_cutting::TreeCuttingPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -69,7 +71,7 @@ impl Plugin for GamePlugin {
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
             // .add_plugin(BuildingJobPlugin)
-            .add_plugin(TreeCuttingJobPlugin)
+            .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingCropsPlugin)
             .add_plugin(InitPlugin)
             .add_plugin(WorkOnArrivalPlugin)

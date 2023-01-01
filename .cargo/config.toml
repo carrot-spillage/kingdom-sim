@@ -17,7 +17,7 @@ rustflags = ["-C", "link-arg=-fuse-ld=/opt/homebrew/bin/zld", "-Zshare-generics=
 
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
-rustflags = ["-Zshare-generics=y"]
+# rustflags = ["-Zshare-generics=y"]
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"

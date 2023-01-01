@@ -1076,6 +1076,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "conditional_commands"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26babd31fbfc420b7f37433e1ae91612a7b8610a25a80c2d0f7e4ba5ac5f1456"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1874,6 +1883,7 @@ dependencies = [
  "bevy",
  "bevy_asset_loader",
  "bevy_kira_audio",
+ "conditional_commands",
  "embed-resource",
  "itertools",
  "rand",

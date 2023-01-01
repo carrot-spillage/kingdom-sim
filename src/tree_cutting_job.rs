@@ -4,7 +4,7 @@ use crate::planned_work::{PlannedWork, WorkerCompletedWorkEvent};
 use crate::resources::BreaksIntoResourcesEvent;
 use crate::skills::{SkillType, Skilled};
 use crate::tree::{SimpleDestructible, Tree};
-use crate::work_progress::{advance_work_process_state, WorkProgress, WorkProgressUpdate};
+use crate::work_progress::{advance_work_progress, WorkProgress, WorkProgressUpdate};
 use crate::GameState;
 pub struct TreeCuttingJobPlugin;
 
@@ -49,7 +49,7 @@ fn handle_work(
             continue;
         }
 
-        match advance_work_process_state(workers, &work_progress, SkillType::None) {
+        match advance_work_progress(workers, &work_progress, SkillType::None) {
             WorkProgressUpdate::Complete { .. } => {
                 for worker_id in work
                     .worker_ids
