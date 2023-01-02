@@ -8,19 +8,22 @@ struct NeedsDestroying;
 
 #[derive(Component)]
 pub struct TreeCutter {
-    countdown: Countdown,
     target_id: Entity
 }
 
+#[derive(Component)]
+pub struct TreeHitCountdown(Countdown);
+
 // WHEN CREATING we need not to forget to add this task to a list of tasks to be cleaned up if the worker is destroyed
-pub fn handle_task_progress(mut commands: Commands, mut tree_cutters_query: Query<(Entity, &mut TreeCutter)>, mut destructibles: Query<&mut SimpleDestructible>) {
-    for (worker_id, mut tree_cutter) in &mut tree_cutters_query {
+pub fn handle_task_progress(mut commands: Commands, tree_cutters_query: Query<(Entity, &TreeCutter, Option<&TreeHitCountdown>)>, mut destructibles: Query<&mut SimpleDestructible>) {
+    for (worker_id, tree_cutter, maybe_tree_hit_countdown) in &tree_cutters_query {
         if let Ok(mut destructible) = destructibles.get_mut(tree_cutter.target_id) {
-            let result = advance(tree_cutter.countdown, 20.0, destructible.clone());
+            let countdown = maybe_tree_hit_countdown.map(|x| x.0).unwrap_or(Countdown::new(5));
+            let result = advance(countdown, 20.0, destructible.clone());
             match result {
                 AdvanceResult::Continuing(updated_countdown, updated_destructible) => {
                     *destructible = updated_destructible;
-                    (*tree_cutter).countdown = updated_countdown;
+                    commands.entity(worker_id).insert(TreeHitCountdown(updated_countdown));
                 }
                 AdvanceResult::Completed => {
                     commands.entity(tree_cutter.target_id).insert(NeedsDestroying);
