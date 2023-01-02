@@ -7,7 +7,7 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res, Vec3};
 
 #[derive(Component)]
 pub struct Planting {
-    plant_class_id: usize,
+    plant_prefab_id: usize,
     plant_position: Vec3,
 }
 
@@ -27,7 +27,7 @@ pub fn handle_task_progress(
             init_plant(
                 &mut commands,
                 &textures,
-                planting.plant_class_id,
+                planting.plant_prefab_id,
                 planting.plant_position,
             );
         } else {

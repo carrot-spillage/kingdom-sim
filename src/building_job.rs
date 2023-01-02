@@ -6,7 +6,7 @@ use bevy::{
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, BuildingBlueprint,
+        spawn_construction_site, Buildingprefab,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     movement::{MovingToEntity, Position},
@@ -35,12 +35,12 @@ fn handle_building_process(
         Entity,
         &PlannedWork,
         &mut CraftingProgress,
-        &BuildingBlueprint,
+        &Buildingprefab,
     )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
-    for (planned_work_id, work, mut crafting_progress, building_blueprint) in
+    for (planned_work_id, work, mut crafting_progress, building_prefab) in
         construction_sites.iter_mut()
     {
         let building_id = planned_work_id; // building is the planned work
@@ -78,14 +78,14 @@ fn handle_building_process(
                 convert_construction_site_to_building(
                     building_id,
                     &mut commands,
-                    &building_blueprint.texture_set,
+                    &building_prefab.texture_set,
                 );
             }
             CraftingProgressUpdate::Incomplete { progress, delta } => {
                 if let Some(new_texture) = get_construction_site_texture(
                     1.0 - (progress.units_of_work_left + delta) / work.units_of_work,
                     1.0 - progress.units_of_work_left / work.units_of_work,
-                    building_blueprint,
+                    building_prefab,
                 ) {
                     commands.entity(building_id).insert(new_texture);
                 }
@@ -101,26 +101,26 @@ fn handle_building_process(
 
 pub fn plan_building(
     commands: &mut Commands,
-    building_blueprint: BuildingBlueprint,
+    building_prefab: Buildingprefab,
     position: Vec3,
 ) -> Entity {
     let id = commands
         .spawn_empty()
         .insert(PlannedWork::new(
             BUILDING_JOB_NAME,
-            building_blueprint.units_of_work,
-            building_blueprint.max_workers,
+            building_prefab.units_of_work,
+            building_prefab.max_workers,
         ))
         .insert(CraftingProgress::new(
-            building_blueprint.units_of_work,
-            building_blueprint.required_resources.clone(),
+            building_prefab.units_of_work,
+            building_prefab.required_resources.clone(),
         ))
         .insert(Position(position))
         .id();
 
-    spawn_construction_site(commands, id, position, &building_blueprint.texture_set);
+    spawn_construction_site(commands, id, position, &building_prefab.texture_set);
 
-    commands.entity(id).insert(building_blueprint);
+    commands.entity(id).insert(building_prefab);
 
     return id;
 }

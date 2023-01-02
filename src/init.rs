@@ -13,7 +13,7 @@ use rand::Rng;
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, BuildingTextureSet, BuildingBlueprint,
+        spawn_construction_site, BuildingTextureSet, Buildingprefab,
     },
     loading::{FontAssets, TextureAssets},
     monkey_planner::{MonkeyPlanner, move_to_work},
@@ -143,7 +143,7 @@ fn init(
 
         let construction_site_id = commands.spawn_empty().id();
         spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
-        let building_blueprint = BuildingBlueprint {
+        let building_prefab = Buildingprefab {
             name: "House",
             max_hp: 2000.0,
             units_of_work: 100.0,
@@ -158,7 +158,7 @@ fn init(
             max_workers: 2,
             required_resources: vec![(ResourceKind::Wood, 4)],
         };
-        if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_blueprint) {
+        if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
             commands.entity(construction_site_id).insert(new_texture);
         }
 

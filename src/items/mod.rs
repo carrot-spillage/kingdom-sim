@@ -52,7 +52,7 @@ pub enum ItemHandlingKind {
     SingleHanded,
 }
 
-pub struct ItemBlueprint {
+pub struct Itemprefab {
     id: usize,
     packable: bool, // false - only handheld
     handling_kind: ItemHandlingKind,
@@ -61,7 +61,7 @@ pub struct ItemBlueprint {
 
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ItemGroup {
-    blueprint_id: usize,
+    prefab_id: usize,
     quantity: usize,
 }
 
@@ -90,16 +90,16 @@ pub struct ItemTakingResult {
 impl ItemGroup {
     fn take(
         &self,
-        item_blueprint: &ItemBlueprint,
+        item_prefab: &Itemprefab,
         max_weight: usize,
     ) -> ItemTakingResult {
-        let picked_quantity = (max_weight as f32 / item_blueprint.weight as f32).floor() as usize;
+        let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as usize;
     
         if picked_quantity >= self.quantity {
             ItemTakingResult {
                 picked: Some(ItemGroup {
                     quantity: self.quantity,
-                    blueprint_id: item_blueprint.id,
+                    prefab_id: item_prefab.id,
                 }),
                 left: None,
             }
@@ -112,11 +112,11 @@ impl ItemGroup {
             ItemTakingResult {
                 picked: Some(ItemGroup {
                     quantity: picked_quantity,
-                    blueprint_id: item_blueprint.id,
+                    prefab_id: item_prefab.id,
                 }),
                 left: Some(ItemGroup {
                     quantity: self.quantity - picked_quantity,
-                    blueprint_id: item_blueprint.id,
+                    prefab_id: item_prefab.id,
                 }),
             }
         }

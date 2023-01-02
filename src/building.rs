@@ -13,7 +13,7 @@ pub struct ConstructionSite;
 pub struct Building;
 
 #[derive(Component)]
-pub struct BuildingBlueprint {
+pub struct Buildingprefab {
     pub name: &'static str,
     pub texture_set: BuildingTextureSet,
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
@@ -51,14 +51,14 @@ pub fn spawn_construction_site(
 pub fn get_construction_site_texture(
     previous_progress: f32,
     progress: f32,
-    building_blueprint: &BuildingBlueprint,
+    building_prefab: &Buildingprefab,
 ) -> Option<Handle<Image>> {
-    let max_index = (building_blueprint.texture_set.in_progress.len() - 1) as f32;
+    let max_index = (building_prefab.texture_set.in_progress.len() - 1) as f32;
     let old_index = (max_index * previous_progress).round() as usize;
     let index = (max_index * progress).round() as usize;
 
     if previous_progress == 0.0 || index != old_index {
-        return Some(building_blueprint.texture_set.in_progress[index].clone());
+        return Some(building_prefab.texture_set.in_progress[index].clone());
     } else {
         return None;
     }
