@@ -8,7 +8,6 @@ mod loading;
 mod monkey_planner;
 mod movement;
 mod planned_work;
-mod planting_crops;
 mod resource_gathering;
 
 mod resources;
@@ -19,10 +18,13 @@ mod work_progress;
 mod stockpile;
 mod crafting_progress;
 mod items;
-
+mod plants;
+mod planting;
+mod planting_crops; // deprecated
 use crate::loading::LoadingPlugin;
 // use crate::menu::MenuPlugin;
 
+use planting::PlantingPlugin;
 use worker_job_tooltip::WorkerJobTooltipPlugin;
 use bevy::app::App;
 // #[cfg(debug_assertions)]
@@ -34,7 +36,6 @@ use init::{InitPlugin, WorldParams};
 use movement::MovementPlugin;
 
 use planned_work::WorkOnArrivalPlugin;
-use planting_crops::PlantingCropsPlugin;
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting::TreeCuttingPlugin;
@@ -72,7 +73,7 @@ impl Plugin for GamePlugin {
             .add_plugin(WorkerJobTooltipPlugin)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
-            .add_plugin(PlantingCropsPlugin)
+            .add_plugin(PlantingPlugin)
             .add_plugin(InitPlugin)
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin)

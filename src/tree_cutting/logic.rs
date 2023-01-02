@@ -20,24 +20,19 @@ pub struct TreeCutter {
 #[derive(Component)]
 pub struct TreeHitCountdown(Countdown);
 
-// WHEN CREATING we need not to forget to add this task to a list of tasks to be cleaned up if the worker is destroyed
 pub fn handle_task_progress(
     mut commands: Commands,
-    tree_cutters_query: Query<(Entity, &TreeCutter, Option<&TreeHitCountdown>)>,
+    mut tree_cutters_query: Query<(Entity, &TreeCutter, &mut TreeHitCountdown)>,
     mut destructibles: Query<&mut SimpleDestructible>,
 ) {
-    for (worker_id, tree_cutter, maybe_tree_hit_countdown) in &tree_cutters_query {
+    for (worker_id, tree_cutter, mut tree_hit_countdown) in &mut tree_cutters_query {
         if let Ok(mut destructible) = destructibles.get_mut(tree_cutter.target_id) {
-            let countdown = maybe_tree_hit_countdown
-                .map(|x| x.0)
-                .unwrap_or(Countdown::new(5));
+            let countdown = tree_hit_countdown.0;
             let result = advance(countdown, 20.0, destructible.clone());
             match result {
                 AdvanceResult::Continuing(updated_countdown, updated_destructible) => {
                     *destructible = updated_destructible;
-                    commands
-                        .entity(worker_id)
-                        .insert(TreeHitCountdown(updated_countdown));
+                    *tree_hit_countdown = TreeHitCountdown(updated_countdown)
                 }
                 AdvanceResult::Completed => {
                     commands
@@ -52,9 +47,17 @@ pub fn handle_task_progress(
     }
 }
 
-pub fn start_cutting_tree(commands: &mut Commands, worker_id: Entity, target_id: Entity) {
+pub fn start_cutting_tree(
+    commands: &mut Commands,
+    worker_id: Entity,
+    hit_interval: usize,
+    target_id: Entity,
+) {
     commands.entity(target_id).insert(ClaimedBy(worker_id));
-    commands.entity(worker_id).insert(TreeCutter { target_id });
+    commands.entity(worker_id).insert((
+        TreeCutter { target_id },
+        TreeHitCountdown(Countdown::new(hit_interval)),
+    ));
 }
 
 fn advance(
@@ -76,7 +79,9 @@ fn advance(
 }
 
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {
-    commands.entity(worker_id).remove::<TreeCutter>();
+    commands
+        .entity(worker_id)
+        .remove::<(TreeCutter, TreeHitCountdown)>();
 
     if let Some(target_id) = maybe_target_id {
         commands.entity(target_id).remove::<ClaimedBy>();

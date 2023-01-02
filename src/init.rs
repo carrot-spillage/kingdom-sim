@@ -19,7 +19,6 @@ use crate::{
     monkey_planner::{MonkeyPlanner, move_to_work},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planned_work::BUILDING_JOB_NAME,
-    planting_crops::{plan_farm_field, PLANTING_JOB_NAME},
     resource_gathering::plan_resource_gathering,
     resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
     skills::{SkillType, Skilled},
