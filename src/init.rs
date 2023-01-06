@@ -12,14 +12,11 @@ use rand::Rng;
 
 use crate::{
     building::{
-        convert_construction_site_to_building, get_construction_site_texture,
+        get_construction_site_texture,
         spawn_construction_site, BuildingTextureSet, Buildingprefab,
     },
     loading::{FontAssets, TextureAssets},
-    monkey_planner::{MonkeyPlanner, move_to_work},
     movement::{hack_3d_position_to_2d, Position, Walker},
-    planned_work::BUILDING_JOB_NAME,
-    resource_gathering::plan_resource_gathering,
     resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,

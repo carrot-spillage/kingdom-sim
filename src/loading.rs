@@ -1,8 +1,7 @@
-use crate::{GameState, plants::bundle::PlantPrefab};
-use bevy::prelude::*;
+use crate::{plants::bundle::{PlantPrefab, Growing, PlantBundle}, GameState, tree::SimpleDestructible, planting::logic::PlantBundleMap};
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 
 use bevy_asset_loader::prelude::{AssetCollection, LoadingState};
-use bevy_common_assets::json::JsonAssetPlugin;
 use bevy_kira_audio::AudioSource;
 
 pub struct LoadingPlugin;
@@ -19,6 +18,10 @@ impl Plugin for LoadingPlugin {
             .with_collection::<PlantPrefabAssets>()
             .continue_to_state(GameState::Playing) // TODO: change to GameState::Menu
             .build(app);
+
+        app.add_system_set(
+            SystemSet::on_enter(GameState::Playing).with_system(setup_prefabs),
+        );
     }
 }
 
@@ -27,7 +30,7 @@ impl Plugin for LoadingPlugin {
 
 #[derive(AssetCollection, Resource)]
 pub struct PlantPrefabAssets {
-    #[asset(path = "plants", collection(typed))]
+    #[asset(path = "prefabs", collection(typed))]
     pub items: Vec<Handle<PlantPrefab>>,
 }
 
@@ -83,4 +86,25 @@ pub struct TextureAssets {
 
     #[asset(path = "textures/logs.png")]
     pub logs: Handle<Image>,
+}
+
+fn setup_prefabs(app: &mut App, plants: Res<Assets<PlantPrefab>>) {
+    let map: HashMap<_, _> = plants
+        .iter()
+        .map(|x| (x.1.name, create_plant_bundle_from_prefab(x.1)))
+        .collect();
+    app.insert_resource(PlantBundleMap(map));
+}
+
+fn create_plant_bundle_from_prefab(prefab: &PlantPrefab) -> PlantBundle {
+    PlantBundle {
+        germinating: prefab.germinating,
+        growing: Growing {
+            growth_speed: prefab.growth_speed,
+        },
+        simple_destructible: SimpleDestructible {
+            max_health: prefab.health as f32,
+            current_health: prefab.health as f32,
+        },
+    }
 }

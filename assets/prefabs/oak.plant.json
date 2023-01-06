@@ -1,7 +1,9 @@
 {
   "growth_speed": 0.1,
   "germinating": {
-    
+    "radius": 1,
+    "period": 1
   },
-  "health": 200
+  "health": 200,
+  "name": "Oak"
 }

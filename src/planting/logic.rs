@@ -1,22 +1,25 @@
 use crate::{
     common::{ClaimedBy, Countdown},
     loading::{TextureAssets, PlantPrefabAssets},
-    plants::{init_plant, bundle::PlantPrefab},
+    plants::{init_plant, bundle::{PlantPrefab, PlantBundle}},
 };
-use bevy::prelude::{Commands, Component, Entity, Query, Res, Vec3};
+use bevy::{prelude::{Commands, Component, Entity, Query, Res, Vec3, Assets, Resource}, utils::HashMap};
 
 #[derive(Component)]
 pub struct Planting {
-    plant_prefab_id: usize,
+    plant_name: String,
     plant_position: Vec3,
 }
 
 #[derive(Component)]
 pub struct PlantingCountdown(Countdown);
 
+#[derive(Resource)]
+pub struct PlantBundleMap(pub HashMap<String, PlantBundle>);
+
 pub fn handle_task_progress(
     mut commands: Commands,
-    plants: Res<PlantPrefabAssets>,
+    plants: Res<PlantBundleMap>,
     textures: Res<TextureAssets>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
@@ -27,9 +30,8 @@ pub fn handle_task_progress(
             cleanup(&mut commands, worker_id);
             init_plant(
                 &mut commands,
-                plants.items.iter().find(|x| x.0.)
+                *plants.0.get(&planting.plant_name).unwrap(),
                 &textures,
-                planting.plant_prefab_id,
                 planting.plant_position,
             );
         } else {

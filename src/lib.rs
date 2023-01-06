@@ -1,34 +1,35 @@
-mod worker_job_tooltip;
 mod building;
 mod building_job;
 mod common;
 mod init;
 mod loading;
+mod worker_job_tooltip;
 // mod menu;
 mod monkey_planner;
 mod movement;
 mod planned_work;
 mod resource_gathering;
 
+mod crafting_progress;
+mod items;
+mod planting;
+mod planting_crops;
+mod plants;
 mod resources;
 mod skills;
+mod stockpile;
 mod tree;
 mod tree_cutting;
 mod work_progress;
-mod stockpile;
-mod crafting_progress;
-mod items;
-mod plants;
-mod planting;
-mod planting_crops; // deprecated
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
 
+use bevy::app::App;
 use bevy_common_assets::json::JsonAssetPlugin;
 use planting::PlantingPlugin;
+
 use worker_job_tooltip::WorkerJobTooltipPlugin;
-use bevy::app::App;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -38,10 +39,10 @@ use init::{InitPlugin, WorldParams};
 use movement::MovementPlugin;
 
 use planned_work::WorkOnArrivalPlugin;
+use plants::bundle::PlantPrefab;
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting::TreeCuttingPlugin;
-use plants::bundle::PlantPrefab;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -75,7 +76,6 @@ impl Plugin for GamePlugin {
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
-            .add_startup_system(setup)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
@@ -83,15 +83,10 @@ impl Plugin for GamePlugin {
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin)
             .add_plugin(ResourceGatheringJobPlugin);
-
         // #[cfg(debug_assertions)]
         // {
         //     app.add_plugin(FrameTimeDiagnosticsPlugin::default())
         //         .add_plugin(LogDiagnosticsPlugin::default());
         // }
     }
-}
-
-fn setup() {
-    
 }
