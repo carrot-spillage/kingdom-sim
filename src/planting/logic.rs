@@ -1,7 +1,7 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    loading::TextureAssets,
-    plants::init_plant,
+    loading::{TextureAssets, PlantPrefabAssets},
+    plants::{init_plant, bundle::PlantPrefab},
 };
 use bevy::prelude::{Commands, Component, Entity, Query, Res, Vec3};
 
@@ -16,6 +16,7 @@ pub struct PlantingCountdown(Countdown);
 
 pub fn handle_task_progress(
     mut commands: Commands,
+    plants: Res<PlantPrefabAssets>,
     textures: Res<TextureAssets>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
@@ -26,6 +27,7 @@ pub fn handle_task_progress(
             cleanup(&mut commands, worker_id);
             init_plant(
                 &mut commands,
+                plants.items.iter().find(|x| x.0.)
                 &textures,
                 planting.plant_prefab_id,
                 planting.plant_position,

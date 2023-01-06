@@ -22,8 +22,10 @@ mod plants;
 mod planting;
 mod planting_crops; // deprecated
 use crate::loading::LoadingPlugin;
+
 // use crate::menu::MenuPlugin;
 
+use bevy_common_assets::json::JsonAssetPlugin;
 use planting::PlantingPlugin;
 use worker_job_tooltip::WorkerJobTooltipPlugin;
 use bevy::app::App;
@@ -39,6 +41,7 @@ use planned_work::WorkOnArrivalPlugin;
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting::TreeCuttingPlugin;
+use plants::bundle::PlantPrefab;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -65,12 +68,14 @@ impl Plugin for GamePlugin {
         app.insert_resource(world_params);
 
         app.add_state(GameState::Loading)
+            .add_plugin(JsonAssetPlugin::<PlantPrefab>::new(&["plant.json"]))
             .add_plugin(LoadingPlugin)
             // .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
+            .add_startup_system(setup)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
@@ -85,4 +90,8 @@ impl Plugin for GamePlugin {
         //         .add_plugin(LogDiagnosticsPlugin::default());
         // }
     }
+}
+
+fn setup() {
+    
 }

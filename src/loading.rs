@@ -1,7 +1,8 @@
-use crate::GameState;
+use crate::{GameState, plants::bundle::PlantPrefab};
 use bevy::prelude::*;
 
 use bevy_asset_loader::prelude::{AssetCollection, LoadingState};
+use bevy_common_assets::json::JsonAssetPlugin;
 use bevy_kira_audio::AudioSource;
 
 pub struct LoadingPlugin;
@@ -15,6 +16,7 @@ impl Plugin for LoadingPlugin {
             .with_collection::<FontAssets>()
             // .with_collection::<AudioAssets>() // NOTE: disabled audio, as if this failes to load, the game never starts
             .with_collection::<TextureAssets>()
+            .with_collection::<PlantPrefabAssets>()
             .continue_to_state(GameState::Playing) // TODO: change to GameState::Menu
             .build(app);
     }
@@ -22,6 +24,12 @@ impl Plugin for LoadingPlugin {
 
 // the following asset collections will be loaded during the State `GameState::Loading`
 // when done loading, they will be inserted as resources (see https://github.com/NiklasEi/bevy_asset_loader)
+
+#[derive(AssetCollection, Resource)]
+pub struct PlantPrefabAssets {
+    #[asset(path = "plants", collection(typed))]
+    pub items: Vec<Handle<PlantPrefab>>,
+}
 
 #[derive(AssetCollection, Resource)]
 pub struct FontAssets {
