@@ -39,7 +39,7 @@ use init::{InitPlugin, WorldParams};
 use movement::MovementPlugin;
 
 use planned_work::WorkOnArrivalPlugin;
-use plants::bundle::PlantPrefab;
+use plants::{bundle::PlantPrefab, PlantsPlugin};
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
 use tree_cutting::TreeCuttingPlugin;
@@ -76,6 +76,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
+            .add_plugin(PlantsPlugin)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)

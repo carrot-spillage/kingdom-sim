@@ -1,9 +1,9 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    loading::{TextureAssets, PlantPrefabAssets},
-    plants::{init_plant, bundle::{PlantPrefab, PlantBundle}},
+    loading::{TextureAssets},
+    plants::{init_plant, bundle::{PlantBundle}},
 };
-use bevy::{prelude::{Commands, Component, Entity, Query, Res, Vec3, Assets, Resource}, utils::HashMap};
+use bevy::{prelude::{Commands, Component, Entity, Query, Res, Vec3, Resource}, utils::HashMap};
 
 #[derive(Component)]
 pub struct Planting {

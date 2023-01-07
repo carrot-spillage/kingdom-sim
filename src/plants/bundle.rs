@@ -19,7 +19,8 @@ pub struct Germinating {
 
 #[derive(Component, Clone, Copy)]
 pub struct Growing {
-    growth_speed: f32
+    pub speed: f32,
+    pub maturity: f32,
 }
 
 #[derive(Bundle, Clone, Copy)]

@@ -88,19 +88,20 @@ pub struct TextureAssets {
     pub logs: Handle<Image>,
 }
 
-fn setup_prefabs(app: &mut App, plants: Res<Assets<PlantPrefab>>) {
+fn setup_prefabs(mut commands: Commands, plants: Res<Assets<PlantPrefab>>) {
     let map: HashMap<_, _> = plants
         .iter()
-        .map(|x| (x.1.name, create_plant_bundle_from_prefab(x.1)))
+        .map(|x| (x.1.name.clone(), create_plant_bundle_from_prefab(x.1)))
         .collect();
-    app.insert_resource(PlantBundleMap(map));
+    commands.insert_resource(PlantBundleMap(map));
 }
 
 fn create_plant_bundle_from_prefab(prefab: &PlantPrefab) -> PlantBundle {
     PlantBundle {
         germinating: prefab.germinating,
         growing: Growing {
-            growth_speed: prefab.growth_speed,
+            maturity: 0.0,
+            speed: prefab.growth_speed,
         },
         simple_destructible: SimpleDestructible {
             max_health: prefab.health as f32,
