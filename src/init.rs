@@ -22,7 +22,7 @@ use crate::{
     stockpile::spawn_stockpile,
     tree::spawn_tree,
     worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
-    GameState,
+    GameState, plants::plant_germ, planting::logic::PlantBundleMap,
 };
 
 pub struct InitPlugin;
@@ -47,6 +47,7 @@ fn init(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
+    plants: Res<PlantBundleMap>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
@@ -170,6 +171,10 @@ fn init(
         spawn_tree(&mut commands, &textures, pos);
     }
 
+    for _ in 0..40 {
+        let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        plant_germ(&mut commands, *plants.0.get("Oak").unwrap(), &textures, pos);
+    }
 
 }
 

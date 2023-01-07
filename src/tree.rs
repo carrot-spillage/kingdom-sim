@@ -13,7 +13,7 @@ use crate::{
 #[derive(Component)]
 pub struct Tree;
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 pub struct SimpleDestructible {
     pub current_health: f32,
     pub max_health: f32,

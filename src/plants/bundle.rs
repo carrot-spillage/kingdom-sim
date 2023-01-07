@@ -17,13 +17,13 @@ pub struct Germinating {
     // pub quantity_range: Range<usize>,
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 pub struct Growing {
-    pub speed: f32,
+    pub rate: f32,
     pub maturity: f32,
 }
 
-#[derive(Bundle, Clone, Copy)]
+#[derive(Bundle, Clone, Copy, Debug)]
 pub struct PlantBundle {
     pub growing: Growing,
     pub germinating: Germinating,
@@ -35,6 +35,6 @@ pub struct PlantBundle {
 pub struct PlantPrefab {
     pub name: String,
     pub health: usize,
-    pub growth_speed: f32,
+    pub growth_rate: f32,
     pub germinating: Germinating,
 }

@@ -13,7 +13,7 @@ use crate::{
 
 use self::bundle::{Growing, PlantBundle};
 
-pub fn init_plant(
+pub fn plant_germ(
     commands: &mut Commands,
     plant_bundle: PlantBundle,
     textures: &Res<TextureAssets>,
@@ -27,7 +27,7 @@ pub fn init_plant(
                 texture: textures.tree2.clone(),
                 transform: Transform {
                     translation: hack_3d_position_to_2d(position),
-                    scale: Vec3::new(1.0, 1.0, 1.0),
+                    scale: Vec3::new(0.0, 0.0, 1.0),
                     ..Transform::default()
                 },
                 ..Default::default()
@@ -38,9 +38,9 @@ pub fn init_plant(
 
 pub fn grow(mut commands: Commands, mut growing_query: Query<(Entity, &mut Growing, &mut Transform)>) {
     for (tree_id, mut growing, mut transform) in &mut growing_query {
-        growing.maturity = (growing.maturity + growing.speed).min(1.0);
-        transform.scale = (transform.scale.truncate() * (1.0 + growing.maturity)).extend(1.0);
-        if growing.maturity == 0.0 {
+        growing.maturity = (growing.maturity + growing.rate).min(1.0);
+        transform.scale = Vec3::new(growing.maturity, growing.maturity, 1.0);
+        if growing.maturity == 1.0 {
             commands.entity(tree_id).remove::<Growing>();
         }
     }

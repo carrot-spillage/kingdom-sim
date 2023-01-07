@@ -1,7 +1,7 @@
 use crate::{
     common::{ClaimedBy, Countdown},
     loading::{TextureAssets},
-    plants::{init_plant, bundle::{PlantBundle}},
+    plants::{plant_germ, bundle::{PlantBundle}},
 };
 use bevy::{prelude::{Commands, Component, Entity, Query, Res, Vec3, Resource}, utils::HashMap};
 
@@ -14,7 +14,7 @@ pub struct Planting {
 #[derive(Component)]
 pub struct PlantingCountdown(Countdown);
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct PlantBundleMap(pub HashMap<String, PlantBundle>);
 
 pub fn handle_task_progress(
@@ -28,7 +28,7 @@ pub fn handle_task_progress(
         countdown.tick();
         if countdown.is_done() {
             cleanup(&mut commands, worker_id);
-            init_plant(
+            plant_germ(
                 &mut commands,
                 *plants.0.get(&planting.plant_name).unwrap(),
                 &textures,

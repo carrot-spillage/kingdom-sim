@@ -20,7 +20,7 @@ impl Plugin for LoadingPlugin {
             .build(app);
 
         app.add_system_set(
-            SystemSet::on_enter(GameState::Playing).with_system(setup_prefabs),
+            SystemSet::on_exit(GameState::Loading).with_system(setup_prefabs),
         );
     }
 }
@@ -101,7 +101,7 @@ fn create_plant_bundle_from_prefab(prefab: &PlantPrefab) -> PlantBundle {
         germinating: prefab.germinating,
         growing: Growing {
             maturity: 0.0,
-            speed: prefab.growth_speed,
+            rate: prefab.growth_rate,
         },
         simple_destructible: SimpleDestructible {
             max_health: prefab.health as f32,
