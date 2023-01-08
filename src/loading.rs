@@ -1,5 +1,10 @@
-use crate::{plants::bundle::{PlantPrefab, Growing, PlantBundle}, GameState, tree::SimpleDestructible, planting::logic::PlantBundleMap};
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use crate::{
+    planting::logic::PlantBundleMap,
+    plants::bundle::{Growing, PlantBundle, PlantPrefab},
+    tree::SimpleDestructible,
+    GameState,
+};
+use bevy::{prelude::*, utils::hashbrown::HashMap, reflect::TypeUuid};
 
 use bevy_asset_loader::prelude::{AssetCollection, LoadingState};
 use bevy_kira_audio::AudioSource;
@@ -19,19 +24,23 @@ impl Plugin for LoadingPlugin {
             .continue_to_state(GameState::Playing) // TODO: change to GameState::Menu
             .build(app);
 
-        app.add_system_set(
-            SystemSet::on_exit(GameState::Loading).with_system(setup_prefabs),
-        );
+        app.add_system_set(SystemSet::on_exit(GameState::Loading).with_system(setup_prefabs));
     }
 }
 
 // the following asset collections will be loaded during the State `GameState::Loading`
 // when done loading, they will be inserted as resources (see https://github.com/NiklasEi/bevy_asset_loader)
 
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
+pub struct PlantPrefabVec {
+    pub plants: Vec<PlantPrefab>
+}
+
 #[derive(AssetCollection, Resource)]
 pub struct PlantPrefabAssets {
-    #[asset(path = "prefabs", collection(typed))]
-    pub items: Vec<Handle<PlantPrefab>>,
+    #[asset(path = "prefabs/plants.yaml", typed)]
+    pub items: Handle<PlantPrefabVec>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -91,8 +100,10 @@ pub struct TextureAssets {
 fn setup_prefabs(mut commands: Commands, plants: Res<Assets<PlantPrefab>>) {
     let map: HashMap<_, _> = plants
         .iter()
-        .map(|x| (x.1.name.clone(), create_plant_bundle_from_prefab(x.1)))
+        .map(|x| (x.1.plant_name.clone(), create_plant_bundle_from_prefab(x.1)))
         .collect();
+    let handles: Vec<_> = plants.iter().map(|x| x.0).collect();
+    println!("handles {:?}", handles);
     commands.insert_resource(PlantBundleMap(map));
 }
 

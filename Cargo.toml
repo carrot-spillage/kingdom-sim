@@ -33,7 +33,7 @@ bevy_asset_loader = { version = "0.14" }
 rand = "0.8"
 itertools = "0.10"
 conditional_commands = "0.7"
-bevy_common_assets = { version = "0.4", features = ["json"] }
+bevy_common_assets = { version = "0.4", features = ["yaml"] }
 serde = "1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]

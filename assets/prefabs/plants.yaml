@@ -1,0 +1,35 @@
+plants:
+  - plant_name: Oak
+    growth_rate: 0.001
+    germinating:
+      radius: 10
+      period_range:
+        from: 2000
+        to: 13000
+      quantity_range:
+        from: 1
+        to: 1
+    health: 250
+  - plant_name: Pine
+    growth_rate: 0.002
+    germinating:
+      radius: 13
+      period_range:
+        from: 3000
+        to: 12000
+      quantity_range:
+        from: 1
+        to: 1
+    health: 240
+# Oak
+# Maple
+# Pine
+# Birch
+# Spruce
+# Willow
+# Elm
+# Redwood
+# Fir
+# Cypress
+
+# altitude, temperature, soil moisture, light, pollution
