@@ -27,6 +27,7 @@ use crate::loading::LoadingPlugin;
 
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
+use loading::PlantPrefabVec;
 use planting::PlantingPlugin;
 
 use worker_job_tooltip::WorkerJobTooltipPlugin;
@@ -69,7 +70,7 @@ impl Plugin for GamePlugin {
         app.insert_resource(world_params);
 
         app.add_state(GameState::Loading)
-            .add_plugin(YamlAssetPlugin::<PlantPrefab>::new(&["yaml"]))
+            .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["yaml"]))
             .add_plugin(LoadingPlugin)
             // .add_plugin(MenuPlugin)
             .add_plugin(MovementPlugin)

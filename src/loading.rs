@@ -97,11 +97,18 @@ pub struct TextureAssets {
     pub logs: Handle<Image>,
 }
 
-fn setup_prefabs(mut commands: Commands, plants: Res<Assets<PlantPrefab>>) {
-    let map: HashMap<_, _> = plants
+fn setup_prefabs(
+    mut commands: Commands,
+    plants: Res<Assets<PlantPrefabVec>>,
+    p: Res<PlantPrefabAssets>,
+) {
+    let plantvec = plants.get(&p.items).unwrap();
+    let map: HashMap<_, _> = plantvec
+        .plants
         .iter()
-        .map(|x| (x.1.plant_name.clone(), create_plant_bundle_from_prefab(x.1)))
+        .map(|x| (x.plant_name.clone(), create_plant_bundle_from_prefab(x)))
         .collect();
+
     let handles: Vec<_> = plants.iter().map(|x| x.0).collect();
     println!("handles {:?}", handles);
     commands.insert_resource(PlantBundleMap(map));
