@@ -1,5 +1,6 @@
 plants:
-  - plant_name: Oak
+  - name: Oak
+    texture_path: "oak_1.png"
     growth_rate: 0.001
     germinating:
       radius: 10
@@ -10,7 +11,8 @@ plants:
         from: 1
         to: 1
     health: 250
-  - plant_name: Pine
+  - name: Pine
+    texture_path: "pine_1.png"
     growth_rate: 0.002
     germinating:
       radius: 13

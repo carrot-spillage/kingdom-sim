@@ -38,7 +38,8 @@ pub struct PlantBundle {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
 pub struct PlantPrefab {
-    pub plant_name: String,
+    pub name: String,
+    pub texture_path: String,
     pub health: usize,
     pub growth_rate: f32,
     pub germinating: Germinating,

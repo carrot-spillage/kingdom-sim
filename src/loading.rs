@@ -106,7 +106,7 @@ fn setup_prefabs(
     let map: HashMap<_, _> = plantvec
         .plants
         .iter()
-        .map(|x| (x.plant_name.clone(), create_plant_bundle_from_prefab(x)))
+        .map(|x| (x.name.clone(), create_plant_bundle_from_prefab(x)))
         .collect();
 
     let handles: Vec<_> = plants.iter().map(|x| x.0).collect();
