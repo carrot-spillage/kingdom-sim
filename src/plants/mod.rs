@@ -2,7 +2,7 @@ pub mod bundle;
 
 use bevy::{
     prelude::{Commands, Entity, Query, Res, Transform, Vec3, SystemSet, Plugin, App, Handle, Image},
-    sprite::SpriteBundle,
+    sprite::{SpriteBundle, Sprite},
 };
 
 use crate::{
@@ -29,6 +29,10 @@ pub fn plant_germ(
                     translation: hack_3d_position_to_2d(position),
                     scale: Vec3::new(0.0, 0.0, 1.0),
                     ..Transform::default()
+                },
+                sprite: Sprite {
+                    anchor: bevy::sprite::Anchor::BottomCenter,
+                    ..Default::default()
                 },
                 ..Default::default()
             },
