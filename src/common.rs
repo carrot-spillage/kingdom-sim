@@ -9,10 +9,10 @@ pub struct CreationProgress(pub f32);
 #[derive(Component)]
 pub struct ClaimedBy(pub Entity);
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 
 pub struct Countdown {
-    pub initial_value: usize,
+    initial_value: usize,
     current_value: usize,
 }
 
@@ -25,6 +25,7 @@ impl Countdown {
     }
 
     pub fn tick(&mut self) {
+        println!("value {:?}", self.current_value);
         if self.is_done() {
             self.current_value = self.initial_value
         } else {

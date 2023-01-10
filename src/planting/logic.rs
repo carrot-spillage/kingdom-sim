@@ -20,7 +20,6 @@ pub struct PlantBundleMap(pub HashMap<String, (PlantBundle, Handle<Image>)>);
 pub fn handle_task_progress(
     mut commands: Commands,
     plants: Res<PlantBundleMap>,
-    textures: Res<TextureAssets>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
@@ -31,7 +30,7 @@ pub fn handle_task_progress(
             cleanup(&mut commands, worker_id);
             plant_germ(
                 &mut commands,
-                *bundle,
+                bundle.clone(),
                 texture.clone(),
                 planting.plant_position,
             );

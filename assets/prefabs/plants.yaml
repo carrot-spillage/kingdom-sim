@@ -5,11 +5,8 @@ plants:
     germinating:
       radius: 10
       period_range:
-        from: 2000
-        to: 13000
-      quantity_range:
-        from: 1
-        to: 1
+        from: 5
+        to: 13
     health: 250
   - name: Pine
     texture_path: "prefabs/pine_1.png"
@@ -19,9 +16,6 @@ plants:
       period_range:
         from: 3000
         to: 12000
-      quantity_range:
-        from: 1
-        to: 1
     health: 240
 # Oak
 # Maple
