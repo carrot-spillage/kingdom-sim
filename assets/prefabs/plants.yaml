@@ -2,7 +2,7 @@ plants:
   - name: Oak
     texture_path: "prefabs/oak_1.png"
     growth_rate: 0.010
-    germinating:
+    germinator_params:
       radius: 10
       period_range:
         from: 5
@@ -11,11 +11,11 @@ plants:
   - name: Pine
     texture_path: "prefabs/pine_1.png"
     growth_rate: 0.012
-    germinating:
+    germinator_params:
       radius: 13
       period_range:
-        from: 3000
-        to: 12000
+        from: 3
+        to: 12
     health: 240
 # Oak
 # Maple

@@ -1,6 +1,6 @@
 use crate::{
     planting::logic::PlantBundleMap,
-    plants::bundle::{Growing, PlantBundle, PlantPrefab},
+    plants::bundle::{Growing, PlantBundle, PlantPrefab, PlantPrefabId},
     tree::SimpleDestructible,
     GameState,
 };
@@ -107,7 +107,8 @@ fn setup_prefabs(
     let map: HashMap<_, _> = plantvec
         .plants
         .iter()
-        .map(|x| (x.name.clone(), (x.to_plant_bundle(), asset_server.load(x.texture_path.clone()))))
+        .enumerate()
+        .map(|(i, x)| (PlantPrefabId(i), (x.to_plant_bundle(i), asset_server.load(x.texture_path.clone()))))
         .collect();
 
     commands.insert_resource(PlantBundleMap(map));

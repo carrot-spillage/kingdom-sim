@@ -1,7 +1,7 @@
 pub mod bundle;
 
 use bevy::{
-    prelude::{Commands, Entity, Query, Res, Transform, Vec3, SystemSet, Plugin, App, Handle, Image, With},
+    prelude::{Commands, Entity, Query, Res, Transform, Vec3, SystemSet, Plugin, App, Handle, Image},
     sprite::{SpriteBundle, Sprite},
 };
 
@@ -10,7 +10,7 @@ use crate::{
     GameState, planting::logic::PlantBundleMap,
 };
 
-use self::bundle::{Growing, PlantBundle, Germinator, GerminatorCountdown, PlantName, MaturePlant};
+use self::bundle::{Growing, PlantBundle, GerminatorParams, Germinator, PlantPrefabId};
 
 pub fn plant_germ(
     commands: &mut Commands,
@@ -39,23 +39,21 @@ pub fn plant_germ(
         .id()
 }
 
-pub fn grow(mut commands: Commands, mut growing_query: Query<(Entity, &mut Growing, &mut Transform)>) {
-    for (tree_id, mut growing, mut transform) in &mut growing_query {
+pub fn grow(mut commands: Commands, mut growing_query: Query<(Entity, &mut Growing, &mut Transform, &GerminatorParams)>) {
+    for (tree_id, mut growing, mut transform, germinator_params) in &mut growing_query {
         growing.maturity = (growing.maturity + growing.rate).min(1.0);
         transform.scale = Vec3::new(growing.maturity, growing.maturity, 1.0);
         if growing.maturity == 1.0 {
-            commands.entity(tree_id).remove::<Growing>().insert(MaturePlant);
+            commands.entity(tree_id).remove::<Growing>().insert(Germinator::new(germinator_params.clone()));
         }
     }
 }
 
-pub fn germinate(mut commands: Commands, plant_bundle_map: Res<PlantBundleMap>, mut germinating_query: Query<(&PlantName, &Position, &Germinator, &mut GerminatorCountdown), With<MaturePlant>>) {
-    for (plant_name, position, germinating, mut germinating_countdown) in &mut germinating_query {
-        germinating_countdown.0.tick();
-        if germinating_countdown.0.is_done() {
-            *germinating_countdown = germinating.gen_countdown();
-            let germ_position = position.0 + germinating.gen_offset().extend(0.0);
-            let (bundle, texture) = plant_bundle_map.0.get(&plant_name.0.clone()).unwrap();
+pub fn germinate(mut commands: Commands, plant_bundle_map: Res<PlantBundleMap>, mut germinator_params_query: Query<(&PlantPrefabId, &Position, &mut Germinator)>) {
+    for (plant_prefab_id, position, mut germinator) in &mut germinator_params_query {
+        if let Some(germ_offset)= germinator.try_produce() {
+            let germ_position = position.0 + germ_offset.extend(0.0);
+            let (bundle, texture) = plant_bundle_map.0.get(plant_prefab_id).unwrap();
             plant_germ(&mut commands, bundle.clone(), texture.clone(), germ_position);
         }
     }
