@@ -1,6 +1,6 @@
 plants:
   - name: Oak
-    texture_path: "oak_1.png"
+    texture_path: "prefabs/oak_1.png"
     growth_rate: 0.001
     germinating:
       radius: 10
@@ -12,7 +12,7 @@ plants:
         to: 1
     health: 250
   - name: Pine
-    texture_path: "pine_1.png"
+    texture_path: "prefabs/pine_1.png"
     growth_rate: 0.002
     germinating:
       radius: 13
