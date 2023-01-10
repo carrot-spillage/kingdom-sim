@@ -1,7 +1,7 @@
 pub mod bundle;
 
 use bevy::{
-    prelude::{Commands, Entity, Query, Res, Transform, Vec3, SystemSet, Plugin, App},
+    prelude::{Commands, Entity, Query, Res, Transform, Vec3, SystemSet, Plugin, App, Handle, Image},
     sprite::SpriteBundle,
 };
 
@@ -16,7 +16,7 @@ use self::bundle::{Growing, PlantBundle};
 pub fn plant_germ(
     commands: &mut Commands,
     plant_bundle: PlantBundle,
-    textures: &Res<TextureAssets>,
+    texture: Handle<Image>,
     position: Vec3,
 ) -> Entity {
     commands
@@ -24,7 +24,7 @@ pub fn plant_germ(
             plant_bundle,
             Position(position),
             SpriteBundle {
-                texture: textures.tree2.clone(),
+                texture,
                 transform: Transform {
                     translation: hack_3d_position_to_2d(position),
                     scale: Vec3::new(0.0, 0.0, 1.0),

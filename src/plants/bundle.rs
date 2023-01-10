@@ -44,3 +44,19 @@ pub struct PlantPrefab {
     pub growth_rate: f32,
     pub germinating: Germinating,
 }
+
+impl PlantPrefab {
+    pub fn to_plant_bundle(&self) -> PlantBundle {
+        PlantBundle {
+            germinating: self.germinating,
+            growing: Growing {
+                maturity: 0.0,
+                rate: self.growth_rate,
+            },
+            simple_destructible: SimpleDestructible {
+                max_health: self.health as f32,
+                current_health: self.health as f32,
+            },
+        }
+    }
+}

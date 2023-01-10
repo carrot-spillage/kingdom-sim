@@ -173,7 +173,8 @@ fn init(
 
     for _ in 0..40 {
         let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        plant_germ(&mut commands, *plants.0.get("Oak").unwrap(), &textures, pos);
+        let (plant_bundle, texture) = plants.0.get("Oak").unwrap().clone();
+        plant_germ(&mut commands, plant_bundle, texture, pos);
     }
 
 }

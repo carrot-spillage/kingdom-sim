@@ -101,29 +101,15 @@ fn setup_prefabs(
     mut commands: Commands,
     plants: Res<Assets<PlantPrefabVec>>,
     p: Res<PlantPrefabAssets>,
+    asset_server: Res<AssetServer>
 ) {
     let plantvec = plants.get(&p.items).unwrap();
     let map: HashMap<_, _> = plantvec
         .plants
         .iter()
-        .map(|x| (x.name.clone(), create_plant_bundle_from_prefab(x)))
+        .map(|x| (x.name.clone(), (x.to_plant_bundle(), asset_server.load(x.texture_path.clone()))))
         .collect();
 
-    let handles: Vec<_> = plants.iter().map(|x| x.0).collect();
-    println!("handles {:?}", handles);
     commands.insert_resource(PlantBundleMap(map));
 }
 
-fn create_plant_bundle_from_prefab(prefab: &PlantPrefab) -> PlantBundle {
-    PlantBundle {
-        germinating: prefab.germinating,
-        growing: Growing {
-            maturity: 0.0,
-            rate: prefab.growth_rate,
-        },
-        simple_destructible: SimpleDestructible {
-            max_health: prefab.health as f32,
-            current_health: prefab.health as f32,
-        },
-    }
-}
