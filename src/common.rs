@@ -25,7 +25,6 @@ impl Countdown {
     }
 
     pub fn tick(&mut self) {
-        println!("value {:?}", self.current_value);
         if self.is_done() {
             self.current_value = self.initial_value
         } else {

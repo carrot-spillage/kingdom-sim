@@ -3,7 +3,7 @@ plants:
     texture_path: "prefabs/oak_1.png"
     growth_rate: 0.010
     germinator_params:
-      radius: 10
+      radius: 100
       period_range:
         from: 5
         to: 13
@@ -12,7 +12,7 @@ plants:
     texture_path: "prefabs/pine_1.png"
     growth_rate: 0.012
     germinator_params:
-      radius: 13
+      radius: 130
       period_range:
         from: 3
         to: 12
