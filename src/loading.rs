@@ -1,10 +1,10 @@
 use crate::{
+    items::ItemPrefab,
     planting::logic::PlantBundleMap,
-    plants::bundle::{Growing, PlantBundle, PlantPrefab, PlantPrefabId},
-    tree::SimpleDestructible,
+    plants::bundle::{PlantPrefab, PlantPrefabId},
     GameState,
 };
-use bevy::{prelude::*, utils::hashbrown::HashMap, reflect::TypeUuid};
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 
 use bevy_asset_loader::prelude::{AssetCollection, LoadingState};
 use bevy_kira_audio::AudioSource;
@@ -34,13 +34,25 @@ impl Plugin for LoadingPlugin {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
 pub struct PlantPrefabVec {
-    pub plants: Vec<PlantPrefab>
+    pub plants: Vec<PlantPrefab>,
+}
+
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[uuid = "160a57b6-2417-47c7-bd3b-52ace245cc49"]
+pub struct ItemPrefabVec {
+    pub items: Vec<ItemPrefab>,
 }
 
 #[derive(AssetCollection, Resource)]
 pub struct PlantPrefabAssets {
     #[asset(path = "prefabs/plants.yaml", typed)]
-    pub items: Handle<PlantPrefabVec>,
+    pub plants: Handle<PlantPrefabVec>,
+}
+
+#[derive(AssetCollection, Resource)]
+pub struct ItemPrefabAssets {
+    #[asset(path = "prefabs/items.yaml", typed)]
+    pub items: Handle<ItemPrefabVec>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -100,17 +112,29 @@ pub struct TextureAssets {
 fn setup_prefabs(
     mut commands: Commands,
     plants: Res<Assets<PlantPrefabVec>>,
+    items: Res<Assets<ItemPrefabVec>>,
     p: Res<PlantPrefabAssets>,
-    asset_server: Res<AssetServer>
+    ip: Res<ItemPrefabAssets>,
+    asset_server: Res<AssetServer>,
 ) {
-    let plantvec = plants.get(&p.items).unwrap();
+    let plantvec = plants.get(&p.plants).unwrap();
     let map: HashMap<_, _> = plantvec
         .plants
         .iter()
         .enumerate()
-        .map(|(i, x)| (PlantPrefabId(i), (x.to_plant_bundle(i), asset_server.load(x.texture_path.clone()))))
+        .map(|(i, x)| {
+            let (bundle, maybe_grower, maybe_producer) = x.to_plant_bundle(PlantPrefabId(i));
+            (
+                PlantPrefabId(i),
+                (
+                    bundle,
+                    maybe_grower,
+                    maybe_producer,
+                    asset_server.load(x.texture_path.clone()),
+                ),
+            )
+        })
         .collect();
 
     commands.insert_resource(PlantBundleMap(map));
 }
-

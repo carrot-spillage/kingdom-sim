@@ -1,8 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{
-        App, Commands, Component, Entity, EventReader, Plugin, Query, Res, SystemSet, Transform,
-    },
+    prelude::{Commands, Component, Entity, Res, Transform},
     sprite::SpriteBundle,
 };
 use conditional_commands::ConditionalInsertBundleExt;
@@ -11,7 +9,6 @@ use crate::{
     loading::TextureAssets,
     movement::{hack_3d_position_to_2d, Position},
     stockpile::InStockpile,
-    GameState,
 };
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -47,22 +44,32 @@ pub enum CarrierHands {
     Combined(ItemGroup),
 }
 
+#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[uuid = "7df1e471-50ac-4f76-a7d9-c8507f28fde4"]
 pub enum ItemHandlingKind {
     TwoHanded,
     SingleHanded,
 }
 
-pub struct Itemprefab {
-    id: usize,
-    packable: bool, // false - only handheld
-    handling_kind: ItemHandlingKind,
-    weight: usize,
+#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527b"]
+pub struct ItemPrefab {
+    pub id: ItemPrefabId,
+    pub packable: bool, // false - only handheld
+    pub handling_kind: ItemHandlingKind,
+    pub weight: usize,
 }
+
+#[derive(
+    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
+)]
+#[uuid = "3819241a-9f90-47dc-b5df-bc99f8fec014"]
+pub struct ItemPrefabId(usize);
 
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ItemGroup {
-    prefab_id: usize,
-    quantity: usize,
+    pub prefab_id: ItemPrefabId,
+    pub quantity: usize,
 }
 
 pub struct ItemTakingResult {
@@ -86,15 +93,10 @@ pub struct ItemTakingResult {
 
 // }
 
-
 impl ItemGroup {
-    fn take(
-        &self,
-        item_prefab: &Itemprefab,
-        max_weight: usize,
-    ) -> ItemTakingResult {
+    fn take(&self, item_prefab: &ItemPrefab, max_weight: usize) -> ItemTakingResult {
         let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as usize;
-    
+
         if picked_quantity >= self.quantity {
             ItemTakingResult {
                 picked: Some(ItemGroup {

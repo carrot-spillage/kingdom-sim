@@ -5,11 +5,11 @@ use bevy::{
 };
 
 use crate::{
-    building::{Buildingprefab, BuildingTextureSet},
+    building::{BuildingPrefab, BuildingTextureSet},
     building_job::plan_building,
     loading::TextureAssets,
     movement::MovingToEntity,
-    planned_work::{PlannedWork, WorkingOn, BUILDING_JOB_NAME, NotWorking},
+    planned_work::{NotWorking, PlannedWork, WorkingOn, BUILDING_JOB_NAME},
     resources::ResourceKind,
     skills::Skilled,
 };
@@ -25,7 +25,12 @@ impl MonkeyPlanner {
         workers: Query<Entity, (With<Skilled>, Without<WorkingOn>)>,
     ) {
         let work = work_query.get(work_id).unwrap();
-        MonkeyPlanner::temp_recruit_workers(commands, work_id, workers.iter().take(work.max_workers).collect(), BUILDING_JOB_NAME)
+        MonkeyPlanner::temp_recruit_workers(
+            commands,
+            work_id,
+            workers.iter().take(work.max_workers).collect(),
+            BUILDING_JOB_NAME,
+        )
     }
 
     pub fn temp_recruit_workers(
@@ -44,7 +49,7 @@ impl MonkeyPlanner {
         textures: &Res<TextureAssets>,
         position: Vec3,
     ) -> Entity {
-        let building_prefab = Buildingprefab {
+        let building_prefab = BuildingPrefab {
             name: "House",
             max_hp: 2000.0,
             units_of_work: 100.0,

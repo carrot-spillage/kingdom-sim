@@ -1,22 +1,46 @@
 plants:
-  - name: Oak
+  - id: 1
+    name: Oak
     texture_path: "prefabs/oak_1.png"
     growth_rate: 0.010
-    germinator_params:
+    germinator:
       radius: 100
       period_range:
         from: 5
         to: 13
     health: 250
-  - name: Pine
+    intrinsic_resource:
+      max_quantity_range:
+        from: 1
+        to: 3
+      item_prefab_id: 3
+    resource_producer:
+      max_quantity: 20,
+      period_range:
+        from: 5
+        to: 12
+      item_prefab_id: 4
+  - id: 2
+    name: Pine
     texture_path: "prefabs/pine_1.png"
     growth_rate: 0.012
-    germinator_params:
+    germinator:
       radius: 130
       period_range:
         from: 3
         to: 12
     health: 240
+    intrinsic_resource:
+      max_quantity_range:
+        from: 1
+        to: 3
+      item_prefab_id: 3
+    resource_producer:
+      max_quantity: 20,
+      period_range:
+        from: 5
+        to: 12
+      item_prefab_id: 4
 # Oak
 # Maple
 # Pine

@@ -6,11 +6,13 @@ use bevy::{
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, Buildingprefab,
+        spawn_construction_site, BuildingPrefab,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     movement::{MovingToEntity, Position},
-    planned_work::{PlannedWork, WorkerCompletedWorkEvent, WorkingOn, BUILDING_JOB_NAME, NotWorking},
+    planned_work::{
+        NotWorking, PlannedWork, WorkerCompletedWorkEvent, WorkingOn, BUILDING_JOB_NAME,
+    },
     skills::{SkillType, Skilled},
     GameState,
 };
@@ -31,12 +33,7 @@ impl Plugin for BuildingJobPlugin {
 
 fn handle_building_process(
     mut commands: Commands,
-    mut construction_sites: Query<(
-        Entity,
-        &PlannedWork,
-        &mut CraftingProgress,
-        &Buildingprefab,
-    )>,
+    mut construction_sites: Query<(Entity, &PlannedWork, &mut CraftingProgress, &BuildingPrefab)>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
 ) {
@@ -101,7 +98,7 @@ fn handle_building_process(
 
 pub fn plan_building(
     commands: &mut Commands,
-    building_prefab: Buildingprefab,
+    building_prefab: BuildingPrefab,
     position: Vec3,
 ) -> Entity {
     let id = commands

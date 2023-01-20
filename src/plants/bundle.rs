@@ -1,18 +1,25 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::{Bundle, Component, Vec2};
-use rand::{Rng, rngs::ThreadRng};
+use rand::{rngs::ThreadRng, Rng};
 
-use crate::{common::Countdown, tree::SimpleDestructible};
+use crate::{common::Countdown, items::ItemPrefabId, tree::SimpleDestructible};
 
-#[derive(Component, Clone, Debug, Hash, PartialEq, Eq)]
+use super::{
+    intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
+};
+
+#[derive(
+    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Debug, Hash, PartialEq, Eq,
+)]
+#[uuid = "407e6caf-2901-437a-b2e6-5ca256de6b2a"]
 pub struct PlantPrefabId(pub usize);
 
 #[derive(Component, Clone, Debug)]
 pub struct PlantName(pub &'static str);
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c46"]
+#[uuid = "c1b29b63-2032-413c-bb10-bb0e9b54f7b2"]
 pub struct Range<T> {
     pub from: T,
     pub to: T,
@@ -82,29 +89,61 @@ pub struct PlantBundle {
     pub simple_destructible: SimpleDestructible,
 }
 
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
+#[uuid = "fd8aa8ff-bb48-4572-a6d8-7e7dc1fec9a7"]
+pub struct IntrinsicResourceParams {
+    pub max_quantity_range: Range<usize>,
+    pub item_prefab_id: ItemPrefabId,
+}
+
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
+#[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f61053"]
+pub struct ResourceProducerParams {
+    pub max_quantity: usize,
+    pub period_range: Range<usize>,
+    pub item_prefab_id: ItemPrefabId,
+}
+
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
 pub struct PlantPrefab {
+    pub id: PlantPrefabId,
     pub name: String,
     pub texture_path: String,
     pub health: usize,
     pub growth_rate: f32,
-    pub germinator_params: GerminatorParams,
+    pub germinator: GerminatorParams,
+    pub intrinsic_resource: Option<IntrinsicResourceParams>,
+    pub resource_producer: Option<ResourceProducerParams>,
 }
 
 impl PlantPrefab {
-    pub fn to_plant_bundle(&self, id: usize) -> PlantBundle {
-        PlantBundle {
-            prefab_id: PlantPrefabId(id),
-            germinator_params: self.germinator_params,
-            growing: Growing {
-                maturity: 0.0,
-                rate: self.growth_rate,
+    pub fn to_plant_bundle(
+        &self,
+        prefab_id: PlantPrefabId,
+    ) -> (
+        PlantBundle,
+        Option<IntrinsicPlantResourceGrower>,
+        Option<PlantResourceProducer>,
+    ) {
+        (
+            PlantBundle {
+                prefab_id,
+                germinator_params: self.germinator,
+                growing: Growing {
+                    maturity: 0.0,
+                    rate: self.growth_rate,
+                },
+                simple_destructible: SimpleDestructible {
+                    max_health: self.health as f32,
+                    current_health: self.health as f32,
+                },
             },
-            simple_destructible: SimpleDestructible {
-                max_health: self.health as f32,
-                current_health: self.health as f32,
-            },
-        }
+            self.intrinsic_resource
+                .map(|x| IntrinsicPlantResourceGrower::new(x.item_prefab_id, x.max_quantity_range)),
+            self.resource_producer.map(|x| {
+                PlantResourceProducer::new(x.item_prefab_id, x.max_quantity, x.period_range)
+            }),
+        )
     }
 }

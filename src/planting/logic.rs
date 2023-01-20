@@ -1,8 +1,14 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    plants::{plant_germ, bundle::{PlantBundle, PlantPrefabId}},
+    plants::{
+        bundle::{PlantBundle, PlantPrefabId},
+        plant_germ, IntrinsicPlantResourceGrower, PlantResourceProducer,
+    },
 };
-use bevy::{prelude::{Commands, Component, Entity, Query, Res, Vec3, Resource, Handle, Image}, utils::HashMap};
+use bevy::{
+    prelude::{Commands, Component, Entity, Handle, Image, Query, Res, Resource, Vec3},
+    utils::HashMap,
+};
 
 #[derive(Component)]
 pub struct Planting {
@@ -14,7 +20,17 @@ pub struct Planting {
 pub struct PlantingCountdown(Countdown);
 
 #[derive(Resource, Debug)]
-pub struct PlantBundleMap(pub HashMap<PlantPrefabId, (PlantBundle, Handle<Image>)>);
+pub struct PlantBundleMap(
+    pub  HashMap<
+        PlantPrefabId,
+        (
+            PlantBundle,
+            Option<IntrinsicPlantResourceGrower>,
+            Option<PlantResourceProducer>,
+            Handle<Image>,
+        ),
+    >,
+);
 
 pub fn handle_task_progress(
     mut commands: Commands,
@@ -25,11 +41,14 @@ pub fn handle_task_progress(
         let mut countdown = planting_countdown.0;
         countdown.tick();
         if countdown.is_done() {
-            let (bundle, texture) = plants.0.get(&planting.plant_prefab_id).unwrap();
+            let (bundle, maybe_grower, maybe_producer, texture) =
+                plants.0.get(&planting.plant_prefab_id).unwrap();
             cleanup(&mut commands, worker_id);
             plant_germ(
                 &mut commands,
                 bundle.clone(),
+                maybe_grower.clone(),
+                maybe_producer.clone(),
                 texture.clone(),
                 planting.position,
             );
