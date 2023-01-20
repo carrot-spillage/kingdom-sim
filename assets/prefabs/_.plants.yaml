@@ -15,7 +15,7 @@ plants:
         to: 3
       item_prefab_id: 3
     resource_producer:
-      max_quantity: 20,
+      max_quantity: 20
       period_range:
         from: 5
         to: 12
@@ -36,7 +36,7 @@ plants:
         to: 3
       item_prefab_id: 3
     resource_producer:
-      max_quantity: 20,
+      max_quantity: 20
       period_range:
         from: 5
         to: 12

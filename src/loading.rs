@@ -21,6 +21,7 @@ impl Plugin for LoadingPlugin {
             // .with_collection::<AudioAssets>() // NOTE: disabled audio, as if this failes to load, the game never starts
             .with_collection::<TextureAssets>()
             .with_collection::<PlantPrefabAssets>()
+            .with_collection::<ItemPrefabAssets>()
             .continue_to_state(GameState::Playing) // TODO: change to GameState::Menu
             .build(app);
 
@@ -45,13 +46,13 @@ pub struct ItemPrefabVec {
 
 #[derive(AssetCollection, Resource)]
 pub struct PlantPrefabAssets {
-    #[asset(path = "prefabs/plants.yaml", typed)]
+    #[asset(path = "prefabs/_.plants.yaml", typed)]
     pub plants: Handle<PlantPrefabVec>,
 }
 
 #[derive(AssetCollection, Resource)]
 pub struct ItemPrefabAssets {
-    #[asset(path = "prefabs/items.yaml", typed)]
+    #[asset(path = "prefabs/_.items.yaml", typed)]
     pub items: Handle<ItemPrefabVec>,
 }
 
