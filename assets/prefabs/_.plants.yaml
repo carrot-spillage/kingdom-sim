@@ -1,7 +1,7 @@
 plants:
   - id: 1
     name: Oak
-    texture_path: "prefabs/oak_1.png"
+    texture: "prefabs/oak_1.png"
     growth_rate: 0.010
     germinator:
       radius: 100
@@ -22,7 +22,7 @@ plants:
       item_prefab_id: 4
   - id: 2
     name: Pine
-    texture_path: "prefabs/pine_1.png"
+    texture: "prefabs/pine_1.png"
     growth_rate: 0.012
     germinator:
       radius: 130

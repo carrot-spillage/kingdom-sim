@@ -109,7 +109,7 @@ pub struct ResourceProducerParams {
 pub struct PlantPrefab {
     pub id: PlantPrefabId,
     pub name: String,
-    pub texture_path: String,
+    pub texture: String,
     pub health: usize,
     pub growth_rate: f32,
     pub germinator: GerminatorParams,

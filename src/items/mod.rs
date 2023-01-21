@@ -1,7 +1,8 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Res, Transform},
+    prelude::{Commands, Component, Entity, Res, Resource, Transform},
     sprite::SpriteBundle,
+    utils::hashbrown::HashMap,
 };
 use conditional_commands::ConditionalInsertBundleExt;
 
@@ -44,27 +45,34 @@ pub enum CarrierHands {
     Combined(ItemGroup),
 }
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "7df1e471-50ac-4f76-a7d9-c8507f28fde4"]
 pub enum ItemHandlingKind {
     TwoHanded,
     SingleHanded,
 }
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
+#[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527a"]
+pub struct ItemPrefabTextures {
+    pub dropped: String,
+}
+
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527b"]
 pub struct ItemPrefab {
     pub id: ItemPrefabId,
     pub packable: bool, // false - only handheld
     pub handling_kind: ItemHandlingKind,
     pub weight: usize,
+    pub textures: ItemPrefabTextures,
 }
 
 #[derive(
     Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
 )]
 #[uuid = "3819241a-9f90-47dc-b5df-bc99f8fec014"]
-pub struct ItemPrefabId(usize);
+pub struct ItemPrefabId(pub usize);
 
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ItemGroup {
@@ -76,6 +84,9 @@ pub struct ItemTakingResult {
     picked: Option<ItemGroup>,
     left: Option<ItemGroup>,
 }
+
+#[derive(Resource, Debug)]
+pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, ItemPrefab>);
 
 // pub struct ItemPlugin;
 
