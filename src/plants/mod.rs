@@ -26,7 +26,7 @@ pub use self::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
 };
 
-pub enum PlantMaturityState {
+pub enum PlantMaturityStage {
     Germ,
     FullyGrown,
 }
@@ -36,7 +36,7 @@ pub fn spawn_plant(
     prefab: &PlantPrefab,
     texture: Handle<Image>,
     position: Vec3,
-    maturity_state: &PlantMaturityState,
+    maturity_state: &PlantMaturityStage,
 ) -> Entity {
     let (plant_bundle, maybe_resource_grower, maybe_producer, maybe_growing, maybe_germinator) =
         prefab.to_plant_components(maturity_state);
@@ -97,7 +97,7 @@ pub fn germinate(
                 prefab,
                 texture.clone(),
                 germ_position,
-                &PlantMaturityState::Germ,
+                &PlantMaturityStage::Germ,
             );
         }
     }

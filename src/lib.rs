@@ -18,7 +18,6 @@ mod plants;
 mod resources;
 mod skills;
 mod stockpile;
-mod tree;
 mod tree_cutting;
 mod work_progress;
 use crate::loading::LoadingPlugin;

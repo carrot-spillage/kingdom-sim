@@ -1,7 +1,4 @@
-use crate::{
-    common::{ClaimedBy, Countdown},
-    tree::SimpleDestructible,
-};
+use crate::common::{ClaimedBy, Countdown, SimpleDestructible};
 use bevy::prelude::{Commands, Component, Entity, Query};
 
 enum AdvanceResult {

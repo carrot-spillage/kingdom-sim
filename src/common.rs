@@ -9,6 +9,12 @@ pub struct CreationProgress(pub f32);
 #[derive(Component)]
 pub struct ClaimedBy(pub Entity);
 
+#[derive(Component, Clone, Copy, Debug)]
+pub struct SimpleDestructible {
+    pub current_health: f32,
+    pub max_health: f32,
+}
+
 #[derive(Clone, Copy, Debug)]
 
 pub struct Countdown {

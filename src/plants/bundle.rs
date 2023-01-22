@@ -3,11 +3,11 @@ use std::f32::consts::PI;
 use bevy::prelude::{Bundle, Component, Vec2};
 use rand::{rngs::ThreadRng, Rng};
 
-use crate::{common::Countdown, items::ItemPrefabId, tree::SimpleDestructible};
+use crate::{common::Countdown, common::SimpleDestructible, items::ItemPrefabId};
 
 use super::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
-    PlantMaturityState,
+    PlantMaturityStage,
 };
 
 #[derive(
@@ -120,7 +120,7 @@ pub struct PlantPrefab {
 impl PlantPrefab {
     pub fn to_plant_components(
         &self,
-        maturity_state: &PlantMaturityState,
+        maturity_state: &PlantMaturityStage,
     ) -> (
         PlantBundle,
         Option<IntrinsicPlantResourceGrower>,
@@ -143,15 +143,15 @@ impl PlantPrefab {
                 PlantResourceProducer::new(x.item_prefab_id, x.max_quantity, x.period_range)
             }),
             match maturity_state {
-                PlantMaturityState::Germ => Some(Growing {
+                PlantMaturityStage::Germ => Some(Growing {
                     maturity: 0.0,
                     rate: self.growth_rate,
                 }),
-                PlantMaturityState::FullyGrown => None,
+                PlantMaturityStage::FullyGrown => None,
             },
             match maturity_state {
-                PlantMaturityState::Germ => None,
-                PlantMaturityState::FullyGrown => Some(Germinator::new(self.germinator)),
+                PlantMaturityStage::Germ => None,
+                PlantMaturityStage::FullyGrown => Some(Germinator::new(self.germinator)),
             },
         )
     }

@@ -2,7 +2,7 @@ use crate::{
     common::{ClaimedBy, Countdown},
     plants::{
         bundle::{PlantPrefab, PlantPrefabId},
-        spawn_plant, PlantMaturityState,
+        spawn_plant, PlantMaturityStage,
     },
 };
 use bevy::{
@@ -38,7 +38,7 @@ pub fn handle_task_progress(
                 &prefab,
                 texture.clone(),
                 planting.position,
-                &PlantMaturityState::Germ,
+                &PlantMaturityStage::Germ,
             );
         } else {
             *planting_countdown = PlantingCountdown(countdown);

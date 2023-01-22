@@ -17,11 +17,10 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
-    plants::{spawn_plant, PlantMaturityState},
+    plants::{spawn_plant, PlantMaturityStage},
     resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
-    tree::spawn_tree,
     worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
     GameState,
 };
@@ -168,11 +167,6 @@ fn init(
     // Use move_to_work()
 
     for _ in 0..40 {
-        let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        spawn_tree(&mut commands, &textures, pos);
-    }
-
-    for _ in 0..40 {
         let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         let (prefab, texture) = plants.0.values().next().unwrap();
         spawn_plant(
@@ -180,7 +174,7 @@ fn init(
             prefab,
             texture.clone(),
             position,
-            &PlantMaturityState::FullyGrown,
+            &PlantMaturityStage::FullyGrown,
         );
     }
 }
