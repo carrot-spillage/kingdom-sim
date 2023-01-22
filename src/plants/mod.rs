@@ -4,7 +4,8 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, Handle, Image, Plugin, Query, Res, SystemSet, Transform, Vec3,
+        App, Commands, Entity, Handle, Image, Plugin, Query, Rect, Res, SystemSet, Transform, Vec2,
+        Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -53,6 +54,7 @@ pub fn spawn_plant(
                 },
                 sprite: Sprite {
                     anchor: bevy::sprite::Anchor::BottomCenter,
+                    custom_size: Some(Vec2::new(24.0, 24.0)),
                     ..Default::default()
                 },
                 ..Default::default()

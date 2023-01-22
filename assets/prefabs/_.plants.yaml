@@ -2,12 +2,12 @@ plants:
   - id: 1
     name: Oak
     texture: "prefabs/oak_1.png"
-    growth_rate: 0.010
+    growth_rate: 0.0010
     germinator:
       radius: 100
       period_range:
-        from: 5
-        to: 13
+        from: 50
+        to: 130
     health: 250
     intrinsic_resource:
       max_quantity_range:
@@ -22,13 +22,13 @@ plants:
       item_prefab_id: 4
   - id: 2
     name: Pine
-    texture: "prefabs/pine_1.png"
-    growth_rate: 0.012
+    texture: "prefabs/berry_bush_1.png"
+    growth_rate: 0.0012
     germinator:
       radius: 130
       period_range:
-        from: 3
-        to: 12
+        from: 30
+        to: 120
     health: 240
     intrinsic_resource:
       max_quantity_range:

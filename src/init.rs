@@ -17,7 +17,7 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
-    plants::{spawn_plant, PlantMaturityStage},
+    plants::{bundle::PlantPrefabId, spawn_plant, PlantMaturityStage},
     resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
@@ -166,9 +166,21 @@ fn init(
     // MOVE TO THE WORK ENTITY
     // Use move_to_work()
 
-    for _ in 0..40 {
+    for _ in 0..10 {
         let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        let (prefab, texture) = plants.0.values().next().unwrap();
+        let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
+        spawn_plant(
+            &mut commands,
+            prefab,
+            texture.clone(),
+            position,
+            &PlantMaturityStage::FullyGrown,
+        );
+    }
+
+    for _ in 0..5 {
+        let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let (prefab, texture) = plants.0.get(&PlantPrefabId(2)).unwrap();
         spawn_plant(
             &mut commands,
             prefab,
