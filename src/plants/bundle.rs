@@ -7,10 +7,11 @@ use crate::{common::Countdown, items::ItemPrefabId, tree::SimpleDestructible};
 
 use super::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
+    PlantMaturityState,
 };
 
 #[derive(
-    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Debug, Hash, PartialEq, Eq,
+    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
 )]
 #[uuid = "407e6caf-2901-437a-b2e6-5ca256de6b2a"]
 pub struct PlantPrefabId(pub usize);
@@ -84,7 +85,6 @@ pub struct Growing {
 #[derive(Bundle, Clone, Debug)]
 pub struct PlantBundle {
     pub prefab_id: PlantPrefabId,
-    pub growing: Growing,
     pub germinator_params: GerminatorParams,
     pub simple_destructible: SimpleDestructible,
 }
@@ -104,7 +104,7 @@ pub struct ResourceProducerParams {
     pub item_prefab_id: ItemPrefabId,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
 pub struct PlantPrefab {
     pub id: PlantPrefabId,
@@ -118,22 +118,20 @@ pub struct PlantPrefab {
 }
 
 impl PlantPrefab {
-    pub fn to_plant_bundle(
+    pub fn to_plant_components(
         &self,
-        prefab_id: PlantPrefabId,
+        maturity_state: &PlantMaturityState,
     ) -> (
         PlantBundle,
         Option<IntrinsicPlantResourceGrower>,
         Option<PlantResourceProducer>,
+        Option<Growing>,
+        Option<Germinator>,
     ) {
         (
             PlantBundle {
-                prefab_id,
+                prefab_id: self.id,
                 germinator_params: self.germinator,
-                growing: Growing {
-                    maturity: 0.0,
-                    rate: self.growth_rate,
-                },
                 simple_destructible: SimpleDestructible {
                     max_health: self.health as f32,
                     current_health: self.health as f32,
@@ -144,6 +142,17 @@ impl PlantPrefab {
             self.resource_producer.map(|x| {
                 PlantResourceProducer::new(x.item_prefab_id, x.max_quantity, x.period_range)
             }),
+            match maturity_state {
+                PlantMaturityState::Germ => Some(Growing {
+                    maturity: 0.0,
+                    rate: self.growth_rate,
+                }),
+                PlantMaturityState::FullyGrown => None,
+            },
+            match maturity_state {
+                PlantMaturityState::Germ => None,
+                PlantMaturityState::FullyGrown => Some(Germinator::new(self.germinator)),
+            },
         )
     }
 }

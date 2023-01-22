@@ -1,8 +1,8 @@
 use crate::{
     common::{ClaimedBy, Countdown},
     plants::{
-        bundle::{PlantBundle, PlantPrefabId},
-        plant_germ, IntrinsicPlantResourceGrower, PlantResourceProducer,
+        bundle::{PlantPrefab, PlantPrefabId},
+        spawn_plant, PlantMaturityState,
     },
 };
 use bevy::{
@@ -20,37 +20,25 @@ pub struct Planting {
 pub struct PlantingCountdown(Countdown);
 
 #[derive(Resource, Debug)]
-pub struct PlantBundleMap(
-    pub  HashMap<
-        PlantPrefabId,
-        (
-            PlantBundle,
-            Option<IntrinsicPlantResourceGrower>,
-            Option<PlantResourceProducer>,
-            Handle<Image>,
-        ),
-    >,
-);
+pub struct PlantPrefabMap(pub HashMap<PlantPrefabId, (PlantPrefab, Handle<Image>)>);
 
 pub fn handle_task_progress(
     mut commands: Commands,
-    plants: Res<PlantBundleMap>,
+    plants: Res<PlantPrefabMap>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
         let mut countdown = planting_countdown.0;
         countdown.tick();
         if countdown.is_done() {
-            let (bundle, maybe_grower, maybe_producer, texture) =
-                plants.0.get(&planting.plant_prefab_id).unwrap();
+            let (prefab, texture) = plants.0.get(&planting.plant_prefab_id).unwrap();
             cleanup(&mut commands, worker_id);
-            plant_germ(
+            spawn_plant(
                 &mut commands,
-                bundle.clone(),
-                maybe_grower.clone(),
-                maybe_producer.clone(),
+                &prefab,
                 texture.clone(),
                 planting.position,
+                &PlantMaturityState::Germ,
             );
         } else {
             *planting_countdown = PlantingCountdown(countdown);

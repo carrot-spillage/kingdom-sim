@@ -16,8 +16,8 @@ use crate::{
     },
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
-    planting::logic::PlantBundleMap,
-    plants::plant_germ,
+    planting::logic::PlantPrefabMap,
+    plants::{spawn_plant, PlantMaturityState},
     resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
@@ -48,7 +48,7 @@ fn init(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
-    plants: Res<PlantBundleMap>,
+    plants: Res<PlantPrefabMap>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
@@ -173,16 +173,14 @@ fn init(
     }
 
     for _ in 0..40 {
-        let pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        let (plant_bundle, maybe_grower, maybe_producer, texture) =
-            plants.0.values().next().unwrap().clone();
-        plant_germ(
+        let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let (prefab, texture) = plants.0.values().next().unwrap();
+        spawn_plant(
             &mut commands,
-            plant_bundle,
-            maybe_grower,
-            maybe_producer,
-            texture,
-            pos,
+            prefab,
+            texture.clone(),
+            position,
+            &PlantMaturityState::FullyGrown,
         );
     }
 }

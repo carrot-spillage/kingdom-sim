@@ -12,12 +12,12 @@ use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
     movement::{hack_3d_position_to_2d, Position},
-    planting::logic::PlantBundleMap,
+    planting::logic::PlantPrefabMap,
     GameState,
 };
 
 use self::{
-    bundle::{Germinator, GerminatorParams, Growing, PlantBundle, PlantPrefabId},
+    bundle::{Germinator, GerminatorParams, Growing, PlantPrefab, PlantPrefabId},
     intrinsic_resource::grow_resource,
     resource_producer::produce_resources,
 };
@@ -26,14 +26,20 @@ pub use self::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
 };
 
-pub fn plant_germ(
+pub enum PlantMaturityState {
+    Germ,
+    FullyGrown,
+}
+
+pub fn spawn_plant(
     commands: &mut Commands,
-    plant_bundle: PlantBundle,
-    maybe_grower: Option<IntrinsicPlantResourceGrower>,
-    maybe_producer: Option<PlantResourceProducer>,
+    prefab: &PlantPrefab,
     texture: Handle<Image>,
     position: Vec3,
+    maturity_state: &PlantMaturityState,
 ) -> Entity {
+    let (plant_bundle, maybe_resource_grower, maybe_producer, maybe_growing, maybe_germinator) =
+        prefab.to_plant_components(maturity_state);
     commands
         .spawn((
             plant_bundle,
@@ -52,8 +58,12 @@ pub fn plant_germ(
                 ..Default::default()
             },
         ))
-        .insert_if(maybe_grower.is_some(), || maybe_grower.unwrap())
+        .insert_if(maybe_resource_grower.is_some(), || {
+            maybe_resource_grower.unwrap()
+        })
         .insert_if(maybe_producer.is_some(), || maybe_producer.unwrap())
+        .insert_if(maybe_growing.is_some(), || maybe_growing.unwrap())
+        .insert_if(maybe_germinator.is_some(), || maybe_germinator.unwrap())
         .id()
 }
 
@@ -75,21 +85,19 @@ pub fn grow(
 
 pub fn germinate(
     mut commands: Commands,
-    plant_bundle_map: Res<PlantBundleMap>,
+    plant_prefab_map: Res<PlantPrefabMap>,
     mut germinator_params_query: Query<(&PlantPrefabId, &Position, &mut Germinator)>,
 ) {
     for (plant_prefab_id, position, mut germinator) in &mut germinator_params_query {
         if let Some(germ_offset) = germinator.try_produce() {
             let germ_position = position.0 + germ_offset.extend(0.0);
-            let (bundle, maybe_grower, maybe_producer, texture) =
-                plant_bundle_map.0.get(plant_prefab_id).unwrap();
-            plant_germ(
+            let (prefab, texture) = plant_prefab_map.0.get(plant_prefab_id).unwrap();
+            spawn_plant(
                 &mut commands,
-                bundle.clone(),
-                maybe_grower.clone(),
-                maybe_producer.clone(),
+                prefab,
                 texture.clone(),
                 germ_position,
+                &PlantMaturityState::Germ,
             );
         }
     }

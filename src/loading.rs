@@ -1,6 +1,6 @@
 use crate::{
     items::{ItemPrefab, ItemPrefabId, ItemPrefabMap},
-    planting::logic::PlantBundleMap,
+    planting::logic::PlantPrefabMap,
     plants::bundle::{PlantPrefab, PlantPrefabId},
     GameState,
 };
@@ -122,29 +122,14 @@ fn setup_prefabs(
     let map: HashMap<_, _> = plant_vec
         .plants
         .iter()
-        .enumerate()
-        .map(|(i, x)| {
-            let (bundle, maybe_grower, maybe_producer) = x.to_plant_bundle(PlantPrefabId(i));
-            (
-                PlantPrefabId(i),
-                (
-                    bundle,
-                    maybe_grower,
-                    maybe_producer,
-                    asset_server.load(x.texture.clone()),
-                ),
-            )
+        .map(|x| {
+            let texture: Handle<Image> = asset_server.load(x.texture.clone());
+            (x.id, (x.clone(), texture))
         })
         .collect();
-    commands.insert_resource(PlantBundleMap(map));
+    commands.insert_resource(PlantPrefabMap(map));
 
     let item_vec = items.get(&ip.items).unwrap();
-    let item_prefab_map: HashMap<_, _> = item_vec
-        .items
-        .iter()
-        .enumerate()
-        .map(|(i, x)| (ItemPrefabId(i), x.clone()))
-        .collect();
-
+    let item_prefab_map: HashMap<_, _> = item_vec.items.iter().map(|x| (x.id, x.clone())).collect();
     commands.insert_resource(ItemPrefabMap(item_prefab_map));
 }
