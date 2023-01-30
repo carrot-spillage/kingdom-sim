@@ -30,6 +30,11 @@ impl IntrinsicPlantResourceGrower {
     pub fn update(&mut self, maturity: f32) {
         self.current_quantity = (maturity * self.max_quantity as f32).ceil() as usize;
     }
+
+    // TODO: this looks like a hack. maybe it asks for redesigning the whole struct/countdown
+    pub(crate) fn max_out(&mut self) {
+        self.current_quantity = self.max_quantity;
+    }
 }
 
 pub fn grow_resource(mut growers: Query<(&Growing, &mut IntrinsicPlantResourceGrower)>) {

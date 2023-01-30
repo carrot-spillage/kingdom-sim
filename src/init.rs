@@ -191,7 +191,7 @@ fn init(
             &PlantMaturityStage::FullyGrown,
         );
 
-        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
         start_cutting_tree(&mut commands, worker_id, 300, tree_id);
@@ -209,7 +209,7 @@ fn init(
             &PlantMaturityStage::FullyGrown,
         );
 
-        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
         start_harvesting(&mut commands, worker_id, 300, bush_id);

@@ -46,6 +46,11 @@ impl PlantResourceProducer {
             self.countdown = Countdown::new(rand_period);
         }
     }
+
+    pub fn max_out(&mut self) {
+        // TODO: this looks like a hack. maybe it asks for redesigning the whole producer/countdown
+        self.current.quantity = self.max_quantity
+    }
 }
 
 pub fn produce_resources(mut producer_lists: Query<&mut PlantResourceProducer>) {

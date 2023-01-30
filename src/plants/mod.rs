@@ -41,6 +41,22 @@ pub fn spawn_plant(
 ) -> Entity {
     let (plant_bundle, maybe_resource_grower, maybe_producer, maybe_growing, maybe_germinator) =
         prefab.to_plant_components(maturity_state);
+    let maybe_maturity_based_producer = maybe_producer.map(|producer| match maturity_state {
+        PlantMaturityStage::Germ => producer,
+        PlantMaturityStage::FullyGrown => {
+            let mut maxed_producer = producer.clone();
+            maxed_producer.max_out();
+            maxed_producer
+        }
+    });
+    let maybe_maturity_based_grower = maybe_resource_grower.map(|grower| match maturity_state {
+        PlantMaturityStage::Germ => grower,
+        PlantMaturityStage::FullyGrown => {
+            let mut maxed_grower = grower.clone();
+            maxed_grower.max_out();
+            maxed_grower
+        }
+    });
     commands
         .spawn((
             plant_bundle,
@@ -63,10 +79,12 @@ pub fn spawn_plant(
                 ..Default::default()
             },
         ))
-        .insert_if(maybe_resource_grower.is_some(), || {
-            maybe_resource_grower.unwrap()
+        .insert_if(maybe_maturity_based_grower.is_some(), || {
+            maybe_maturity_based_grower.unwrap()
         })
-        .insert_if(maybe_producer.is_some(), || maybe_producer.unwrap())
+        .insert_if(maybe_maturity_based_producer.is_some(), || {
+            maybe_maturity_based_producer.unwrap()
+        })
         .insert_if(maybe_growing.is_some(), || maybe_growing.unwrap())
         .insert_if(maybe_germinator.is_some(), || maybe_germinator.unwrap())
         .id()
