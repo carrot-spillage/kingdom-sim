@@ -14,6 +14,8 @@ use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
+    cutting_tree::start_cutting_tree,
+    harvesting::start_harvesting,
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
@@ -166,28 +168,53 @@ fn init(
     // MOVE TO THE WORK ENTITY
     // Use move_to_work()
 
-    for _ in 0..10 {
-        let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    // for _ in 0..20 {
+    //     let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+    //     let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
+    //     spawn_plant(
+    //         &mut commands,
+    //         prefab,
+    //         texture.clone(),
+    //         position,
+    //         &PlantMaturityStage::FullyGrown,
+    //     );
+    // }
+
+    for _ in 0..3 {
+        let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
-        spawn_plant(
+        let tree_id = spawn_plant(
             &mut commands,
             prefab,
             texture.clone(),
-            position,
+            tree_pos,
             &PlantMaturityStage::FullyGrown,
         );
+
+        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+
+        start_cutting_tree(&mut commands, worker_id, 300, tree_id);
+        // order to cut tree
     }
 
-    for _ in 0..5 {
-        let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    for _ in 0..2 {
+        let bush_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(2)).unwrap();
-        spawn_plant(
+        let bush_id = spawn_plant(
             &mut commands,
             prefab,
             texture.clone(),
-            position,
+            bush_pos,
             &PlantMaturityStage::FullyGrown,
         );
+
+        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+
+        start_harvesting(&mut commands, worker_id, 300, bush_id);
+
+        // order to gather berries
     }
 }
 

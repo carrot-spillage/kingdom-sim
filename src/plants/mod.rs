@@ -49,7 +49,10 @@ pub fn spawn_plant(
                 texture,
                 transform: Transform {
                     translation: hack_3d_position_to_2d(position),
-                    scale: Vec3::new(0.0, 0.0, 1.0),
+                    scale: match maturity_state {
+                        PlantMaturityStage::Germ => Vec3::new(0.0, 0.0, 1.0),
+                        PlantMaturityStage::FullyGrown => Vec3::new(1.0, 1.0, 1.0),
+                    },
                     ..Transform::default()
                 },
                 sprite: Sprite {

@@ -11,6 +11,7 @@ mod planned_work;
 mod resource_gathering;
 
 mod crafting_progress;
+mod cutting_tree;
 mod items;
 mod planting;
 mod planting_crops;
@@ -18,14 +19,15 @@ mod plants;
 mod resources;
 mod skills;
 mod stockpile;
-mod tree_cutting;
 mod work_progress;
+mod harvesting;
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
+use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;
 
@@ -38,11 +40,11 @@ use init::{InitPlugin, WorldParams};
 
 use movement::MovementPlugin;
 
+use cutting_tree::TreeCuttingPlugin;
 use planned_work::WorkOnArrivalPlugin;
 use plants::PlantsPlugin;
 use resource_gathering::ResourceGatheringJobPlugin;
 use resources::ResourcesPlugin;
-use tree_cutting::TreeCuttingPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -78,6 +80,7 @@ impl Plugin for GamePlugin {
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
             .add_plugin(PlantsPlugin)
+            .add_plugin(HarvestingPlugin)
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
