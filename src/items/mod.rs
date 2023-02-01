@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Res, Resource, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform},
     sprite::SpriteBundle,
     utils::hashbrown::HashMap,
 };
@@ -86,7 +86,7 @@ pub struct ItemTakingResult {
 }
 
 #[derive(Resource, Debug)]
-pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, ItemPrefab>);
+pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, (ItemPrefab, Handle<Image>)>);
 
 // pub struct ItemPlugin;
 
@@ -138,7 +138,7 @@ impl ItemGroup {
 
 pub fn spawn_item_group(
     commands: &mut Commands,
-    textures: &Res<TextureAssets>,
+    texture: Handle<Image>,
     item_group: ItemGroup,
     position: Vec3,
     is_in_stockpile: bool,
@@ -149,7 +149,7 @@ pub fn spawn_item_group(
         .insert(Position(position))
         .insert(item_group)
         .insert(SpriteBundle {
-            texture: textures.logs.clone(),
+            texture,
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
                 scale: Vec3::new(0.3, 0.3, 1.0),

@@ -1,13 +1,11 @@
-use crate::common::{ClaimedBy, Countdown, SimpleDestructible};
+use crate::common::{ClaimedBy, Countdown, NeedsDestroying, SimpleDestructible};
 use bevy::prelude::{Commands, Component, Entity, Query};
 
+#[derive(Debug)]
 enum AdvanceResult {
     Continuing(Countdown, SimpleDestructible),
     Completed,
 }
-
-#[derive(Component)]
-struct NeedsDestroying;
 
 #[derive(Component)]
 pub struct TreeCutter {
@@ -26,6 +24,7 @@ pub fn handle_task_progress(
         if let Ok(mut destructible) = destructibles.get_mut(tree_cutter.target_id) {
             let countdown = tree_hit_countdown.0;
             let result = advance(countdown, 20.0, destructible.clone());
+
             match result {
                 AdvanceResult::Continuing(updated_countdown, updated_destructible) => {
                     *destructible = updated_destructible;

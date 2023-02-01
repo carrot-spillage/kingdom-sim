@@ -1,11 +1,11 @@
 pub mod bundle;
+mod destruction;
 mod intrinsic_resource;
 mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, Handle, Image, Plugin, Query, Rect, Res, SystemSet, Transform, Vec2,
-        Vec3,
+        App, Commands, Entity, Handle, Image, Plugin, Query, Res, SystemSet, Transform, Vec2, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -19,6 +19,7 @@ use crate::{
 
 use self::{
     bundle::{Germinator, GerminatorParams, Growing, PlantPrefab, PlantPrefabId},
+    destruction::break_into_resources,
     intrinsic_resource::grow_resource,
     resource_producer::produce_resources,
 };
@@ -134,7 +135,8 @@ impl Plugin for PlantsPlugin {
                 .with_system(grow)
                 .with_system(germinate)
                 .with_system(grow_resource)
-                .with_system(produce_resources),
+                .with_system(produce_resources)
+                .with_system(break_into_resources),
         );
     }
 

@@ -130,6 +130,13 @@ fn setup_prefabs(
     commands.insert_resource(PlantPrefabMap(map));
 
     let item_vec = items.get(&ip.items).unwrap();
-    let item_prefab_map: HashMap<_, _> = item_vec.items.iter().map(|x| (x.id, x.clone())).collect();
+    let item_prefab_map: HashMap<_, _> = item_vec
+        .items
+        .iter()
+        .map(|x| {
+            let texture: Handle<Image> = asset_server.load(x.textures.dropped.clone());
+            (x.id, (x.clone(), texture))
+        })
+        .collect();
     commands.insert_resource(ItemPrefabMap(item_prefab_map));
 }

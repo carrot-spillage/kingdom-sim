@@ -117,19 +117,19 @@ fn init(
     // }
 
     // RESOURCES
-    for _ in 0..10 {
-        let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-        spawn_resource(
-            &mut commands,
-            &textures,
-            ResourceChunk {
-                kind: crate::resources::ResourceKind::Wood,
-                quantity: 5,
-            },
-            position,
-            false,
-        );
-    }
+    // for _ in 0..10 {
+    //     let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    //     spawn_resource(
+    //         &mut commands,
+    //         &textures,
+    //         ResourceChunk {
+    //             kind: crate::resources::ResourceKind::Wood,
+    //             quantity: 5,
+    //         },
+    //         position,
+    //         false,
+    //     );
+    // }
 
     let house_textures = BuildingTextureSet {
         in_progress: vec![textures.house_in_progress.clone()],
@@ -194,7 +194,7 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_cutting_tree(&mut commands, worker_id, 300, tree_id);
+        start_cutting_tree(&mut commands, worker_id, 3, tree_id);
         // order to cut tree
     }
 
@@ -212,7 +212,7 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_harvesting(&mut commands, worker_id, 300, bush_id);
+        start_harvesting(&mut commands, worker_id, 3, bush_id);
 
         // order to gather berries
     }

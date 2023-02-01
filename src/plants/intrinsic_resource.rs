@@ -1,15 +1,14 @@
 use bevy::prelude::{Component, Query};
 use rand::Rng;
 
-use crate::items::ItemPrefabId;
+use crate::items::{ItemGroup, ItemPrefabId};
 
 use super::bundle::{Growing, Range};
 
 #[derive(Component, Clone, Debug)]
 pub struct IntrinsicPlantResourceGrower {
-    pub item_prefab_id: ItemPrefabId,
+    pub item_group: ItemGroup,
     pub max_quantity: usize,
-    pub current_quantity: usize,
 }
 impl IntrinsicPlantResourceGrower {
     pub fn new(
@@ -22,18 +21,20 @@ impl IntrinsicPlantResourceGrower {
         );
         IntrinsicPlantResourceGrower {
             max_quantity,
-            current_quantity: 0,
-            item_prefab_id,
+            item_group: ItemGroup {
+                prefab_id: item_prefab_id,
+                quantity: 0,
+            },
         }
     }
 
     pub fn update(&mut self, maturity: f32) {
-        self.current_quantity = (maturity * self.max_quantity as f32).ceil() as usize;
+        self.item_group.quantity = (maturity * self.max_quantity as f32).ceil() as usize;
     }
 
     // TODO: this looks like a hack. maybe it asks for redesigning the whole struct/countdown
     pub(crate) fn max_out(&mut self) {
-        self.current_quantity = self.max_quantity;
+        self.item_group.quantity = self.max_quantity;
     }
 }
 

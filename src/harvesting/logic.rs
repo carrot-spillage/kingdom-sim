@@ -41,13 +41,13 @@ pub fn handle_task_progress(
 pub fn start_harvesting(
     commands: &mut Commands,
     worker_id: Entity,
-    hit_interval: usize,
+    interval: usize,
     target_id: Entity,
 ) {
     commands.entity(target_id).insert(ClaimedBy(worker_id));
     commands.entity(worker_id).insert((
         Harvester { target_id },
-        HarvestBatchCountdown(Countdown::new(hit_interval)),
+        HarvestBatchCountdown(Countdown::new(interval)),
     ));
 }
 

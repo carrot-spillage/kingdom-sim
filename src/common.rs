@@ -3,6 +3,9 @@ use bevy::prelude::{Component, Entity};
 #[derive(Component)]
 pub struct CreationProgress(pub f32);
 
+#[derive(Component)]
+pub struct NeedsDestroying;
+
 /**
  * Means player's workers are NOT allowed to claim this entity for any other task.
  */
