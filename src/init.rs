@@ -16,6 +16,7 @@ use crate::{
     },
     cutting_tree::start_cutting_tree,
     harvesting::start_harvesting,
+    items::CarrierInventory,
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
@@ -212,7 +213,7 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_harvesting(&mut commands, worker_id, 3, bush_id);
+        start_harvesting(&mut commands, worker_id, bush_id);
 
         // order to gather berries
     }
@@ -241,11 +242,16 @@ fn spawn_worker(
                 (SkillType::None, 0.5),
             ]),
         },
+        inventory: CarrierInventory {
+            items: vec![],
+            max_weight: 50,
+        },
         walker: Walker {
             max_speed: 2.0,
             current_speed: 0.0,
             acceleration: 0.5,
         },
+
         position: Position(position),
         sprite: SpriteBundle {
             texture: textures.peasant.clone(),
@@ -283,4 +289,5 @@ struct WorkerBundle {
     walker: Walker,
     position: Position,
     sprite: SpriteBundle,
+    inventory: CarrierInventory,
 }

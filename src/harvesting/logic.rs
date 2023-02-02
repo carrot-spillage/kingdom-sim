@@ -1,8 +1,12 @@
-use crate::common::{ClaimedBy, Countdown, SimpleDestructible};
-use bevy::prelude::{Commands, Component, Entity, Query};
+use crate::{
+    common::{ClaimedBy, Countdown, SimpleDestructible},
+    items::{CarrierInventory, ItemGroup, ItemPrefabMap, ItemTakingResult},
+    plants::PlantResourceProducer,
+};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 enum AdvanceResult {
-    Continuing(Countdown, SimpleDestructible),
+    Continuing(Countdown),
     Completed,
 }
 
@@ -16,19 +20,27 @@ pub struct HarvestBatchCountdown(Countdown);
 
 pub fn handle_task_progress(
     mut commands: Commands,
-    mut tree_cutters_query: Query<(Entity, &Harvester, &mut HarvestBatchCountdown)>,
-    mut destructibles: Query<&mut SimpleDestructible>,
+    mut harversters_query: Query<(
+        Entity,
+        &mut CarrierInventory,
+        &Harvester,
+        &mut HarvestBatchCountdown,
+    )>,
+    mut producers: Query<&mut PlantResourceProducer>,
+    items: Res<ItemPrefabMap>,
 ) {
-    for (worker_id, tree_cutter, mut tree_hit_countdown) in &mut tree_cutters_query {
-        if let Ok(mut destructible) = destructibles.get_mut(tree_cutter.target_id) {
-            let countdown = tree_hit_countdown.0;
-            let result = advance(countdown, 20.0, destructible.clone());
+    for (worker_id, mut inventory, tree_cutter, mut harvest_batch_countdown) in
+        &mut harversters_query
+    {
+        if let Ok(mut producer) = producers.get_mut(tree_cutter.target_id) {
+            let countdown = harvest_batch_countdown.0;
+            let result = advance(countdown, &mut producer, &mut inventory, &items);
             match result {
-                AdvanceResult::Continuing(updated_countdown, updated_destructible) => {
-                    *destructible = updated_destructible;
-                    *tree_hit_countdown = HarvestBatchCountdown(updated_countdown)
+                AdvanceResult::Continuing(updated_countdown) => {
+                    *harvest_batch_countdown = HarvestBatchCountdown(updated_countdown)
                 }
                 AdvanceResult::Completed => {
+                    println!("Inventory now has {:?}", inventory);
                     cleanup(&mut commands, worker_id, Some(tree_cutter.target_id));
                 }
             }
@@ -38,35 +50,41 @@ pub fn handle_task_progress(
     }
 }
 
-pub fn start_harvesting(
-    commands: &mut Commands,
-    worker_id: Entity,
-    interval: usize,
-    target_id: Entity,
-) {
+pub fn start_harvesting(commands: &mut Commands, worker_id: Entity, target_id: Entity) {
     commands.entity(target_id).insert(ClaimedBy(worker_id));
     commands.entity(worker_id).insert((
         Harvester { target_id },
-        HarvestBatchCountdown(Countdown::new(interval)),
+        HarvestBatchCountdown(Countdown::new(10)), // TODO: make countdown worker performance-related
     ));
 }
 
 fn advance(
     mut countdown: Countdown,
-    task_effeciency: f32,
-    mut simple_destructible: SimpleDestructible,
+    resource_producer: &mut PlantResourceProducer,
+    receiver_inventory: &mut CarrierInventory,
+    items: &Res<ItemPrefabMap>,
 ) -> AdvanceResult {
     countdown.tick();
 
     if countdown.is_done() {
-        simple_destructible.current_health =
-            (simple_destructible.current_health - task_effeciency).max(0.0);
-        if simple_destructible.current_health == 0.0 {
-            return AdvanceResult::Completed;
-        }
+        let prefab = items
+            .0
+            .get(&resource_producer.current.prefab_id)
+            .unwrap()
+            .0
+            .clone();
+
+        let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);
+
+        resource_producer.current = rest.unwrap_or(ItemGroup {
+            quantity: 0,
+            prefab_id: resource_producer.current.prefab_id,
+        });
+
+        return AdvanceResult::Completed;
     }
 
-    AdvanceResult::Continuing(countdown, simple_destructible)
+    AdvanceResult::Continuing(countdown)
 }
 
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {

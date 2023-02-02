@@ -33,10 +33,35 @@ Villager
 
 */
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct CarrierInventory {
-    items: Vec<ItemGroup>,
-    max_weight: usize,
+    pub items: Vec<ItemGroup>,
+    pub max_weight: usize,
+}
+impl CarrierInventory {
+    pub(crate) fn put_and_get_rest(
+        &mut self,
+        item_prefab: &ItemPrefab,
+        picked_item_group: ItemGroup,
+    ) -> Option<ItemGroup> {
+        let ItemTakingResult { picked, left } =
+            picked_item_group.take(item_prefab, self.max_weight);
+
+        let maybe_item_group = self
+            .items
+            .iter_mut()
+            .find(|x| x.prefab_id == item_prefab.id);
+
+        if let Some(picked_item_group) = picked {
+            if let Some(item_group) = maybe_item_group {
+                item_group.quantity += picked_item_group.quantity;
+            } else {
+                self.items.push(picked_item_group);
+            }
+        }
+
+        left
+    }
 }
 
 #[derive(Component)]
@@ -105,14 +130,14 @@ pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, (ItemPrefab, Handle<Image>)>)
 // }
 
 impl ItemGroup {
-    fn take(&self, item_prefab: &ItemPrefab, max_weight: usize) -> ItemTakingResult {
+    pub fn take(&self, item_prefab: &ItemPrefab, max_weight: usize) -> ItemTakingResult {
         let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as usize;
 
         if picked_quantity >= self.quantity {
             ItemTakingResult {
                 picked: Some(ItemGroup {
                     quantity: self.quantity,
-                    prefab_id: item_prefab.id,
+                    prefab_id: self.prefab_id,
                 }),
                 left: None,
             }
@@ -125,11 +150,11 @@ impl ItemGroup {
             ItemTakingResult {
                 picked: Some(ItemGroup {
                     quantity: picked_quantity,
-                    prefab_id: item_prefab.id,
+                    prefab_id: self.prefab_id,
                 }),
                 left: Some(ItemGroup {
                     quantity: self.quantity - picked_quantity,
-                    prefab_id: item_prefab.id,
+                    prefab_id: self.prefab_id,
                 }),
             }
         }
