@@ -1,7 +1,7 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform},
-    sprite::SpriteBundle,
+    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform, Vec2},
+    sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
 use conditional_commands::ConditionalInsertBundleExt;
@@ -177,8 +177,13 @@ pub fn spawn_item_group(
             texture,
             transform: Transform {
                 translation: hack_3d_position_to_2d(position),
-                scale: Vec3::new(0.3, 0.3, 1.0),
+                scale: Vec3::new(1.0, 1.0, 1.0),
                 ..Transform::default()
+            },
+            sprite: Sprite {
+                anchor: bevy::sprite::Anchor::BottomCenter,
+                custom_size: Some(Vec2::new(24.0, 24.0)),
+                ..Default::default()
             },
             ..Default::default()
         })
