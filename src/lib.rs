@@ -12,6 +12,7 @@ mod resource_gathering;
 
 mod crafting_progress;
 mod cutting_tree;
+mod harvesting;
 mod items;
 mod planting;
 mod planting_crops;
@@ -19,8 +20,8 @@ mod plants;
 mod resources;
 mod skills;
 mod stockpile;
+mod tasks;
 mod work_progress;
-mod harvesting;
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
@@ -31,6 +32,7 @@ use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;
 
+use tasks::TaskPlugin;
 use worker_job_tooltip::WorkerJobTooltipPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -75,6 +77,7 @@ impl Plugin for GamePlugin {
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
             .add_plugin(LoadingPlugin)
             // .add_plugin(MenuPlugin)
+            .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
             .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)

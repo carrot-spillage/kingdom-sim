@@ -1,9 +1,10 @@
 use crate::{
-    common::{ClaimedBy, Countdown},
+    common::Countdown,
     plants::{
         bundle::{PlantPrefab, PlantPrefabId},
         spawn_plant, PlantMaturityStage,
     },
+    tasks::IdlingWorker,
 };
 use bevy::{
     prelude::{Commands, Component, Entity, Handle, Image, Query, Res, Resource, Vec3},
@@ -50,16 +51,15 @@ pub fn start_planting(
     commands: &mut Commands,
     planting: Planting,
     worker_id: Entity,
-    skill_value: f32,
-    target_id: Entity,
+    performance: f32,
 ) {
-    commands.entity(target_id).insert(ClaimedBy(worker_id));
-    let countdown = PlantingCountdown(Countdown::new((skill_value * 30.0).floor() as usize));
+    let countdown = PlantingCountdown(Countdown::new((performance * 30.0).floor() as usize));
     commands.entity(worker_id).insert((planting, countdown));
 }
 
 fn cleanup(commands: &mut Commands, worker_id: Entity) {
     commands
         .entity(worker_id)
-        .remove::<(Planting, PlantingCountdown)>();
+        .remove::<(Planting, PlantingCountdown)>()
+        .insert(IdlingWorker);
 }

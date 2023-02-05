@@ -1,7 +1,8 @@
 use crate::{
-    common::{ClaimedBy, Countdown, SimpleDestructible},
+    common::{ClaimedBy, Countdown},
     items::{CarrierInventory, ItemGroup, ItemPrefabMap, ItemTakingResult},
     plants::PlantResourceProducer,
+    tasks::IdlingWorker,
 };
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
@@ -50,11 +51,16 @@ pub fn handle_task_progress(
     }
 }
 
-pub fn start_harvesting(commands: &mut Commands, worker_id: Entity, target_id: Entity) {
+pub fn start_harvesting(
+    commands: &mut Commands,
+    worker_id: Entity,
+    target_id: Entity,
+    performance: f32,
+) {
     commands.entity(target_id).insert(ClaimedBy(worker_id));
     commands.entity(worker_id).insert((
         Harvester { target_id },
-        HarvestBatchCountdown(Countdown::new(10)), // TODO: make countdown worker performance-related
+        HarvestBatchCountdown(Countdown::new((10.0 / performance).ceil() as usize)), // TODO: make countdown worker performance-related
     ));
 }
 
@@ -90,7 +96,8 @@ fn advance(
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {
     commands
         .entity(worker_id)
-        .remove::<(Harvester, HarvestBatchCountdown)>();
+        .remove::<(Harvester, HarvestBatchCountdown)>()
+        .insert(IdlingWorker);
 
     if let Some(target_id) = maybe_target_id {
         commands.entity(target_id).remove::<ClaimedBy>();

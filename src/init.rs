@@ -21,7 +21,7 @@ use crate::{
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
     plants::{bundle::PlantPrefabId, spawn_plant, PlantMaturityStage},
-    resources::{spawn_resource, ResourceCarrier, ResourceChunk, ResourceKind},
+    resources::{ResourceCarrier, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
     worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
@@ -195,7 +195,7 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_cutting_tree(&mut commands, worker_id, 3, tree_id);
+        start_cutting_tree(&mut commands, worker_id, tree_id, 1.0);
         // order to cut tree
     }
 
@@ -213,7 +213,7 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_harvesting(&mut commands, worker_id, bush_id);
+        start_harvesting(&mut commands, worker_id, bush_id, 1.0);
 
         // order to gather berries
     }
