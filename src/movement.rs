@@ -3,7 +3,7 @@ use bevy::{
     prelude::{App, Commands, Component, Entity, EventWriter, Plugin, Query, SystemSet, Transform},
 };
 
-use crate::GameState;
+use crate::{tasks::IdlingWorker, GameState};
 
 #[derive(Component)]
 pub struct MovingToPosition {
@@ -65,7 +65,7 @@ impl Plugin for MovementPlugin {
             );
     }
 }
-
+// TODO: deprecate ArrivedToPositionEvent and use IdlingWorker instead?
 fn move_to_position(
     mut moving: Query<(Entity, &mut Walker, &MovingToPosition)>,
     mut positions: Query<(&mut Position, &mut Transform)>,
@@ -96,7 +96,6 @@ fn move_to_entity(
     mut moving: Query<(Entity, &mut Walker, &MovingToEntity)>,
     mut positions_and_transforms: Query<(&mut Position, Option<&mut Transform>)>,
     mut commands: Commands,
-    mut arrivals: EventWriter<ArrivedToEntityEvent>,
 ) {
     for (entity_id, mut walker, moving) in moving.iter_mut() {
         let destination_position = positions_and_transforms
@@ -116,12 +115,10 @@ fn move_to_entity(
         } else {
             println!("Stopped {:?}", entity_id);
             walker.stop();
-            commands.entity(entity_id).remove::<MovingToEntity>();
-
-            arrivals.send(ArrivedToEntityEvent {
-                moving_entity: entity_id,
-                destination_entity: moving.destination_entity,
-            })
+            commands
+                .entity(entity_id)
+                .remove::<MovingToEntity>()
+                .insert(IdlingWorker);
         }
     }
 }

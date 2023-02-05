@@ -60,7 +60,7 @@ pub fn start_harvesting(
     commands.entity(target_id).insert(ClaimedBy(worker_id));
     commands.entity(worker_id).insert((
         Harvester { target_id },
-        HarvestBatchCountdown(Countdown::new((10.0 / performance).ceil() as usize)), // TODO: make countdown worker performance-related
+        HarvestBatchCountdown(Countdown::new((100.0 / performance).ceil() as usize)), // TODO: make countdown worker performance-related
     ));
 }
 

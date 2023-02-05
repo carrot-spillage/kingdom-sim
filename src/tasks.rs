@@ -3,6 +3,7 @@ use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, 
 use crate::{
     cutting_tree::start_cutting_tree,
     harvesting::start_harvesting,
+    movement::MovingToEntity,
     planting::logic::{start_planting, Planting},
     GameState,
 };
@@ -12,7 +13,7 @@ pub struct TaskPlugin;
 impl Plugin for TaskPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_enter(GameState::Playing).with_system(proceed_to_next_task),
+            SystemSet::on_update(GameState::Playing).with_system(proceed_to_next_task),
         );
     }
 
@@ -25,11 +26,11 @@ pub enum WorkerTask {
     CutTree { target_id: Entity },
     Plant { planting: Planting },
     Harvest { target_id: Entity },
-    MoveTo { target_id: Entity },
+    MoveToTarget { target_id: Entity },
 }
 
 #[derive(Component)]
-pub struct WorkerTasks(Vec<WorkerTask>);
+pub struct WorkerTasks(pub Vec<WorkerTask>);
 
 #[derive(Component)]
 pub struct IdlingWorker;
@@ -40,6 +41,7 @@ fn proceed_to_next_task(
 ) {
     for (worker_id, mut tasks) in &mut idling_workers {
         let next_task = tasks.0.pop().unwrap();
+        commands.entity(worker_id).remove::<IdlingWorker>();
         arrange_next_task(&mut commands, worker_id, next_task);
         if tasks.0.is_empty() {
             commands.entity(worker_id).remove::<WorkerTasks>();
@@ -50,10 +52,15 @@ fn proceed_to_next_task(
 fn arrange_next_task(commands: &mut Commands, worker_id: Entity, next_task: WorkerTask) {
     match next_task {
         WorkerTask::CutTree { target_id } => {
-            start_cutting_tree(commands, worker_id, target_id, 1.0)
+            start_cutting_tree(commands, worker_id, target_id, 1.0);
         }
         WorkerTask::Harvest { target_id } => start_harvesting(commands, worker_id, target_id, 1.0),
         WorkerTask::Plant { planting } => start_planting(commands, planting, worker_id, 1.0),
-        WorkerTask::MoveTo { target_id } => todo!(),
+        WorkerTask::MoveToTarget { target_id } => {
+            commands.entity(worker_id).insert(MovingToEntity {
+                destination_entity: target_id,
+                sufficient_range: 20.0,
+            });
+        }
     }
 }

@@ -15,7 +15,6 @@ use crate::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
     cutting_tree::start_cutting_tree,
-    harvesting::start_harvesting,
     items::CarrierInventory,
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
@@ -24,6 +23,7 @@ use crate::{
     resources::{ResourceCarrier, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
+    tasks::{IdlingWorker, WorkerTask, WorkerTasks},
     worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
     GameState,
 };
@@ -195,8 +195,11 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_cutting_tree(&mut commands, worker_id, tree_id, 1.0);
-        // order to cut tree
+        commands
+            .entity(worker_id)
+            .insert(WorkerTasks(vec![WorkerTask::CutTree {
+                target_id: tree_id,
+            }]));
     }
 
     for _ in 0..2 {
@@ -213,9 +216,11 @@ fn init(
         let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
         let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
 
-        start_harvesting(&mut commands, worker_id, bush_id, 1.0);
-
-        // order to gather berries
+        commands
+            .entity(worker_id)
+            .insert(WorkerTasks(vec![WorkerTask::Harvest {
+                target_id: bush_id,
+            }]));
     }
 }
 
@@ -251,7 +256,6 @@ fn spawn_worker(
             current_speed: 0.0,
             acceleration: 0.5,
         },
-
         position: Position(position),
         sprite: SpriteBundle {
             texture: textures.peasant.clone(),
@@ -272,6 +276,7 @@ fn spawn_worker(
         .spawn(bundle)
         .insert(Position(position))
         .insert(ResourceCarrier { max_volume: 120 })
+        .insert(IdlingWorker)
         .with_children(|parent| {
             id = Some(parent.spawn(create_tooltip_bundle(13.0, &fonts)).id());
         })
