@@ -1,9 +1,8 @@
-use std::f32::consts::PI;
-
-use bevy::prelude::{Bundle, Component, Vec2};
-use rand::{rngs::ThreadRng, Rng};
-
 use crate::{common::Countdown, common::SimpleDestructible, items::ItemPrefabId};
+use bevy::prelude::{Bundle, Component, Vec2};
+use bevy_turborand::prelude::*;
+use rand::{rngs::ThreadRng, Rng};
+use std::f32::consts::PI;
 
 use super::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,

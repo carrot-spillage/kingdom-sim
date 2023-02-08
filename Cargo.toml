@@ -34,6 +34,7 @@ rand = "0.8"
 itertools = "0.10"
 conditional_commands = "0.7"
 bevy_common_assets = { version = "0.4", features = ["yaml"] }
+bevy_turborand = { version = "0.4" }
 serde = "1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]

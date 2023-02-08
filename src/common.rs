@@ -1,4 +1,7 @@
+use std::ops::{Range, RangeBounds};
+
 use bevy::prelude::{Component, Entity};
+use bevy_turborand::prelude::*;
 
 #[derive(Component)]
 pub struct CreationProgress(pub f32);
@@ -23,6 +26,34 @@ pub struct SimpleDestructible {
 pub struct Countdown {
     initial_value: usize,
     current_value: usize,
+}
+
+pub struct VariatingCountdown {
+    range: Range<usize>,
+    current_value: usize,
+}
+
+impl VariatingCountdown {
+    pub fn new(rng: &mut RngComponent, range: Range<usize>) -> Self {
+        let current_value = rng.usize(range.clone());
+        Self {
+            range,
+            current_value,
+        }
+    }
+
+    pub fn tick(&mut self, rng: &mut RngComponent) {
+        let initial_value = rng.usize(self.range.clone());
+        if self.is_done() {
+            self.current_value = initial_value
+        } else {
+            self.current_value -= 1
+        }
+    }
+
+    pub fn is_done(&self) -> bool {
+        self.current_value == 0
+    }
 }
 
 impl Countdown {

@@ -34,16 +34,11 @@ pub fn handle_task_progress(
         &mut harversters_query
     {
         if let Ok(mut producer) = producers.get_mut(tree_cutter.target_id) {
-            let countdown = harvest_batch_countdown.0;
-            let result = advance(countdown, &mut producer, &mut inventory, &items);
-            match result {
-                AdvanceResult::Continuing(updated_countdown) => {
-                    *harvest_batch_countdown = HarvestBatchCountdown(updated_countdown)
-                }
-                AdvanceResult::Completed => {
-                    println!("Inventory now has {:?}", inventory);
-                    cleanup(&mut commands, worker_id, Some(tree_cutter.target_id));
-                }
+            harvest_batch_countdown.0.tick();
+            if harvest_batch_countdown.0.is_done() {
+                produce(&mut producer, &mut inventory, &items);
+                println!("Inventory now has {:?}", inventory);
+                cleanup(&mut commands, worker_id, Some(tree_cutter.target_id));
             }
         } else {
             cleanup(&mut commands, worker_id, None);
@@ -64,33 +59,24 @@ pub fn start_harvesting(
     ));
 }
 
-fn advance(
-    mut countdown: Countdown,
+fn produce(
     resource_producer: &mut PlantResourceProducer,
     receiver_inventory: &mut CarrierInventory,
     items: &Res<ItemPrefabMap>,
-) -> AdvanceResult {
-    countdown.tick();
+) {
+    let prefab = items
+        .0
+        .get(&resource_producer.current.prefab_id)
+        .unwrap()
+        .0
+        .clone();
 
-    if countdown.is_done() {
-        let prefab = items
-            .0
-            .get(&resource_producer.current.prefab_id)
-            .unwrap()
-            .0
-            .clone();
+    let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);
 
-        let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);
-
-        resource_producer.current = rest.unwrap_or(ItemGroup {
-            quantity: 0,
-            prefab_id: resource_producer.current.prefab_id,
-        });
-
-        return AdvanceResult::Completed;
-    }
-
-    AdvanceResult::Continuing(countdown)
+    resource_producer.current = rest.unwrap_or(ItemGroup {
+        quantity: 0,
+        prefab_id: resource_producer.current.prefab_id,
+    });
 }
 
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {

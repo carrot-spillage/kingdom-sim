@@ -1,7 +1,8 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet},
+    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, ResMut, SystemSet},
 };
+use bevy_turborand::GlobalRng;
 
 use crate::{
     building::{

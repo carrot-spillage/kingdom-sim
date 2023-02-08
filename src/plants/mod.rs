@@ -5,10 +5,12 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, Handle, Image, Plugin, Query, Res, SystemSet, Transform, Vec2, Vec3,
+        App, Commands, Entity, Handle, Image, Plugin, Query, Res, ResMut, SystemSet, Transform,
+        Vec2, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
+use bevy_turborand::{GlobalRng, RngComponent};
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
@@ -35,6 +37,7 @@ pub enum PlantMaturityStage {
 
 pub fn spawn_plant(
     commands: &mut Commands,
+    global_rng: &mut ResMut<GlobalRng>,
     prefab: &PlantPrefab,
     texture: Handle<Image>,
     position: Vec3,
@@ -61,6 +64,7 @@ pub fn spawn_plant(
     commands
         .spawn((
             plant_bundle,
+            RngComponent::from(global_rng),
             Position(position),
             SpriteBundle {
                 texture,
@@ -109,6 +113,7 @@ pub fn grow(
 
 pub fn germinate(
     mut commands: Commands,
+    mut global_rng: ResMut<GlobalRng>,
     plant_prefab_map: Res<PlantPrefabMap>,
     mut germinator_params_query: Query<(&PlantPrefabId, &Position, &mut Germinator)>,
 ) {
@@ -118,6 +123,7 @@ pub fn germinate(
             let (prefab, texture) = plant_prefab_map.0.get(plant_prefab_id).unwrap();
             spawn_plant(
                 &mut commands,
+                &mut global_rng,
                 prefab,
                 texture.clone(),
                 germ_position,

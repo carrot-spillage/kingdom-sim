@@ -1,8 +1,9 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, ResMut, Transform},
     sprite::SpriteBundle,
 };
+use bevy_turborand::GlobalRng;
 
 use crate::{movement::hack_3d_position_to_2d, resources::ResourceKind};
 

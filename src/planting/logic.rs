@@ -7,9 +7,10 @@ use crate::{
     tasks::IdlingWorker,
 };
 use bevy::{
-    prelude::{Commands, Component, Entity, Handle, Image, Query, Res, Resource, Vec3},
+    prelude::{Commands, Component, Entity, Handle, Image, Query, Res, ResMut, Resource, Vec3},
     utils::HashMap,
 };
+use bevy_turborand::GlobalRng;
 
 #[derive(Component)]
 pub struct Planting {
@@ -25,6 +26,7 @@ pub struct PlantPrefabMap(pub HashMap<PlantPrefabId, (PlantPrefab, Handle<Image>
 
 pub fn handle_task_progress(
     mut commands: Commands,
+    mut global_rng: ResMut<GlobalRng>,
     plants: Res<PlantPrefabMap>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
@@ -36,6 +38,7 @@ pub fn handle_task_progress(
             cleanup(&mut commands, worker_id);
             spawn_plant(
                 &mut commands,
+                &mut global_rng,
                 &prefab,
                 texture.clone(),
                 planting.position,

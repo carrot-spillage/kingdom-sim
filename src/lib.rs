@@ -28,6 +28,7 @@ use crate::loading::LoadingPlugin;
 
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
+use bevy_turborand::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;
@@ -76,6 +77,7 @@ impl Plugin for GamePlugin {
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
             .add_plugin(LoadingPlugin)
+            .add_plugin(RngPlugin::default())
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)

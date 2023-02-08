@@ -4,17 +4,18 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Camera2dBundle, Commands, Entity, Plugin, Res, Resource, SystemSet, Transform,
+        App, Bundle, Camera2dBundle, Commands, Entity, Plugin, Res, ResMut, Resource, SystemSet,
+        Transform,
     },
     sprite::{Sprite, SpriteBundle},
 };
+use bevy_turborand::{GlobalRng, RngComponent};
 use rand::Rng;
 
 use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
-    cutting_tree::start_cutting_tree,
     items::CarrierInventory,
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
@@ -48,6 +49,7 @@ pub struct WorldParams {
 fn init(
     world_params: Res<WorldParams>,
     mut commands: Commands,
+    mut global_rng: ResMut<GlobalRng>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
@@ -186,6 +188,7 @@ fn init(
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_id = spawn_plant(
             &mut commands,
+            &mut global_rng,
             prefab,
             texture.clone(),
             tree_pos,
@@ -193,7 +196,13 @@ fn init(
         );
 
         let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
-        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+        let worker_id = spawn_worker(
+            &mut commands,
+            &mut global_rng,
+            &textures,
+            &fonts,
+            worker_pos,
+        );
 
         commands
             .entity(worker_id)
@@ -207,6 +216,7 @@ fn init(
         let (prefab, texture) = plants.0.get(&PlantPrefabId(2)).unwrap();
         let bush_id = spawn_plant(
             &mut commands,
+            &mut global_rng,
             prefab,
             texture.clone(),
             bush_pos,
@@ -214,7 +224,13 @@ fn init(
         );
 
         let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
-        let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
+        let worker_id = spawn_worker(
+            &mut commands,
+            &mut global_rng,
+            &textures,
+            &fonts,
+            worker_pos,
+        );
 
         commands
             .entity(worker_id)
@@ -235,6 +251,7 @@ pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
 
 fn spawn_worker(
     commands: &mut Commands,
+    global_rng: &mut ResMut<GlobalRng>,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
     position: Vec3,
@@ -274,16 +291,19 @@ fn spawn_worker(
     let mut id = None::<Entity>;
     commands
         .spawn(bundle)
-        .insert(Position(position))
-        .insert(ResourceCarrier { max_volume: 120 })
-        .insert(IdlingWorker)
         .with_children(|parent| {
             id = Some(parent.spawn(create_tooltip_bundle(13.0, &fonts)).id());
         })
-        .insert(WorkerJobTooltip {
-            title: "".to_string(),
-            child: id.unwrap(),
-        })
+        .insert((
+            Position(position),
+            RngComponent::from(global_rng),
+            ResourceCarrier { max_volume: 120 },
+            IdlingWorker,
+            WorkerJobTooltip {
+                title: "".to_string(),
+                child: id.unwrap(),
+            },
+        ))
         .id()
 }
 
