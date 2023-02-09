@@ -68,9 +68,7 @@ fn advance(
     performance: f32,
     mut simple_destructible: SimpleDestructible,
 ) -> AdvanceResult {
-    countdown.tick();
-
-    if countdown.is_done() {
+    if countdown.tick_yield() {
         simple_destructible.current_health =
             (simple_destructible.current_health - (20.0 / performance)).max(0.0);
         if simple_destructible.current_health == 0.0 {

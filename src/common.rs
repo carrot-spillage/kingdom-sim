@@ -73,15 +73,13 @@ impl Countdown {
         }
     }
 
-    pub fn tick(&mut self) {
-        if self.is_done() {
-            self.current_value = self.initial_value
+    pub fn tick_yield(&mut self) -> bool {
+        if self.current_value == 0 {
+            self.current_value = self.initial_value;
+            true
         } else {
-            self.current_value -= 1
+            self.current_value -= 1;
+            false
         }
-    }
-
-    pub fn is_done(&self) -> bool {
-        self.current_value == 0
     }
 }

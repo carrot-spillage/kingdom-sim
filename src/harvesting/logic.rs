@@ -29,8 +29,7 @@ pub fn handle_task_progress(
         &mut harversters_query
     {
         if let Ok(mut producer) = producers.get_mut(tree_cutter.target_id) {
-            harvest_batch_countdown.0.tick();
-            if harvest_batch_countdown.0.is_done() {
+            if harvest_batch_countdown.0.tick_yield() {
                 produce(&mut producer, &mut inventory, &items);
                 println!("Inventory now has {:?}", inventory);
                 cleanup(&mut commands, worker_id, Some(tree_cutter.target_id));

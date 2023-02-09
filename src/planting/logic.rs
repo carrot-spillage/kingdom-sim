@@ -32,8 +32,7 @@ pub fn handle_task_progress(
 ) {
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
         let mut countdown = planting_countdown.0;
-        countdown.tick();
-        if countdown.is_done() {
+        if countdown.tick_yield() {
             let (prefab, texture) = plants.0.get(&planting.plant_prefab_id).unwrap();
             cleanup(&mut commands, worker_id);
             spawn_plant(
