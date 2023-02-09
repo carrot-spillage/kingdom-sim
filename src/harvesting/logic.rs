@@ -1,15 +1,10 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    items::{CarrierInventory, ItemGroup, ItemPrefabMap, ItemTakingResult},
+    items::{CarrierInventory, ItemGroup, ItemPrefabMap},
     plants::PlantResourceProducer,
     tasks::IdlingWorker,
 };
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
-
-enum AdvanceResult {
-    Continuing(Countdown),
-    Completed,
-}
 
 #[derive(Component)]
 pub struct Harvester {

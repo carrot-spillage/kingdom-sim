@@ -28,6 +28,7 @@ pub struct Countdown {
     current_value: usize,
 }
 
+#[derive(Clone, Debug)]
 pub struct VariatingCountdown {
     range: Range<usize>,
     current_value: usize,

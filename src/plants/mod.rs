@@ -10,7 +10,7 @@ use bevy::{
     },
     sprite::{Sprite, SpriteBundle},
 };
-use bevy_turborand::{GlobalRng, RngComponent};
+use bevy_turborand::GlobalRng;
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
@@ -44,7 +44,7 @@ pub fn spawn_plant(
     maturity_state: &PlantMaturityStage,
 ) -> Entity {
     let (plant_bundle, maybe_resource_grower, maybe_producer, maybe_growing, maybe_germinator) =
-        prefab.to_plant_components(maturity_state);
+        prefab.to_plant_components(maturity_state, global_rng);
     let maybe_maturity_based_producer = maybe_producer.map(|producer| match maturity_state {
         PlantMaturityStage::Germ => producer,
         PlantMaturityStage::FullyGrown => {
@@ -64,7 +64,6 @@ pub fn spawn_plant(
     commands
         .spawn((
             plant_bundle,
-            RngComponent::from(global_rng),
             Position(position),
             SpriteBundle {
                 texture,

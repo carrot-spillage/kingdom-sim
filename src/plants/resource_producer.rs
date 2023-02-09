@@ -1,9 +1,10 @@
-use bevy::prelude::{Component, Query};
-use rand::Rng;
+use std::ops::Range;
 
-use super::bundle::Range;
+use bevy::prelude::{Component, Query};
+use bevy_turborand::prelude::*;
+
 use crate::{
-    common::Countdown,
+    common::VariatingCountdown,
     items::{ItemGroup, ItemPrefabId},
 };
 
@@ -12,38 +13,31 @@ use crate::{
 pub struct PlantResourceProducer {
     pub current: ItemGroup,
     max_quantity: usize,
-    period_range: Range<usize>,
-    countdown: Countdown,
+    countdown: VariatingCountdown,
 }
 impl PlantResourceProducer {
     pub fn new(
         item_prefab_id: ItemPrefabId,
         max_quantity: usize,
         period_range: Range<usize>,
+        rng: &mut RngComponent,
     ) -> Self {
-        let mut rng = rand::thread_rng();
-        let rand_period = rng.gen_range(period_range.from..period_range.to);
-
         PlantResourceProducer {
             current: ItemGroup {
                 quantity: 0,
                 prefab_id: item_prefab_id,
             },
-            period_range,
             max_quantity,
-            countdown: Countdown::new(rand_period),
+            countdown: VariatingCountdown::new(rng, period_range),
         }
     }
 
-    fn tick(&mut self) {
-        self.countdown.tick();
+    fn tick(&mut self, rng: &mut RngComponent) {
+        self.countdown.tick(rng);
         if self.countdown.is_done() {
             if self.current.quantity < self.max_quantity {
                 self.current.quantity += 1;
             }
-            let mut rng = rand::thread_rng();
-            let rand_period = rng.gen_range(self.period_range.from..self.period_range.to);
-            self.countdown = Countdown::new(rand_period);
         }
     }
 
@@ -53,8 +47,10 @@ impl PlantResourceProducer {
     }
 }
 
-pub fn produce_resources(mut producer_lists: Query<&mut PlantResourceProducer>) {
-    for mut producer in &mut producer_lists {
-        producer.tick();
+pub fn produce_resources(
+    mut producer_lists: Query<(&mut PlantResourceProducer, &mut RngComponent)>,
+) {
+    for (mut producer, mut rng) in &mut producer_lists {
+        producer.tick(&mut rng);
     }
 }

@@ -1,5 +1,5 @@
 use crate::{common::Countdown, common::SimpleDestructible, items::ItemPrefabId};
-use bevy::prelude::{Bundle, Component, Vec2};
+use bevy::prelude::{Bundle, Component, ResMut, Vec2};
 use bevy_turborand::prelude::*;
 use rand::{rngs::ThreadRng, Rng};
 use std::f32::consts::PI;
@@ -86,6 +86,7 @@ pub struct PlantBundle {
     pub prefab_id: PlantPrefabId,
     pub germinator_params: GerminatorParams,
     pub simple_destructible: SimpleDestructible,
+    pub rng: RngComponent,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
@@ -120,6 +121,7 @@ impl PlantPrefab {
     pub fn to_plant_components(
         &self,
         maturity_state: &PlantMaturityStage,
+        global_rng: &mut ResMut<GlobalRng>,
     ) -> (
         PlantBundle,
         Option<IntrinsicPlantResourceGrower>,
@@ -127,6 +129,15 @@ impl PlantPrefab {
         Option<Growing>,
         Option<Germinator>,
     ) {
+        let mut rng = RngComponent::from(global_rng);
+        let maybe_resource_producer = self.resource_producer.map(|x| {
+            PlantResourceProducer::new(
+                x.item_prefab_id,
+                x.max_quantity,
+                x.period_range.from..x.period_range.to,
+                &mut rng,
+            )
+        });
         (
             PlantBundle {
                 prefab_id: self.id,
@@ -135,12 +146,11 @@ impl PlantPrefab {
                     max_health: self.health as f32,
                     current_health: self.health as f32,
                 },
+                rng,
             },
             self.intrinsic_resource
                 .map(|x| IntrinsicPlantResourceGrower::new(x.item_prefab_id, x.max_quantity_range)),
-            self.resource_producer.map(|x| {
-                PlantResourceProducer::new(x.item_prefab_id, x.max_quantity, x.period_range)
-            }),
+            maybe_resource_producer,
             match maturity_state {
                 PlantMaturityStage::Germ => Some(Growing {
                     maturity: 0.0,
