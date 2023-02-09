@@ -29,31 +29,39 @@ pub struct Countdown {
 }
 
 #[derive(Clone, Debug)]
-pub struct VariatingCountdown {
+pub struct VariableCountdown {
     range: Range<usize>,
     current_value: usize,
+    pristine: bool,
 }
 
-impl VariatingCountdown {
-    pub fn new(rng: &mut RngComponent, range: Range<usize>) -> Self {
-        let current_value = rng.usize(range.clone());
+impl VariableCountdown {
+    pub fn new(range: Range<usize>) -> Self {
+        if range.start < 1 {
+            panic!("Countdown range must have values above zero");
+        }
+
         Self {
             range,
-            current_value,
+            current_value: 0,
+            pristine: true,
         }
     }
 
-    pub fn tick(&mut self, rng: &mut RngComponent) {
-        let initial_value = rng.usize(self.range.clone());
-        if self.is_done() {
-            self.current_value = initial_value
+    pub fn tick_yield(&mut self, rng: &mut RngComponent) -> bool {
+        if self.current_value > 0 {
+            self.current_value -= 1;
+            return false;
         } else {
-            self.current_value -= 1
+            let initial_value = rng.usize(self.range.clone());
+            self.current_value = initial_value;
+            if self.pristine {
+                self.pristine = false;
+                self.current_value -= 1;
+                return false;
+            }
+            return true;
         }
-    }
-
-    pub fn is_done(&self) -> bool {
-        self.current_value == 0
     }
 }
 

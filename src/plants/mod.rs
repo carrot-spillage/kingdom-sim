@@ -10,7 +10,7 @@ use bevy::{
     },
     sprite::{Sprite, SpriteBundle},
 };
-use bevy_turborand::GlobalRng;
+use bevy_turborand::{GlobalRng, RngComponent};
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
@@ -114,10 +114,15 @@ pub fn germinate(
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
     plant_prefab_map: Res<PlantPrefabMap>,
-    mut germinator_params_query: Query<(&PlantPrefabId, &Position, &mut Germinator)>,
+    mut germinator_params_query: Query<(
+        &PlantPrefabId,
+        &Position,
+        &mut Germinator,
+        &mut RngComponent,
+    )>,
 ) {
-    for (plant_prefab_id, position, mut germinator) in &mut germinator_params_query {
-        if let Some(germ_offset) = germinator.try_produce() {
+    for (plant_prefab_id, position, mut germinator, mut rng) in &mut germinator_params_query {
+        if let Some(germ_offset) = germinator.try_produce(&mut rng) {
             let germ_position = position.0 + germ_offset.extend(0.0);
             let (prefab, texture) = plant_prefab_map.0.get(plant_prefab_id).unwrap();
             spawn_plant(

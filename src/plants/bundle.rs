@@ -1,7 +1,10 @@
-use crate::{common::Countdown, common::SimpleDestructible, items::ItemPrefabId};
+use crate::{
+    common::Countdown,
+    common::{SimpleDestructible, VariableCountdown},
+    items::ItemPrefabId,
+};
 use bevy::prelude::{Bundle, Component, ResMut, Vec2};
 use bevy_turborand::prelude::*;
-use rand::{rngs::ThreadRng, Rng};
 use std::f32::consts::PI;
 
 use super::{
@@ -32,42 +35,29 @@ pub struct GerminatorParams {
     pub period_range: Range<usize>,
 }
 
-#[derive(Component, Clone, Copy, Debug)]
+#[derive(Component, Clone, Debug)]
 pub struct Germinator {
-    countdown: Countdown,
+    countdown: VariableCountdown,
     params: GerminatorParams,
 }
 
 impl Germinator {
     pub fn new(params: GerminatorParams) -> Self {
-        let mut rng = rand::thread_rng();
-
         Germinator {
-            countdown: Self::gen_countdown(&mut rng, &params.period_range),
+            countdown: VariableCountdown::new(params.period_range.from..params.period_range.to),
             params,
         }
     }
 
-    pub fn try_produce(&mut self) -> Option<Vec2> {
-        self.countdown.tick();
-        if self.countdown.is_done() {
-            let mut rng = rand::thread_rng();
-
-            self.countdown = Self::gen_countdown(&mut rng, &self.params.period_range);
-
-            let radius_range = -(self.params.radius as f32)..self.params.radius as f32;
-            let rand_offset_x = rng.gen_range(radius_range);
-            let rand_offset_y = rng.gen_range(-PI..PI).sin() * self.params.radius as f32;
+    pub fn try_produce(&mut self, rng: &mut RngComponent) -> Option<Vec2> {
+        if self.countdown.tick_yield(rng) {
+            let rand_offset_x = rng.f32_normalized() * self.params.radius as f32;
+            let rand_offset_y = (rng.f32_normalized() * PI).sin() * self.params.radius as f32;
 
             return Some(Vec2::new(rand_offset_x as f32, rand_offset_y as f32));
         }
 
         None
-    }
-
-    fn gen_countdown(rng: &mut ThreadRng, period_range: &Range<usize>) -> Countdown {
-        let rand_period = rng.gen_range(period_range.from..period_range.to);
-        Countdown::new(rand_period)
     }
 }
 
@@ -129,15 +119,6 @@ impl PlantPrefab {
         Option<Growing>,
         Option<Germinator>,
     ) {
-        let mut rng = RngComponent::from(global_rng);
-        let maybe_resource_producer = self.resource_producer.map(|x| {
-            PlantResourceProducer::new(
-                x.item_prefab_id,
-                x.max_quantity,
-                x.period_range.from..x.period_range.to,
-                &mut rng,
-            )
-        });
         (
             PlantBundle {
                 prefab_id: self.id,
@@ -146,11 +127,17 @@ impl PlantPrefab {
                     max_health: self.health as f32,
                     current_health: self.health as f32,
                 },
-                rng,
+                rng: RngComponent::from(global_rng),
             },
             self.intrinsic_resource
                 .map(|x| IntrinsicPlantResourceGrower::new(x.item_prefab_id, x.max_quantity_range)),
-            maybe_resource_producer,
+            self.resource_producer.map(|x| {
+                PlantResourceProducer::new(
+                    x.item_prefab_id,
+                    x.max_quantity,
+                    x.period_range.from..x.period_range.to,
+                )
+            }),
             match maturity_state {
                 PlantMaturityStage::Germ => Some(Growing {
                     maturity: 0.0,

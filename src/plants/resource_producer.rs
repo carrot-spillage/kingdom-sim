@@ -4,7 +4,7 @@ use bevy::prelude::{Component, Query};
 use bevy_turborand::prelude::*;
 
 use crate::{
-    common::VariatingCountdown,
+    common::VariableCountdown,
     items::{ItemGroup, ItemPrefabId},
 };
 
@@ -13,14 +13,13 @@ use crate::{
 pub struct PlantResourceProducer {
     pub current: ItemGroup,
     max_quantity: usize,
-    countdown: VariatingCountdown,
+    countdown: VariableCountdown,
 }
 impl PlantResourceProducer {
     pub fn new(
         item_prefab_id: ItemPrefabId,
         max_quantity: usize,
         period_range: Range<usize>,
-        rng: &mut RngComponent,
     ) -> Self {
         PlantResourceProducer {
             current: ItemGroup {
@@ -28,13 +27,12 @@ impl PlantResourceProducer {
                 prefab_id: item_prefab_id,
             },
             max_quantity,
-            countdown: VariatingCountdown::new(rng, period_range),
+            countdown: VariableCountdown::new(period_range),
         }
     }
 
     fn tick(&mut self, rng: &mut RngComponent) {
-        self.countdown.tick(rng);
-        if self.countdown.is_done() {
+        if self.countdown.tick_yield(rng) {
             if self.current.quantity < self.max_quantity {
                 self.current.quantity += 1;
             }
