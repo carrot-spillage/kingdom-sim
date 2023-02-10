@@ -1,4 +1,4 @@
-use std::ops::{Range, RangeBounds};
+use std::ops::Range;
 
 use bevy::prelude::{Component, Entity};
 use bevy_turborand::prelude::*;

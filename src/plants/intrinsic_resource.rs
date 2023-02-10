@@ -1,9 +1,11 @@
+use std::ops::Range;
+
 use bevy::prelude::{Component, Query};
-use rand::Rng;
+use bevy_turborand::prelude::*;
 
 use crate::items::{ItemGroup, ItemPrefabId};
 
-use super::bundle::{Growing, Range};
+use super::bundle::Growing;
 
 #[derive(Component, Clone, Debug)]
 pub struct IntrinsicPlantResourceGrower {
@@ -14,11 +16,9 @@ impl IntrinsicPlantResourceGrower {
     pub fn new(
         item_prefab_id: ItemPrefabId,
         intrinsic_resource_max_quantity_range: Range<usize>,
+        rng: &mut RngComponent,
     ) -> Self {
-        let mut rng = rand::thread_rng();
-        let max_quantity = rng.gen_range(
-            intrinsic_resource_max_quantity_range.from..intrinsic_resource_max_quantity_range.to,
-        );
+        let max_quantity = rng.usize(intrinsic_resource_max_quantity_range);
         IntrinsicPlantResourceGrower {
             max_quantity,
             item_group: ItemGroup {

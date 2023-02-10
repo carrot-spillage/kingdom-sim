@@ -4,12 +4,12 @@ use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Camera2dBundle, Commands, Entity, Plugin, Res, ResMut, Resource, SystemSet,
-        Transform,
+        App, Bundle, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut,
+        Resource, State, SystemSet, Transform, With,
     },
     sprite::{Sprite, SpriteBundle},
 };
-use bevy_turborand::{GlobalRng, RngComponent};
+use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 use rand::Rng;
 
 use crate::{
@@ -20,7 +20,10 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
-    plants::{bundle::PlantPrefabId, spawn_plant, PlantMaturityStage},
+    plants::{
+        bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
+        PlantResourceProducer,
+    },
     resources::{ResourceCarrier, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
@@ -33,7 +36,10 @@ pub struct InitPlugin;
 
 impl Plugin for InitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(init));
+        app.add_system_set(SystemSet::on_enter(GameState::CreatingWorld).with_system(init))
+            .add_system_set(
+                SystemSet::on_enter(GameState::Playing).with_system(run_dummy_commands),
+            );
     }
 
     fn name(&self) -> &str {
@@ -183,7 +189,7 @@ fn init(
     //     );
     // }
 
-    for _ in 0..3 {
+    for _ in 0..30 {
         let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_id = spawn_plant(
@@ -194,24 +200,9 @@ fn init(
             tree_pos,
             &PlantMaturityStage::FullyGrown,
         );
-
-        let worker_pos = Vec2::new(10.0, 10.0).extend(tree_pos.z) + tree_pos;
-        let worker_id = spawn_worker(
-            &mut commands,
-            &mut global_rng,
-            &textures,
-            &fonts,
-            worker_pos,
-        );
-
-        commands
-            .entity(worker_id)
-            .insert(WorkerTasks(vec![WorkerTask::CutTree {
-                target_id: tree_id,
-            }]));
     }
 
-    for _ in 0..2 {
+    for _ in 0..5 {
         let bush_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(2)).unwrap();
         let bush_id = spawn_plant(
@@ -222,8 +213,10 @@ fn init(
             bush_pos,
             &PlantMaturityStage::FullyGrown,
         );
+    }
 
-        let worker_pos = Vec2::new(10.0, 10.0).extend(bush_pos.z) + bush_pos;
+    for _ in 0..5 {
+        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
         let worker_id = spawn_worker(
             &mut commands,
             &mut global_rng,
@@ -231,12 +224,31 @@ fn init(
             &fonts,
             worker_pos,
         );
+    }
+}
 
-        commands
-            .entity(worker_id)
-            .insert(WorkerTasks(vec![WorkerTask::Harvest {
-                target_id: bush_id,
-            }]));
+fn run_dummy_commands(
+    mut commands: Commands,
+    mut workers: Query<(Entity, &mut RngComponent), With<Worker>>,
+    trees: Query<Entity, With<IntrinsicPlantResourceGrower>>,
+    bushes: Query<Entity, With<PlantResourceProducer>>,
+) {
+    let mut trees_iter = trees.iter();
+    let mut bushes_iter = bushes.iter();
+    for (worker_id, mut rng) in &mut workers {
+        if rng.bool() {
+            let tree_id = trees_iter.next().unwrap();
+            commands.entity(worker_id).insert(WorkerTasks(vec![
+                WorkerTask::MoveToTarget { target_id: tree_id },
+                WorkerTask::CutTree { target_id: tree_id },
+            ]));
+        } else {
+            let bush_id = bushes_iter.next().unwrap();
+            commands.entity(worker_id).insert(WorkerTasks(vec![
+                WorkerTask::MoveToTarget { target_id: bush_id },
+                WorkerTask::Harvest { target_id: bush_id },
+            ]));
+        }
     }
 }
 
@@ -249,6 +261,9 @@ pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
         .extend(0.0)
 }
 
+#[derive(Component)]
+pub struct Worker;
+
 fn spawn_worker(
     commands: &mut Commands,
     global_rng: &mut ResMut<GlobalRng>,
@@ -257,6 +272,7 @@ fn spawn_worker(
     position: Vec3,
 ) -> Entity {
     let bundle = WorkerBundle {
+        worker: Worker,
         skilled: Skilled {
             skills: HashMap::from([
                 (SkillType::Building, 0.5),
@@ -310,6 +326,7 @@ fn spawn_worker(
 #[derive(Bundle)]
 
 struct WorkerBundle {
+    worker: Worker,
     skilled: Skilled,
     walker: Walker,
     position: Position,

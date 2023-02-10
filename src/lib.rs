@@ -56,6 +56,7 @@ use resources::ResourcesPlugin;
 enum GameState {
     // During the loading State the LoadingPlugin will load our assets
     Loading,
+    CreatingWorld,
     // During this State the actual game logic is executed
     Playing,
     // Here the menu is drawn and waiting for player interaction
@@ -89,10 +90,10 @@ impl Plugin for GamePlugin {
             // .add_plugin(BuildingJobPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
-            .add_plugin(InitPlugin)
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin)
-            .add_plugin(ResourceGatheringJobPlugin);
+            .add_plugin(ResourceGatheringJobPlugin)
+            .add_plugin(InitPlugin);
         // #[cfg(debug_assertions)]
         // {
         //     app.add_plugin(FrameTimeDiagnosticsPlugin::default())

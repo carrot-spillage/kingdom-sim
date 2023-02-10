@@ -119,6 +119,14 @@ impl PlantPrefab {
         Option<Growing>,
         Option<Germinator>,
     ) {
+        let mut rng = RngComponent::from(global_rng);
+        let maybe_grower = self.intrinsic_resource.map(|x| {
+            IntrinsicPlantResourceGrower::new(
+                x.item_prefab_id,
+                x.max_quantity_range.from..x.max_quantity_range.to,
+                &mut rng,
+            )
+        });
         (
             PlantBundle {
                 prefab_id: self.id,
@@ -127,10 +135,9 @@ impl PlantPrefab {
                     max_health: self.health as f32,
                     current_health: self.health as f32,
                 },
-                rng: RngComponent::from(global_rng),
+                rng,
             },
-            self.intrinsic_resource
-                .map(|x| IntrinsicPlantResourceGrower::new(x.item_prefab_id, x.max_quantity_range)),
+            maybe_grower,
             self.resource_producer.map(|x| {
                 PlantResourceProducer::new(
                     x.item_prefab_id,
