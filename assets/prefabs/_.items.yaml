@@ -1,0 +1,15 @@
+items:
+  - id: 3
+    name: Wood
+    packable: false
+    handling_kind: TwoHanded
+    weight: 20
+    textures:
+      dropped: "prefabs/wood.png"
+  - id: 4
+    name: Berries
+    packable: true
+    handling_kind: SingleHanded
+    weight: 1
+    textures:
+      dropped: "prefabs/berries.png"
