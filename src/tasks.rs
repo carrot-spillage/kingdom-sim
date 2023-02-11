@@ -1,5 +1,3 @@
-use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, With};
-
 use crate::{
     cutting_tree::start_cutting_tree,
     harvesting::start_harvesting,
@@ -7,6 +5,8 @@ use crate::{
     planting::logic::{start_planting, Planting},
     GameState,
 };
+use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, With};
+use std::collections::VecDeque;
 
 pub struct TaskPlugin;
 
@@ -30,7 +30,7 @@ pub enum WorkerTask {
 }
 
 #[derive(Component)]
-pub struct WorkerTasks(pub Vec<WorkerTask>);
+pub struct WorkerTasks(pub VecDeque<WorkerTask>);
 
 #[derive(Component)]
 pub struct IdlingWorker;
@@ -40,7 +40,7 @@ fn proceed_to_next_task(
     mut idling_workers: Query<(Entity, &mut WorkerTasks), With<IdlingWorker>>,
 ) {
     for (worker_id, mut tasks) in &mut idling_workers {
-        let next_task = tasks.0.pop().unwrap();
+        let next_task = tasks.0.pop_front().unwrap();
         commands.entity(worker_id).remove::<IdlingWorker>();
         arrange_next_task(&mut commands, worker_id, next_task);
         if tasks.0.is_empty() {

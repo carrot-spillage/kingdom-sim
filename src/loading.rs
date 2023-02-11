@@ -22,7 +22,7 @@ impl Plugin for LoadingPlugin {
             .with_collection::<TextureAssets>()
             .with_collection::<PlantPrefabAssets>()
             .with_collection::<ItemPrefabAssets>()
-            .continue_to_state(GameState::CreatingWorld) // TODO: change to GameState::Menu
+            .continue_to_state(GameState::CreatingWorld)
             .build(app);
 
         app.add_system_set(SystemSet::on_exit(GameState::Loading).with_system(setup_prefabs));

@@ -1,13 +1,14 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use bevy::{
     hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        App, Bundle, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut,
-        Resource, State, SystemSet, Transform, With,
+        debug, App, Bundle, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res,
+        ResMut, Resource, State, SystemSet, Transform, With,
     },
     sprite::{Sprite, SpriteBundle},
+    utils::tracing::field::debug,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 use rand::Rng;
@@ -53,6 +54,7 @@ pub struct WorldParams {
 }
 
 fn init(
+    mut game_state: ResMut<State<GameState>>,
     world_params: Res<WorldParams>,
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
@@ -225,6 +227,8 @@ fn init(
             worker_pos,
         );
     }
+
+    game_state.overwrite_set(GameState::Playing).unwrap();
 }
 
 fn run_dummy_commands(
@@ -233,21 +237,26 @@ fn run_dummy_commands(
     trees: Query<Entity, With<IntrinsicPlantResourceGrower>>,
     bushes: Query<Entity, With<PlantResourceProducer>>,
 ) {
+    println!("run dummy commands");
     let mut trees_iter = trees.iter();
     let mut bushes_iter = bushes.iter();
     for (worker_id, mut rng) in &mut workers {
         if rng.bool() {
             let tree_id = trees_iter.next().unwrap();
-            commands.entity(worker_id).insert(WorkerTasks(vec![
-                WorkerTask::MoveToTarget { target_id: tree_id },
-                WorkerTask::CutTree { target_id: tree_id },
-            ]));
+            commands
+                .entity(worker_id)
+                .insert(WorkerTasks(VecDeque::from(vec![
+                    WorkerTask::MoveToTarget { target_id: tree_id },
+                    WorkerTask::CutTree { target_id: tree_id },
+                ])));
         } else {
             let bush_id = bushes_iter.next().unwrap();
-            commands.entity(worker_id).insert(WorkerTasks(vec![
-                WorkerTask::MoveToTarget { target_id: bush_id },
-                WorkerTask::Harvest { target_id: bush_id },
-            ]));
+            commands
+                .entity(worker_id)
+                .insert(WorkerTasks(VecDeque::from(vec![
+                    WorkerTask::MoveToTarget { target_id: bush_id },
+                    WorkerTask::Harvest { target_id: bush_id },
+                ])));
         }
     }
 }
