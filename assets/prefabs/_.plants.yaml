@@ -22,7 +22,7 @@ plants:
       item_prefab_id: 4
   - id: 2
     name: Pine
-    texture: "prefabs/bush_1_32.png"
+    texture: "prefabs/bush_1.png"
     growth_rate: 0.0012
     germinator:
       radius: 130
