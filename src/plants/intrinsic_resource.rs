@@ -10,15 +10,15 @@ use super::bundle::Growing;
 #[derive(Component, Clone, Debug)]
 pub struct IntrinsicPlantResourceGrower {
     pub item_group: ItemGroup,
-    pub max_quantity: usize,
+    pub max_quantity: u32,
 }
 impl IntrinsicPlantResourceGrower {
     pub fn new(
         item_prefab_id: ItemPrefabId,
-        intrinsic_resource_max_quantity_range: Range<usize>,
+        intrinsic_resource_max_quantity_range: Range<u32>,
         rng: &mut RngComponent,
     ) -> Self {
-        let max_quantity = rng.usize(intrinsic_resource_max_quantity_range);
+        let max_quantity = rng.u32(intrinsic_resource_max_quantity_range);
         IntrinsicPlantResourceGrower {
             max_quantity,
             item_group: ItemGroup {
@@ -29,7 +29,7 @@ impl IntrinsicPlantResourceGrower {
     }
 
     pub fn update(&mut self, maturity: f32) {
-        self.item_group.quantity = (maturity * self.max_quantity as f32).ceil() as usize;
+        self.item_group.quantity = (maturity * self.max_quantity as f32).ceil() as u32;
     }
 
     // TODO: this looks like a hack. maybe it asks for redesigning the whole struct/countdown

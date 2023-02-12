@@ -8,13 +8,13 @@ pub static BUILDING_JOB_NAME: &'static str = "Building";
 pub struct PlannedWork {
     pub units_of_work: f32,
     pub job_id: &'static str,
-    pub max_workers: usize,
+    pub max_workers: u32,
     pub worker_ids: Vec<Entity>,
     pub tentative_worker_ids: Vec<Entity>,
 }
 
 impl PlannedWork {
-    pub fn new(job_id: &'static str, units_of_work: f32, max_workers: usize) -> Self {
+    pub fn new(job_id: &'static str, units_of_work: f32, max_workers: u32) -> Self {
         if max_workers == 0 {
             panic!("max_workers must be greater than 0");
         }

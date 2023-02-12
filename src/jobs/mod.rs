@@ -33,7 +33,7 @@ impl Plugin for JobsPlugin {
 
 pub struct JobQueue {
     pub jobs: Vec<Job>,
-    counter: usize,
+    counter: u32,
     accumulated_value_per_job: HashMap<&'static str, f32>,
     pub job_priorities: HashMap<&'static str, f32>,
 }
@@ -87,7 +87,7 @@ pub struct AssignedToWorkProcess {
 pub struct WorkProcess {
     pub units_of_work: f32,
     pub job_id: &'static str,
-    pub max_workers: usize,
+    pub max_workers: u32,
 
     pub progress: WorkProgress,
     pub worker_ids: Vec<Entity>,
@@ -100,7 +100,7 @@ impl WorkProcess {
         target: TargetOrPosition,
         job_id: &'static str,
         units_of_work: f32,
-        max_workers: usize,
+        max_workers: u32,
     ) -> Self {
         if max_workers == 0 {
             panic!("max_workers must be greater than 0");

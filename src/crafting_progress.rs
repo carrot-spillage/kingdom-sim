@@ -20,13 +20,13 @@ pub struct CraftingProgress {
 #[derive(Clone, Copy, Debug)]
 pub struct ConstructionResourceState {
     kind: ResourceKind,
-    initially_required: usize,
-    consumed: usize,
-    available: usize,
+    initially_required: u32,
+    consumed: u32,
+    available: u32,
 }
 
 impl ConstructionResourceState {
-    fn new(kind: ResourceKind, initially_required: usize) -> Self {
+    fn new(kind: ResourceKind, initially_required: u32) -> Self {
         Self {
             kind,
             initially_required,
@@ -35,24 +35,24 @@ impl ConstructionResourceState {
         }
     }
 
-    fn try_consume(mut self, amount: usize) -> Option<usize> {
-        let to_be_consumed = self.available as isize - amount as isize;
+    fn try_consume(mut self, amount: u32) -> Option<u32> {
+        let to_be_consumed = self.available - amount;
         if to_be_consumed > 0 {
-            self.consumed += to_be_consumed as usize;
-            self.available -= to_be_consumed as usize;
-            Some(to_be_consumed as usize)
+            self.consumed += to_be_consumed as u32;
+            self.available -= to_be_consumed as u32;
+            Some(to_be_consumed as u32)
         } else {
             None
         }
     }
 
-    fn add(self, amount: usize) {
+    fn add(self, amount: u32) {
         if amount > self.get_missing() {
             panic!("Cannot add more resources that needed in total")
         }
     }
 
-    fn get_missing(self) -> usize {
+    fn get_missing(self) -> u32 {
         self.initially_required - self.consumed - self.available
     }
 }
@@ -70,10 +70,7 @@ pub enum CraftingProgressUpdate {
 }
 
 impl CraftingProgress {
-    pub fn new(
-        units_of_work: f32,
-        initially_required_resources: Vec<(ResourceKind, usize)>,
-    ) -> Self {
+    pub fn new(units_of_work: f32, initially_required_resources: Vec<(ResourceKind, u32)>) -> Self {
         Self {
             quality_counter: QualityCounter {
                 instances: 0,
@@ -128,7 +125,7 @@ pub fn advance_crafting_process_state(
     for resource in state.resource_states.iter_mut() {
         resource.try_consume(
             ((progress / initially_required_units_of_work) * resource.initially_required as f32)
-                .ceil() as usize,
+                .ceil() as u32,
         );
     }
 

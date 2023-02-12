@@ -12,15 +12,11 @@ use crate::{
 #[derive(Component, Clone, Debug)]
 pub struct PlantResourceProducer {
     pub current: ItemGroup,
-    max_quantity: usize,
+    max_quantity: u32,
     countdown: VariableCountdown,
 }
 impl PlantResourceProducer {
-    pub fn new(
-        item_prefab_id: ItemPrefabId,
-        max_quantity: usize,
-        period_range: Range<usize>,
-    ) -> Self {
+    pub fn new(item_prefab_id: ItemPrefabId, max_quantity: u32, period_range: Range<u32>) -> Self {
         PlantResourceProducer {
             current: ItemGroup {
                 quantity: 0,

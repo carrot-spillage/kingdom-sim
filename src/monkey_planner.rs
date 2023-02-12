@@ -28,7 +28,7 @@ impl MonkeyPlanner {
         MonkeyPlanner::temp_recruit_workers(
             commands,
             work_id,
-            workers.iter().take(work.max_workers).collect(),
+            workers.iter().take(work.max_workers as usize).collect(),
             BUILDING_JOB_NAME,
         )
     }

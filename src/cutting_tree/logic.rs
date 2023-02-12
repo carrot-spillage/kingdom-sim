@@ -59,7 +59,7 @@ pub fn start_cutting_tree(
             target_id,
             performance,
         },
-        TreeHitCountdown(Countdown::new((8.0 / performance).ceil() as usize)),
+        TreeHitCountdown(Countdown::new((8.0 / performance).ceil() as u32)),
     ));
 }
 

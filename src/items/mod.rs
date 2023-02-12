@@ -20,7 +20,7 @@ pub enum ResourceKind {
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ResourceChunk {
     pub kind: ResourceKind,
-    pub quantity: usize,
+    pub quantity: u32,
 }
 
 /*
@@ -36,7 +36,7 @@ Villager
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
     pub items: Vec<ItemGroup>,
-    pub max_weight: usize,
+    pub max_weight: u32,
 }
 impl CarrierInventory {
     pub(crate) fn put_and_get_rest(
@@ -89,7 +89,7 @@ pub struct ItemPrefab {
     pub id: ItemPrefabId,
     pub packable: bool, // false - only handheld
     pub handling_kind: ItemHandlingKind,
-    pub weight: usize,
+    pub weight: u32,
     pub textures: ItemPrefabTextures,
 }
 
@@ -97,12 +97,12 @@ pub struct ItemPrefab {
     Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
 )]
 #[uuid = "3819241a-9f90-47dc-b5df-bc99f8fec014"]
-pub struct ItemPrefabId(pub usize);
+pub struct ItemPrefabId(pub u32);
 
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ItemGroup {
     pub prefab_id: ItemPrefabId,
-    pub quantity: usize,
+    pub quantity: u32,
 }
 
 pub struct ItemTakingResult {
@@ -130,8 +130,8 @@ pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, (ItemPrefab, Handle<Image>)>)
 // }
 
 impl ItemGroup {
-    pub fn take(&self, item_prefab: &ItemPrefab, max_weight: usize) -> ItemTakingResult {
-        let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as usize;
+    pub fn take(&self, item_prefab: &ItemPrefab, max_weight: u32) -> ItemTakingResult {
+        let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as u32;
 
         if picked_quantity >= self.quantity {
             ItemTakingResult {

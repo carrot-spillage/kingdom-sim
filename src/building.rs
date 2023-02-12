@@ -19,8 +19,8 @@ pub struct BuildingPrefab {
     pub texture_set: BuildingTextureSet,
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
-    pub max_workers: usize,
-    pub required_resources: Vec<(ResourceKind, usize)>,
+    pub max_workers: u32,
+    pub required_resources: Vec<(ResourceKind, u32)>,
 }
 
 pub struct BuildingTextureSet {
@@ -54,9 +54,9 @@ pub fn get_construction_site_texture(
     progress: f32,
     building_prefab: &BuildingPrefab,
 ) -> Option<Handle<Image>> {
-    let max_index = (building_prefab.texture_set.in_progress.len() - 1) as f32;
-    let old_index = (max_index * previous_progress).round() as usize;
-    let index = (max_index * progress).round() as usize;
+    let max_index = building_prefab.texture_set.in_progress.len() - 1;
+    let old_index = (max_index as f32 * previous_progress).round() as usize;
+    let index = (max_index as f32 * progress).round() as usize;
 
     if previous_progress == 0.0 || index != old_index {
         return Some(building_prefab.texture_set.in_progress[index].clone());

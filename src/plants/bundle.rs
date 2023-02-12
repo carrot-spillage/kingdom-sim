@@ -16,7 +16,7 @@ use super::{
     Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
 )]
 #[uuid = "407e6caf-2901-437a-b2e6-5ca256de6b2a"]
-pub struct PlantPrefabId(pub usize);
+pub struct PlantPrefabId(pub u32);
 
 #[derive(Component, Clone, Debug)]
 pub struct PlantName(pub &'static str);
@@ -31,8 +31,8 @@ pub struct Range<T> {
 #[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4b"]
 pub struct GerminatorParams {
-    pub radius: usize,
-    pub period_range: Range<usize>,
+    pub radius: u32,
+    pub period_range: Range<u32>,
 }
 
 #[derive(Component, Clone, Debug)]
@@ -82,15 +82,15 @@ pub struct PlantBundle {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
 #[uuid = "fd8aa8ff-bb48-4572-a6d8-7e7dc1fec9a7"]
 pub struct IntrinsicResourceParams {
-    pub max_quantity_range: Range<usize>,
+    pub max_quantity_range: Range<u32>,
     pub item_prefab_id: ItemPrefabId,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
 #[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f61053"]
 pub struct ResourceProducerParams {
-    pub max_quantity: usize,
-    pub period_range: Range<usize>,
+    pub max_quantity: u32,
+    pub period_range: Range<u32>,
     pub item_prefab_id: ItemPrefabId,
 }
 
@@ -100,7 +100,7 @@ pub struct PlantPrefab {
     pub id: PlantPrefabId,
     pub name: String,
     pub texture: String,
-    pub health: usize,
+    pub health: u32,
     pub growth_rate: f32,
     pub germinator: GerminatorParams,
     pub intrinsic_resource: Option<IntrinsicResourceParams>,

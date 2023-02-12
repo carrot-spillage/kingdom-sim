@@ -55,7 +55,7 @@ pub fn start_planting(
     worker_id: Entity,
     performance: f32,
 ) {
-    let countdown = PlantingCountdown(Countdown::new((performance * 30.0).floor() as usize));
+    let countdown = PlantingCountdown(Countdown::new((performance * 30.0).floor() as u32));
     commands.entity(worker_id).insert((planting, countdown));
 }
 
