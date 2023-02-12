@@ -1,11 +1,10 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, ResMut, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, Transform},
     sprite::SpriteBundle,
 };
-use bevy_turborand::GlobalRng;
 
-use crate::{movement::hack_3d_position_to_2d, resources::ResourceKind};
+use crate::{items::ItemPrefabId, movement::hack_3d_position_to_2d};
 
 #[derive(Component)]
 pub struct ConstructionSite;
@@ -20,7 +19,7 @@ pub struct BuildingPrefab {
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
     pub max_workers: u32,
-    pub required_resources: Vec<(ResourceKind, u32)>,
+    pub required_resources: Vec<(ItemPrefabId, u32)>,
 }
 
 pub struct BuildingTextureSet {

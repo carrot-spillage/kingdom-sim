@@ -8,7 +8,6 @@ mod worker_job_tooltip;
 mod monkey_planner;
 mod movement;
 mod planned_work;
-mod resource_gathering;
 
 mod crafting_progress;
 mod cutting_tree;
@@ -17,7 +16,6 @@ mod items;
 mod planting;
 mod planting_crops;
 mod plants;
-mod resources;
 mod skills;
 mod stockpile;
 mod tasks;
@@ -46,8 +44,6 @@ use movement::MovementPlugin;
 use cutting_tree::TreeCuttingPlugin;
 use planned_work::WorkOnArrivalPlugin;
 use plants::PlantsPlugin;
-use resource_gathering::ResourceGatheringJobPlugin;
-use resources::ResourcesPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -82,7 +78,6 @@ impl Plugin for GamePlugin {
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
-            .add_plugin(ResourcesPlugin)
             //.add_plugin(JobsPlugin)
             .add_plugin(WorkerJobTooltipPlugin)
             .add_plugin(PlantsPlugin)
@@ -92,7 +87,6 @@ impl Plugin for GamePlugin {
             .add_plugin(PlantingPlugin)
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin)
-            .add_plugin(ResourceGatheringJobPlugin)
             .add_plugin(InitPlugin);
         // #[cfg(debug_assertions)]
         // {

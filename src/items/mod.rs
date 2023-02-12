@@ -7,21 +7,9 @@ use bevy::{
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
-    loading::TextureAssets,
     movement::{hack_3d_position_to_2d, Position},
     stockpile::InStockpile,
 };
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub enum ResourceKind {
-    Wood,
-}
-
-#[derive(Clone, Copy, Component, Debug)]
-pub struct ResourceChunk {
-    pub kind: ResourceKind,
-    pub quantity: u32,
-}
 
 /*
 I have a game unit called Villager.

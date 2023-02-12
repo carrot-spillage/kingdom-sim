@@ -1,16 +1,15 @@
 use bevy::{
     math::Vec3,
     prelude::{Commands, Entity, Query, Res, With, Without},
-    utils::HashMap,
 };
 
 use crate::{
     building::{BuildingPrefab, BuildingTextureSet},
     building_job::plan_building,
+    items::ItemPrefabId,
     loading::TextureAssets,
     movement::MovingToEntity,
     planned_work::{NotWorking, PlannedWork, WorkingOn, BUILDING_JOB_NAME},
-    resources::ResourceKind,
     skills::Skilled,
 };
 
@@ -62,7 +61,7 @@ impl MonkeyPlanner {
                 scale: 0.03,
             },
             max_workers: 2,
-            required_resources: vec![(ResourceKind::Wood, 4)],
+            required_resources: vec![(ItemPrefabId(3), 4)],
         };
         plan_building(commands, building_prefab, position)
     }

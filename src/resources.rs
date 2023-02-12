@@ -13,11 +13,6 @@ use crate::{
     GameState,
 };
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub enum ResourceKind {
-    Wood,
-}
-
 #[derive(Clone, Copy, Component, Debug)]
 pub struct ResourceChunk {
     pub kind: ResourceKind,
@@ -85,63 +80,5 @@ pub fn add_resource_chunk(
                 quantity: added_resource_chunk.quantity - quantity_to_add,
             },
         )
-    }
-}
-
-impl Plugin for ResourcesPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<BreaksIntoResourcesEvent>().add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(break_into_resources),
-        );
-    }
-
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
-}
-
-fn break_into_resources(
-    mut commands: Commands,
-    textures: Res<TextureAssets>,
-    mut events: EventReader<BreaksIntoResourcesEvent>,
-    breakables: Query<(&Position, &BreaksIntoResources)>,
-) {
-    for event in events.iter() {
-        let entity = event.0;
-        let (Position(position), BreaksIntoResources(resources)) = breakables.get(entity).unwrap();
-        println!("Breaking {:?} into resources  {:?}", entity, resources);
-
-        for resource in resources {
-            spawn_resource(&mut commands, &textures, *resource, *position, false);
-        }
-        commands.entity(entity).despawn();
-    }
-}
-
-pub fn spawn_resource(
-    commands: &mut Commands,
-    textures: &Res<TextureAssets>,
-    resource_chunk: ResourceChunk,
-    position: Vec3,
-    is_in_stockpile: bool,
-) {
-    println!("Spawning resource");
-    let resource_id = commands
-        .spawn_empty()
-        .insert(Position(position))
-        .insert(resource_chunk)
-        .insert(SpriteBundle {
-            texture: textures.logs.clone(),
-            transform: Transform {
-                translation: hack_3d_position_to_2d(position),
-                scale: Vec3::new(0.3, 0.3, 1.0),
-                ..Transform::default()
-            },
-            ..Default::default()
-        })
-        .id();
-
-    if is_in_stockpile {
-        commands.entity(resource_id).insert(InStockpile);
     }
 }

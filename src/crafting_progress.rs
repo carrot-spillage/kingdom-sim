@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 
 use crate::{
-    resources::ResourceKind,
+    items::ItemPrefabId,
     skills::{SkillType, Skilled},
     work_progress::{
         calc_work_chunks, calc_work_chunks_progress, calc_work_chunks_quality, QualityCounter,
@@ -19,16 +19,16 @@ pub struct CraftingProgress {
 
 #[derive(Clone, Copy, Debug)]
 pub struct ConstructionResourceState {
-    kind: ResourceKind,
+    item_prefab_id: ItemPrefabId,
     initially_required: u32,
     consumed: u32,
     available: u32,
 }
 
 impl ConstructionResourceState {
-    fn new(kind: ResourceKind, initially_required: u32) -> Self {
+    fn new(item_prefab_id: ItemPrefabId, initially_required: u32) -> Self {
         Self {
-            kind,
+            item_prefab_id,
             initially_required,
             consumed: 0,
             available: 0,
@@ -70,7 +70,7 @@ pub enum CraftingProgressUpdate {
 }
 
 impl CraftingProgress {
-    pub fn new(units_of_work: f32, initially_required_resources: Vec<(ResourceKind, u32)>) -> Self {
+    pub fn new(units_of_work: f32, initially_required_resources: Vec<(ItemPrefabId, u32)>) -> Self {
         Self {
             quality_counter: QualityCounter {
                 instances: 0,

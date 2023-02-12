@@ -17,7 +17,7 @@ use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
-    items::CarrierInventory,
+    items::{CarrierInventory, ItemPrefabId},
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
     planting::logic::PlantPrefabMap,
@@ -25,7 +25,6 @@ use crate::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    resources::{ResourceCarrier, ResourceKind},
     skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
     tasks::{IdlingWorker, WorkerTask, WorkerTasks},
@@ -127,21 +126,6 @@ fn init(
     //     plan_resource_gathering(&mut commands, worker_id);
     // }
 
-    // RESOURCES
-    // for _ in 0..10 {
-    //     let position = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
-    //     spawn_resource(
-    //         &mut commands,
-    //         &textures,
-    //         ResourceChunk {
-    //             kind: crate::resources::ResourceKind::Wood,
-    //             quantity: 5,
-    //         },
-    //         position,
-    //         false,
-    //     );
-    // }
-
     let house_textures = BuildingTextureSet {
         in_progress: vec![textures.house_in_progress.clone()],
         completed: textures.house.clone(),
@@ -167,7 +151,7 @@ fn init(
                 scale: 0.03,
             },
             max_workers: 2,
-            required_resources: vec![(ResourceKind::Wood, 4)],
+            required_resources: vec![(ItemPrefabId(3), 4)],
         };
         if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
             commands.entity(construction_site_id).insert(new_texture);
@@ -322,7 +306,6 @@ fn spawn_worker(
         .insert((
             Position(position),
             RngComponent::from(global_rng),
-            ResourceCarrier { max_volume: 120 },
             IdlingWorker,
             WorkerJobTooltip {
                 title: "".to_string(),
