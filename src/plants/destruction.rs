@@ -15,16 +15,20 @@ pub fn break_into_resources(
         (
             Entity,
             &Position,
-            &IntrinsicPlantResourceGrower,
-            &PlantResourceProducer,
+            Option<&IntrinsicPlantResourceGrower>,
+            Option<&PlantResourceProducer>,
         ),
         Added<NeedsDestroying>,
     >,
 ) {
-    for (entity, position, grower, producer) in &to_be_destroyed {
-        {
+    for (entity, position, maybe_grower, maybe_producer) in &to_be_destroyed {
+        if let Some(grower) = maybe_grower {
             let item_group = grower.item_group;
+            if item_group.quantity == 0 {
+                continue;
+            }
             let (prefab, texture) = items.0.get(&item_group.prefab_id).unwrap();
+            println!("Dumping grower");
             spawn_item_group(
                 &mut commands,
                 texture.clone(),
@@ -33,8 +37,11 @@ pub fn break_into_resources(
                 false,
             );
         }
-        {
+        if let Some(producer) = maybe_producer {
             let item_group = producer.current;
+            if item_group.quantity == 0 {
+                continue;
+            }
             let (prefab, texture) = items.0.get(&item_group.prefab_id).unwrap();
 
             spawn_item_group(

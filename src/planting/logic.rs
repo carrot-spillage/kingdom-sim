@@ -33,16 +33,17 @@ pub fn handle_task_progress(
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
         let mut countdown = planting_countdown.0;
         if countdown.tick_yield() {
-            let (prefab, texture) = plants.0.get(&planting.plant_prefab_id).unwrap();
-            cleanup(&mut commands, worker_id);
-            spawn_plant(
-                &mut commands,
-                &mut global_rng,
-                &prefab,
-                texture.clone(),
-                planting.position,
-                &PlantMaturityStage::Germ,
-            );
+            if let Some((prefab, texture)) = plants.0.get(&planting.plant_prefab_id) {
+                cleanup(&mut commands, worker_id);
+                spawn_plant(
+                    &mut commands,
+                    &mut global_rng,
+                    &prefab,
+                    texture.clone(),
+                    planting.position,
+                    &PlantMaturityStage::Germ,
+                );
+            }
         } else {
             *planting_countdown = PlantingCountdown(countdown);
         }

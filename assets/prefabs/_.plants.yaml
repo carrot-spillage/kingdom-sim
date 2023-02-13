@@ -14,14 +14,8 @@ plants:
         from: 1
         to: 3
       item_prefab_id: 3
-    resource_producer:
-      max_quantity: 20
-      period_range:
-        from: 5
-        to: 12
-      item_prefab_id: 4
   - id: 2
-    name: Pine
+    name: BerryBush
     texture: "prefabs/bush_1.png"
     growth_rate: 0.0012
     germinator:
@@ -30,11 +24,6 @@ plants:
         from: 300
         to: 1200
     health: 240
-    intrinsic_resource:
-      max_quantity_range:
-        from: 1
-        to: 3
-      item_prefab_id: 3
     resource_producer:
       max_quantity: 20
       period_range:

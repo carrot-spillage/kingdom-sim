@@ -170,7 +170,6 @@ pub fn spawn_item_group(
             },
             sprite: Sprite {
                 anchor: bevy::sprite::Anchor::BottomCenter,
-                custom_size: Some(Vec2::new(24.0, 24.0)),
                 ..Default::default()
             },
             ..Default::default()

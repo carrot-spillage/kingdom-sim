@@ -98,27 +98,27 @@ fn move_to_entity(
     mut commands: Commands,
 ) {
     for (entity_id, mut walker, moving) in moving.iter_mut() {
-        let destination_position = positions_and_transforms
+        let maybe_destination_position = positions_and_transforms
             .get(moving.destination_entity)
-            .unwrap()
-            .0
-             .0;
-        let (mut this_pos_res, this_transform) =
-            positions_and_transforms.get_mut(entity_id).unwrap();
-        let distance = this_pos_res.0.distance(destination_position);
-        if distance > moving.sufficient_range {
-            this_pos_res.0 = this_pos_res
-                .0
-                .lerp(destination_position, walker.current_speed / distance);
-            this_transform.unwrap().translation = this_pos_res.0;
-            walker.walk();
-        } else {
-            println!("Stopped {:?}", entity_id);
-            walker.stop();
-            commands
-                .entity(entity_id)
-                .remove::<MovingToEntity>()
-                .insert(IdlingWorker);
+            .map(|x| x.0 .0.clone());
+        if let Ok(destination_position) = maybe_destination_position {
+            let (mut this_pos_res, this_transform) =
+                positions_and_transforms.get_mut(entity_id).unwrap();
+            let distance = this_pos_res.0.distance(destination_position);
+            if distance > moving.sufficient_range {
+                this_pos_res.0 = this_pos_res
+                    .0
+                    .lerp(destination_position, walker.current_speed / distance);
+                this_transform.unwrap().translation = this_pos_res.0;
+                walker.walk();
+            } else {
+                println!("Stopped {:?}", entity_id);
+                walker.stop();
+                commands
+                    .entity(entity_id)
+                    .remove::<MovingToEntity>()
+                    .insert(IdlingWorker);
+            }
         }
     }
 }

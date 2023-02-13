@@ -35,6 +35,8 @@ pub fn handle_task_progress(
                     *tree_hit_countdown = TreeHitCountdown(updated_countdown)
                 }
                 AdvanceResult::Completed => {
+                    println!("Finished a tree");
+
                     commands
                         .entity(tree_cutter.target_id)
                         .insert(NeedsDestroying);

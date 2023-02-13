@@ -5,7 +5,7 @@ use bevy::{
     math::{Vec2, Vec3},
     prelude::{
         debug, App, Bundle, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res,
-        ResMut, Resource, State, SystemSet, Transform, With,
+        ResMut, Resource, State, SystemSet, Transform, With, Without,
     },
     sprite::{Sprite, SpriteBundle},
     utils::tracing::field::debug,
@@ -218,7 +218,13 @@ fn init(
 fn run_dummy_commands(
     mut commands: Commands,
     mut workers: Query<(Entity, &mut RngComponent), With<Worker>>,
-    trees: Query<Entity, With<IntrinsicPlantResourceGrower>>,
+    trees: Query<
+        Entity,
+        (
+            With<IntrinsicPlantResourceGrower>,
+            Without<PlantResourceProducer>,
+        ),
+    >,
     bushes: Query<Entity, With<PlantResourceProducer>>,
 ) {
     println!("run dummy commands");
@@ -266,13 +272,6 @@ fn spawn_worker(
 ) -> Entity {
     let bundle = WorkerBundle {
         worker: Worker,
-        skilled: Skilled {
-            skills: HashMap::from([
-                (SkillType::Building, 0.5),
-                (SkillType::GrowingPlants, 0.5),
-                (SkillType::None, 0.5),
-            ]),
-        },
         inventory: CarrierInventory {
             items: vec![],
             max_weight: 50,
@@ -319,7 +318,6 @@ fn spawn_worker(
 
 struct WorkerBundle {
     worker: Worker,
-    skilled: Skilled,
     walker: Walker,
     position: Position,
     sprite: SpriteBundle,
