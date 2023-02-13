@@ -23,28 +23,28 @@ Villager
 
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
-    pub items: Vec<ItemGroup>,
+    pub items: Vec<ItemBatch>,
     pub max_weight: u32,
 }
 impl CarrierInventory {
     pub(crate) fn put_and_get_rest(
         &mut self,
         item_prefab: &ItemPrefab,
-        picked_item_group: ItemGroup,
-    ) -> Option<ItemGroup> {
+        picked_item_batch: ItemBatch,
+    ) -> Option<ItemBatch> {
         let ItemTakingResult { picked, left } =
-            picked_item_group.take(item_prefab, self.max_weight);
+            picked_item_batch.take(item_prefab, self.max_weight);
 
-        let maybe_item_group = self
+        let maybe_item_batch = self
             .items
             .iter_mut()
             .find(|x| x.prefab_id == item_prefab.id);
 
-        if let Some(picked_item_group) = picked {
-            if let Some(item_group) = maybe_item_group {
-                item_group.quantity += picked_item_group.quantity;
+        if let Some(picked_item_batch) = picked {
+            if let Some(item_batch) = maybe_item_batch {
+                item_batch.quantity += picked_item_batch.quantity;
             } else {
-                self.items.push(picked_item_group);
+                self.items.push(picked_item_batch);
             }
         }
 
@@ -54,8 +54,8 @@ impl CarrierInventory {
 
 #[derive(Component)]
 pub enum CarrierHands {
-    Separate { left: ItemGroup, right: ItemGroup },
-    Combined(ItemGroup),
+    Separate { left: ItemBatch, right: ItemBatch },
+    Combined(ItemBatch),
 }
 
 #[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
@@ -88,14 +88,14 @@ pub struct ItemPrefab {
 pub struct ItemPrefabId(pub u32);
 
 #[derive(Clone, Copy, Component, Debug)]
-pub struct ItemGroup {
+pub struct ItemBatch {
     pub prefab_id: ItemPrefabId,
     pub quantity: u32,
 }
 
 pub struct ItemTakingResult {
-    picked: Option<ItemGroup>,
-    left: Option<ItemGroup>,
+    picked: Option<ItemBatch>,
+    left: Option<ItemBatch>,
 }
 
 #[derive(Resource, Debug)]
@@ -113,17 +113,17 @@ pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, (ItemPrefab, Handle<Image>)>)
 //     }
 // }
 
-// fn pick(events: EventReader<PickItemGroupEvent>) {
+// fn pick(events: EventReader<PickItemBatchEvent>) {
 
 // }
 
-impl ItemGroup {
+impl ItemBatch {
     pub fn take(&self, item_prefab: &ItemPrefab, max_weight: u32) -> ItemTakingResult {
         let picked_quantity = (max_weight as f32 / item_prefab.weight as f32).floor() as u32;
 
         if picked_quantity >= self.quantity {
             ItemTakingResult {
-                picked: Some(ItemGroup {
+                picked: Some(ItemBatch {
                     quantity: self.quantity,
                     prefab_id: self.prefab_id,
                 }),
@@ -136,11 +136,11 @@ impl ItemGroup {
             }
         } else {
             ItemTakingResult {
-                picked: Some(ItemGroup {
+                picked: Some(ItemBatch {
                     quantity: picked_quantity,
                     prefab_id: self.prefab_id,
                 }),
-                left: Some(ItemGroup {
+                left: Some(ItemBatch {
                     quantity: self.quantity - picked_quantity,
                     prefab_id: self.prefab_id,
                 }),
@@ -149,10 +149,10 @@ impl ItemGroup {
     }
 }
 
-pub fn spawn_item_group(
+pub fn spawn_item_batch(
     commands: &mut Commands,
     texture: Handle<Image>,
-    item_group: ItemGroup,
+    item_batch: ItemBatch,
     position: Vec3,
     is_in_stockpile: bool,
 ) -> Entity {
@@ -160,7 +160,7 @@ pub fn spawn_item_group(
     commands
         .spawn_empty()
         .insert(Position(position))
-        .insert(item_group)
+        .insert(item_batch)
         .insert(SpriteBundle {
             texture,
             transform: Transform {

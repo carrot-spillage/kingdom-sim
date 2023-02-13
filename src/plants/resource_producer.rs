@@ -5,20 +5,20 @@ use bevy_turborand::prelude::*;
 
 use crate::{
     common::VariableCountdown,
-    items::{ItemGroup, ItemPrefabId},
+    items::{ItemBatch, ItemPrefabId},
 };
 
 // For resources that are produced and replenished without the neity being destroyed (a bush producing berries)
 #[derive(Component, Clone, Debug)]
 pub struct PlantResourceProducer {
-    pub current: ItemGroup,
+    pub current: ItemBatch,
     max_quantity: u32,
     countdown: VariableCountdown,
 }
 impl PlantResourceProducer {
     pub fn new(item_prefab_id: ItemPrefabId, max_quantity: u32, period_range: Range<u32>) -> Self {
         PlantResourceProducer {
-            current: ItemGroup {
+            current: ItemBatch {
                 quantity: 0,
                 prefab_id: item_prefab_id,
             },

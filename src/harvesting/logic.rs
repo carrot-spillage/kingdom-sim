@@ -1,6 +1,6 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    items::{CarrierInventory, ItemGroup, ItemPrefabMap},
+    items::{CarrierInventory, ItemBatch, ItemPrefabMap},
     plants::PlantResourceProducer,
     tasks::IdlingWorker,
 };
@@ -67,7 +67,7 @@ fn produce(
 
     let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);
 
-    resource_producer.current = rest.unwrap_or(ItemGroup {
+    resource_producer.current = rest.unwrap_or(ItemBatch {
         quantity: 0,
         prefab_id: resource_producer.current.prefab_id,
     });

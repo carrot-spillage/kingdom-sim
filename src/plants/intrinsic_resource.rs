@@ -3,13 +3,13 @@ use std::ops::Range;
 use bevy::prelude::{Component, Query};
 use bevy_turborand::prelude::*;
 
-use crate::items::{ItemGroup, ItemPrefabId};
+use crate::items::{ItemBatch, ItemPrefabId};
 
 use super::bundle::Growing;
 
 #[derive(Component, Clone, Debug)]
 pub struct IntrinsicPlantResourceGrower {
-    pub item_group: ItemGroup,
+    pub item_batch: ItemBatch,
     pub max_quantity: u32,
 }
 impl IntrinsicPlantResourceGrower {
@@ -21,7 +21,7 @@ impl IntrinsicPlantResourceGrower {
         let max_quantity = rng.u32(intrinsic_resource_max_quantity_range);
         IntrinsicPlantResourceGrower {
             max_quantity,
-            item_group: ItemGroup {
+            item_batch: ItemBatch {
                 prefab_id: item_prefab_id,
                 quantity: 0,
             },
@@ -29,12 +29,12 @@ impl IntrinsicPlantResourceGrower {
     }
 
     pub fn update(&mut self, maturity: f32) {
-        self.item_group.quantity = (maturity * self.max_quantity as f32).ceil() as u32;
+        self.item_batch.quantity = (maturity * self.max_quantity as f32).ceil() as u32;
     }
 
     // TODO: this looks like a hack. maybe it asks for redesigning the whole struct/countdown
     pub(crate) fn max_out(&mut self) {
-        self.item_group.quantity = self.max_quantity;
+        self.item_batch.quantity = self.max_quantity;
     }
 }
 
