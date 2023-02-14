@@ -20,15 +20,13 @@ use crate::{
     items::{CarrierInventory, ItemPrefabId},
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
-    planting::logic::PlantPrefabMap,
+    planting::logic::{PlantPrefabMap, Planting},
     plants::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    skills::{SkillType, Skilled},
     stockpile::spawn_stockpile,
-    tasks::{IdlingWorker, WorkerTask, WorkerTasks},
-    worker_job_tooltip::{create_tooltip_bundle, WorkerJobTooltip},
+    tasks::{create_tooltip_bundle, IdlingWorker, WorkerTask, WorkerTaskTooltip, WorkerTasks},
     GameState,
 };
 
@@ -218,6 +216,7 @@ fn init(
 fn run_dummy_commands(
     mut commands: Commands,
     mut workers: Query<(Entity, &mut RngComponent), With<Worker>>,
+    world_params: Res<WorldParams>,
     trees: Query<
         Entity,
         (
@@ -230,8 +229,10 @@ fn run_dummy_commands(
     println!("run dummy commands");
     let mut trees_iter = trees.iter();
     let mut bushes_iter = bushes.iter();
+
     for (worker_id, mut rng) in &mut workers {
-        if rng.bool() {
+        let val = rng.f32();
+        if val < 0.3 {
             let tree_id = trees_iter.next().unwrap();
             commands
                 .entity(worker_id)
@@ -239,13 +240,29 @@ fn run_dummy_commands(
                     WorkerTask::MoveToTarget { target_id: tree_id },
                     WorkerTask::CutTree { target_id: tree_id },
                 ])));
-        } else {
+        } else if val < 0.6 {
             let bush_id = bushes_iter.next().unwrap();
             commands
                 .entity(worker_id)
                 .insert(WorkerTasks(VecDeque::from(vec![
                     WorkerTask::MoveToTarget { target_id: bush_id },
                     WorkerTask::Harvest { target_id: bush_id },
+                ])));
+        } else {
+            let new_plant_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+
+            commands
+                .entity(worker_id)
+                .insert(WorkerTasks(VecDeque::from(vec![
+                    WorkerTask::MoveToPosition {
+                        position: new_plant_pos,
+                    },
+                    WorkerTask::Plant {
+                        planting: Planting {
+                            plant_prefab_id: PlantPrefabId(1),
+                            position: new_plant_pos,
+                        },
+                    },
                 ])));
         }
     }
@@ -306,7 +323,7 @@ fn spawn_worker(
             Position(position),
             RngComponent::from(global_rng),
             IdlingWorker,
-            WorkerJobTooltip {
+            WorkerTaskTooltip {
                 title: "".to_string(),
                 child: id.unwrap(),
             },

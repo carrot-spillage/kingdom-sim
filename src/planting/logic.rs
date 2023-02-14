@@ -4,7 +4,7 @@ use crate::{
         bundle::{PlantPrefab, PlantPrefabId},
         spawn_plant, PlantMaturityStage,
     },
-    tasks::IdlingWorker,
+    tasks::{IdlingWorker, WorkerTask},
 };
 use bevy::{
     prelude::{Commands, Component, Entity, Handle, Image, Query, Res, ResMut, Resource, Vec3},
@@ -12,7 +12,7 @@ use bevy::{
 };
 use bevy_turborand::GlobalRng;
 
-#[derive(Component)]
+#[derive(Component, Debug, Clone, Copy)]
 pub struct Planting {
     pub plant_prefab_id: PlantPrefabId,
     pub position: Vec3,
@@ -63,6 +63,6 @@ pub fn start_planting(
 fn cleanup(commands: &mut Commands, worker_id: Entity) {
     commands
         .entity(worker_id)
-        .remove::<(Planting, PlantingCountdown)>()
+        .remove::<(WorkerTask, Planting, PlantingCountdown)>()
         .insert(IdlingWorker);
 }

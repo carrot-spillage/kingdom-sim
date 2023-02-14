@@ -37,3 +37,5 @@ pub fn spawn_stockpile(commands: &mut Commands, position: Vec3, size: Vec2) -> E
         .insert(Stockpile)
         .id()
 }
+
+pub fn drop_in_stockpile(commands: &mut Commands, worker_id: Entity, stockpile_id: Entity) {}

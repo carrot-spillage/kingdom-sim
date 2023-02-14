@@ -1,6 +1,6 @@
 use crate::{
     common::{ClaimedBy, Countdown, NeedsDestroying, SimpleDestructible},
-    tasks::IdlingWorker,
+    tasks::{IdlingWorker, WorkerTask},
 };
 use bevy::prelude::{Commands, Component, Entity, Query};
 
@@ -84,7 +84,7 @@ fn advance(
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {
     commands
         .entity(worker_id)
-        .remove::<(TreeCutter, TreeHitCountdown)>()
+        .remove::<(WorkerTask, TreeCutter, TreeHitCountdown)>()
         .insert(IdlingWorker);
 
     if let Some(target_id) = maybe_target_id {

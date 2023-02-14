@@ -22,15 +22,6 @@ use crate::{
 
 pub struct ResourceGatheringJobPlugin;
 
-#[derive(Component, Debug)]
-pub struct TaskedWithGatheringResources;
-
-#[derive(Component, Debug)]
-pub struct LockedOnResourceChunk(pub Entity);
-
-#[derive(Component, Debug)]
-pub struct BringingResourcesToStockpile;
-
 impl Plugin for ResourceGatheringJobPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(

@@ -3,7 +3,6 @@ mod building_job;
 mod common;
 mod init;
 mod loading;
-mod worker_job_tooltip;
 // mod menu;
 mod monkey_planner;
 mod movement;
@@ -32,7 +31,6 @@ use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;
 
 use tasks::TaskPlugin;
-use worker_job_tooltip::WorkerJobTooltipPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -79,7 +77,6 @@ impl Plugin for GamePlugin {
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
             //.add_plugin(JobsPlugin)
-            .add_plugin(WorkerJobTooltipPlugin)
             .add_plugin(PlantsPlugin)
             .add_plugin(HarvestingPlugin)
             // .add_plugin(BuildingJobPlugin)
