@@ -5,6 +5,7 @@ use crate::{
     harvesting::start_harvesting,
     movement::{MovingToEntity, MovingToPosition},
     planting::logic::{start_planting, Planting},
+    worker::schedule_dropping_items,
     GameState,
 };
 use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Vec3, With};
@@ -34,7 +35,7 @@ impl Plugin for TaskPlugin {
 pub enum WorkerTask {
     CutTree { target_id: Entity },
     Plant { planting: Planting },
-    DropItems { target_id: Entity },
+    DropItems,
     Harvest { target_id: Entity },
     MoveToTarget { target_id: Entity },
     MoveToPosition { position: Vec3 },
@@ -65,11 +66,6 @@ fn proceed_to_next_task(
 
 fn arrange_next_task(commands: &mut Commands, worker_id: Entity, next_task: WorkerTask) {
     match next_task {
-        WorkerTask::CutTree { target_id } => {
-            start_cutting_tree(commands, worker_id, target_id, 1.0);
-        }
-        WorkerTask::Harvest { target_id } => start_harvesting(commands, worker_id, target_id, 1.0),
-        WorkerTask::Plant { planting } => start_planting(commands, planting, worker_id, 1.0),
         WorkerTask::MoveToTarget { target_id } => {
             commands.entity(worker_id).insert(MovingToEntity {
                 destination_entity: target_id,
@@ -82,11 +78,11 @@ fn arrange_next_task(commands: &mut Commands, worker_id: Entity, next_task: Work
                 sufficient_range: 20.0,
             });
         }
-        WorkerTask::DropItems { target_id } => {
-            // commands
-            //     .entity(worker_id)
-            //     .insert(TransferItemsTo { target_id });
-            //drop_in_stockpile(commands, worker_id, target_id)
+        WorkerTask::CutTree { target_id } => {
+            start_cutting_tree(commands, worker_id, target_id, 1.0);
         }
+        WorkerTask::Harvest { target_id } => start_harvesting(commands, worker_id, target_id, 1.0),
+        WorkerTask::Plant { planting } => start_planting(commands, planting, worker_id, 1.0),
+        WorkerTask::DropItems => schedule_dropping_items(commands, worker_id),
     }
 }

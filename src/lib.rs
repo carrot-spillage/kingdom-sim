@@ -16,9 +16,9 @@ mod planting;
 mod planting_crops;
 mod plants;
 mod skills;
-mod stockpile;
 mod tasks;
 mod work_progress;
+mod worker;
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
@@ -42,6 +42,7 @@ use movement::MovementPlugin;
 use cutting_tree::TreeCuttingPlugin;
 use planned_work::WorkOnArrivalPlugin;
 use plants::PlantsPlugin;
+use worker::CarrierPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -72,11 +73,11 @@ impl Plugin for GamePlugin {
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
             .add_plugin(LoadingPlugin)
-            .add_plugin(RngPlugin::default())
+            .add_plugin(RngPlugin::default().with_rng_seed(12345))
+            .add_plugin(CarrierPlugin)
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
-            //.add_plugin(JobsPlugin)
             .add_plugin(PlantsPlugin)
             .add_plugin(HarvestingPlugin)
             // .add_plugin(BuildingJobPlugin)

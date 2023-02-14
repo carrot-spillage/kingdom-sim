@@ -1,32 +1,28 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 use bevy::{
-    hierarchy::BuildChildren,
     math::{Vec2, Vec3},
     prelude::{
-        debug, App, Bundle, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res,
-        ResMut, Resource, State, SystemSet, Transform, With, Without,
+        App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut, Resource,
+        State, SystemSet, With, Without,
     },
-    sprite::{Sprite, SpriteBundle},
-    utils::tracing::field::debug,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
-use rand::Rng;
 
 use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
-    items::{CarrierInventory, ItemPrefabId},
+    items::ItemPrefabId,
     loading::{FontAssets, TextureAssets},
-    movement::{hack_3d_position_to_2d, Position, Walker},
+    movement::Position,
     planting::logic::{PlantPrefabMap, Planting},
     plants::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    stockpile::spawn_stockpile,
-    tasks::{create_tooltip_bundle, IdlingWorker, WorkerTask, WorkerTaskTooltip, WorkerTasks},
+    tasks::{WorkerTask, WorkerTasks},
+    worker::{spawn_worker, Worker},
     GameState,
 };
 
@@ -62,13 +58,13 @@ fn init(
     commands.spawn(Camera2dBundle::default());
 
     // for _ in 0..1 {
-    //     let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+    //     let pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
     //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
 
     //     let work_id = MonkeyPlanner::plan_house(
     //         &mut commands,
     //         &textures,
-    //         get_random_pos(Vec2::ZERO, world_params.size / 4.0),
+    //         get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 4.0),
     //     );
 
     //     MonkeyPlanner::temp_recruit_workers(
@@ -79,18 +75,13 @@ fn init(
     //     )
     // }
 
-    {
-        let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
-        spawn_stockpile(&mut commands, pos, Vec2::new(100.0, 100.0));
-    }
-
     // for _ in 0..1 {
-    //     let pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+    //     let pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
     //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
 
     //     let work_id = plan_farm_field(
     //         &mut commands,
-    //         get_random_pos(Vec2::ZERO, world_params.size / 4.0),
+    //         get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 4.0),
     //     );
 
     //     MonkeyPlanner::temp_recruit_workers(
@@ -103,9 +94,9 @@ fn init(
 
     // TODO: new tree cutting
     // for _ in 0..2 {
-    //     let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    //     let worker_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
     //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
-    //     let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    //     let tree_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
 
     //     let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
     //     let work_id = plan_tree_cutting(&mut commands, tree_id);
@@ -119,7 +110,7 @@ fn init(
     // }
 
     // for _ in 0..1 {
-    //     let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+    //     let worker_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
     //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
     //     plan_resource_gathering(&mut commands, worker_id);
     // }
@@ -130,9 +121,11 @@ fn init(
         scale: 0.03,
     };
 
+    let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
+    commands.spawn((Campfire, Position(campfire_pos)));
     // CONSTRUCTION SITES
     for _ in 0..5 {
-        let pos = get_random_pos(Vec2::ZERO, world_params.size / 4.0);
+        let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
 
         let construction_site_id = commands.spawn_empty().id();
         spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
@@ -162,7 +155,7 @@ fn init(
     // Use move_to_work()
 
     // for _ in 0..20 {
-    //     let position = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+    //     let position = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
     //     let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
     //     spawn_plant(
     //         &mut commands,
@@ -174,7 +167,7 @@ fn init(
     // }
 
     for _ in 0..30 {
-        let tree_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_id = spawn_plant(
             &mut commands,
@@ -187,7 +180,7 @@ fn init(
     }
 
     for _ in 0..5 {
-        let bush_pos = get_random_pos(Vec2::ZERO, world_params.size / 3.0);
+        let bush_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
         let (prefab, texture) = plants.0.get(&PlantPrefabId(2)).unwrap();
         let bush_id = spawn_plant(
             &mut commands,
@@ -200,7 +193,7 @@ fn init(
     }
 
     for _ in 0..5 {
-        let worker_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+        let worker_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let worker_id = spawn_worker(
             &mut commands,
             &mut global_rng,
@@ -213,8 +206,13 @@ fn init(
     game_state.overwrite_set(GameState::Playing).unwrap();
 }
 
+#[derive(Component)]
+struct Campfire;
+
 fn run_dummy_commands(
+    mut global_rng: ResMut<GlobalRng>,
     mut commands: Commands,
+    campfires: Query<&Position, With<Campfire>>,
     mut workers: Query<(Entity, &mut RngComponent), With<Worker>>,
     world_params: Res<WorldParams>,
     trees: Query<
@@ -226,14 +224,20 @@ fn run_dummy_commands(
     >,
     bushes: Query<Entity, With<PlantResourceProducer>>,
 ) {
-    println!("run dummy commands");
     let mut trees_iter = trees.iter();
     let mut bushes_iter = bushes.iter();
+    let campfire_pos = campfires.single().0.clone();
 
     for (worker_id, mut rng) in &mut workers {
         let val = rng.f32();
         if val < 0.3 {
             let tree_id = trees_iter.next().unwrap();
+            let drop_pos = get_random_pos(
+                &mut global_rng,
+                campfire_pos.truncate(),
+                Vec2::new(20.0, 20.0),
+            );
+
             commands
                 .entity(worker_id)
                 .insert(WorkerTasks(VecDeque::from(vec![
@@ -242,14 +246,22 @@ fn run_dummy_commands(
                 ])));
         } else if val < 0.6 {
             let bush_id = bushes_iter.next().unwrap();
+            let drop_pos = get_random_pos(
+                &mut global_rng,
+                campfire_pos.truncate(),
+                Vec2::new(20.0, 20.0),
+            );
             commands
                 .entity(worker_id)
                 .insert(WorkerTasks(VecDeque::from(vec![
                     WorkerTask::MoveToTarget { target_id: bush_id },
                     WorkerTask::Harvest { target_id: bush_id },
+                    WorkerTask::MoveToPosition { position: drop_pos },
+                    WorkerTask::DropItems,
                 ])));
         } else {
-            let new_plant_pos = get_random_pos(Vec2::ZERO, world_params.size / 2.0);
+            let new_plant_pos =
+                get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
 
             commands
                 .entity(worker_id)
@@ -268,75 +280,10 @@ fn run_dummy_commands(
     }
 }
 
-pub fn get_random_pos(origin: Vec2, range: Vec2) -> Vec3 {
-    let mut rng = rand::thread_rng();
+pub fn get_random_pos(global_rng: &mut ResMut<GlobalRng>, origin: Vec2, range: Vec2) -> Vec3 {
     (Vec2::new(
-        rng.gen_range(-range.x..range.x),
-        rng.gen_range(-range.y..range.y),
+        global_rng.f32_normalized() * range.x,
+        global_rng.f32_normalized() * range.y,
     ) + origin)
         .extend(0.0)
-}
-
-#[derive(Component)]
-pub struct Worker;
-
-fn spawn_worker(
-    commands: &mut Commands,
-    global_rng: &mut ResMut<GlobalRng>,
-    textures: &Res<TextureAssets>,
-    fonts: &Res<FontAssets>,
-    position: Vec3,
-) -> Entity {
-    let bundle = WorkerBundle {
-        worker: Worker,
-        inventory: CarrierInventory {
-            items: vec![],
-            max_weight: 50,
-        },
-        walker: Walker {
-            max_speed: 2.0,
-            current_speed: 0.0,
-            acceleration: 0.5,
-        },
-        position: Position(position),
-        sprite: SpriteBundle {
-            texture: textures.peasant.clone(),
-            transform: Transform {
-                translation: hack_3d_position_to_2d(position),
-                ..Transform::default()
-            },
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(8.0, 12.25)),
-                ..Sprite::default()
-            },
-            ..Default::default()
-        },
-    };
-
-    let mut id = None::<Entity>;
-    commands
-        .spawn(bundle)
-        .with_children(|parent| {
-            id = Some(parent.spawn(create_tooltip_bundle(13.0, &fonts)).id());
-        })
-        .insert((
-            Position(position),
-            RngComponent::from(global_rng),
-            IdlingWorker,
-            WorkerTaskTooltip {
-                title: "".to_string(),
-                child: id.unwrap(),
-            },
-        ))
-        .id()
-}
-
-#[derive(Bundle)]
-
-struct WorkerBundle {
-    worker: Worker,
-    walker: Walker,
-    position: Position,
-    sprite: SpriteBundle,
-    inventory: CarrierInventory,
 }

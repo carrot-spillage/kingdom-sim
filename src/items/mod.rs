@@ -1,25 +1,11 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform, Vec2},
+    prelude::{Commands, Component, Entity, Handle, Image, Resource, Transform},
     sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
-use conditional_commands::ConditionalInsertBundleExt;
 
-use crate::{
-    movement::{hack_3d_position_to_2d, Position},
-    stockpile::InStockpile,
-};
-
-/*
-I have a game unit called Villager.
-Villager can carry logs, wheat, gems, swords, wands.
-
-Villager
-    - has Iventory
-    - has Hands (can hold)
-
-*/
+use crate::movement::{hack_3d_position_to_2d, Position};
 
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
@@ -154,7 +140,6 @@ pub fn spawn_item_batch(
     texture: Handle<Image>,
     item_batch: ItemBatch,
     position: Vec3,
-    is_in_stockpile: bool,
 ) -> Entity {
     println!("Spawning resource");
     commands
@@ -174,6 +159,5 @@ pub fn spawn_item_batch(
             },
             ..Default::default()
         })
-        .insert_if(is_in_stockpile, || InStockpile)
         .id()
 }

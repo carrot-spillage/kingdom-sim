@@ -29,13 +29,7 @@ pub fn break_into_resources(
             }
             let (prefab, texture) = items.0.get(&item_batch.prefab_id).unwrap();
             println!("Dumping grower");
-            spawn_item_batch(
-                &mut commands,
-                texture.clone(),
-                item_batch,
-                position.0,
-                false,
-            );
+            spawn_item_batch(&mut commands, texture.clone(), item_batch, position.0);
         }
         if let Some(producer) = maybe_producer {
             let item_batch = producer.current;
@@ -44,13 +38,7 @@ pub fn break_into_resources(
             }
             let (prefab, texture) = items.0.get(&item_batch.prefab_id).unwrap();
 
-            spawn_item_batch(
-                &mut commands,
-                texture.clone(),
-                item_batch,
-                position.0,
-                false,
-            );
+            spawn_item_batch(&mut commands, texture.clone(), item_batch, position.0);
         }
 
         commands.entity(entity).despawn();

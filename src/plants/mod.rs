@@ -6,7 +6,7 @@ mod resource_producer;
 use bevy::{
     prelude::{
         App, Commands, Entity, Handle, Image, Plugin, Query, Res, ResMut, SystemSet, Transform,
-        Vec2, Vec3,
+        Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };

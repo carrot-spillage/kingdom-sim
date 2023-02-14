@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Component, Entity, EventWriter, Plugin, Query, SystemSet, Transform},
+    prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Transform},
 };
 
 use crate::{
@@ -55,8 +55,6 @@ pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
     Vec3::new(position.x, position.y, 500.0 + position.y) // z cannot be negative so adding 1000.0 just to be sure
 }
 
-/// This plugin is responsible for the game menu (containing only one button...)
-/// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ArrivedToPositionEvent>()
