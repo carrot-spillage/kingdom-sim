@@ -9,16 +9,15 @@ mod movement;
 mod planned_work;
 
 mod crafting_progress;
+mod creature;
 mod cutting_tree;
 mod harvesting;
 mod items;
 mod planting;
-mod planting_crops;
 mod plants;
 mod skills;
 mod tasks;
 mod work_progress;
-mod worker;
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
@@ -39,10 +38,10 @@ use init::{InitPlugin, WorldParams};
 
 use movement::MovementPlugin;
 
+use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
 use planned_work::WorkOnArrivalPlugin;
 use plants::PlantsPlugin;
-use worker::CarrierPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html

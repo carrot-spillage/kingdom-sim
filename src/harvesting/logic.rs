@@ -2,7 +2,7 @@ use crate::{
     common::{ClaimedBy, Countdown},
     items::{CarrierInventory, ItemBatch, ItemPrefabMap},
     plants::PlantResourceProducer,
-    tasks::{IdlingWorker, WorkerTask},
+    tasks::{CreatureTask, IdlingCreature},
 };
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
@@ -76,8 +76,8 @@ fn produce(
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {
     commands
         .entity(worker_id)
-        .remove::<(WorkerTask, Harvester, HarvestBatchCountdown)>()
-        .insert(IdlingWorker);
+        .remove::<(CreatureTask, Harvester, HarvestBatchCountdown)>()
+        .insert(IdlingCreature);
 
     if let Some(target_id) = maybe_target_id {
         commands.entity(target_id).remove::<ClaimedBy>();

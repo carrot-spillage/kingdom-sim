@@ -21,8 +21,8 @@ use crate::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    tasks::{WorkerTask, WorkerTasks},
-    worker::{spawn_worker, Worker},
+    tasks::{CreatureTask, CreatureTasks},
+    creature::{spawn_creature, Creature},
     GameState,
 };
 
@@ -194,7 +194,7 @@ fn init(
 
     for _ in 0..5 {
         let worker_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-        let worker_id = spawn_worker(
+        let worker_id = spawn_creature(
             &mut commands,
             &mut global_rng,
             &textures,
@@ -213,7 +213,7 @@ fn run_dummy_commands(
     mut global_rng: ResMut<GlobalRng>,
     mut commands: Commands,
     campfires: Query<&Position, With<Campfire>>,
-    mut workers: Query<(Entity, &mut RngComponent), With<Worker>>,
+    mut workers: Query<(Entity, &mut RngComponent), With<Creature>>,
     world_params: Res<WorldParams>,
     trees: Query<
         Entity,
@@ -240,9 +240,9 @@ fn run_dummy_commands(
 
             commands
                 .entity(worker_id)
-                .insert(WorkerTasks(VecDeque::from(vec![
-                    WorkerTask::MoveToTarget { target_id: tree_id },
-                    WorkerTask::CutTree { target_id: tree_id },
+                .insert(CreatureTasks(VecDeque::from(vec![
+                    CreatureTask::MoveToTarget { target_id: tree_id },
+                    CreatureTask::CutTree { target_id: tree_id },
                 ])));
         } else if val < 0.6 {
             let bush_id = bushes_iter.next().unwrap();
@@ -253,11 +253,11 @@ fn run_dummy_commands(
             );
             commands
                 .entity(worker_id)
-                .insert(WorkerTasks(VecDeque::from(vec![
-                    WorkerTask::MoveToTarget { target_id: bush_id },
-                    WorkerTask::Harvest { target_id: bush_id },
-                    WorkerTask::MoveToPosition { position: drop_pos },
-                    WorkerTask::DropItems,
+                .insert(CreatureTasks(VecDeque::from(vec![
+                    CreatureTask::MoveToTarget { target_id: bush_id },
+                    CreatureTask::Harvest { target_id: bush_id },
+                    CreatureTask::MoveToPosition { position: drop_pos },
+                    CreatureTask::DropItems,
                 ])));
         } else {
             let new_plant_pos =
@@ -265,11 +265,11 @@ fn run_dummy_commands(
 
             commands
                 .entity(worker_id)
-                .insert(WorkerTasks(VecDeque::from(vec![
-                    WorkerTask::MoveToPosition {
+                .insert(CreatureTasks(VecDeque::from(vec![
+                    CreatureTask::MoveToPosition {
                         position: new_plant_pos,
                     },
-                    WorkerTask::Plant {
+                    CreatureTask::Plant {
                         planting: Planting {
                             plant_prefab_id: PlantPrefabId(1),
                             position: new_plant_pos,

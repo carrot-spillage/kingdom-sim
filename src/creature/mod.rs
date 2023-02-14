@@ -11,13 +11,13 @@ use crate::{
     items::{spawn_item_batch, CarrierInventory, ItemPrefabMap},
     loading::{FontAssets, TextureAssets},
     movement::{hack_3d_position_to_2d, Position, Walker},
-    tasks::{create_tooltip_bundle, IdlingWorker, WorkerTask, WorkerTaskTooltip},
+    tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
     GameState,
 };
 
 #[derive(Bundle)]
 struct WorkerBundle {
-    worker: Worker,
+    creature: Creature,
     walker: Walker,
     position: Position,
     sprite: SpriteBundle,
@@ -25,9 +25,9 @@ struct WorkerBundle {
 }
 
 #[derive(Component)]
-pub struct Worker;
+pub struct Creature;
 
-pub fn spawn_worker(
+pub fn spawn_creature(
     commands: &mut Commands,
     global_rng: &mut ResMut<GlobalRng>,
     textures: &Res<TextureAssets>,
@@ -35,7 +35,7 @@ pub fn spawn_worker(
     position: Vec3,
 ) -> Entity {
     let bundle = WorkerBundle {
-        worker: Worker,
+        creature: Creature,
         inventory: CarrierInventory {
             items: vec![],
             max_weight: 50,
@@ -69,8 +69,8 @@ pub fn spawn_worker(
         .insert((
             Position(position),
             RngComponent::from(global_rng),
-            IdlingWorker,
-            WorkerTaskTooltip {
+            IdlingCreature,
+            CreatureTaskTooltip {
                 title: "".to_string(),
                 child: id.unwrap(),
             },
@@ -121,6 +121,6 @@ fn drop_items(
 fn cleanup(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
-        .remove::<(WorkerTask, CarrierDroppingItems)>()
-        .insert(IdlingWorker);
+        .remove::<(CreatureTask, CarrierDroppingItems)>()
+        .insert(IdlingCreature);
 }

@@ -1,25 +1,24 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        default, Added, Changed, Color, Component, Entity, Query, Res,
-        Transform, With, Without,
+        default, Added, Changed, Color, Component, Entity, Query, Res, Transform, With, Without,
     },
     text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
 };
 
 use crate::{
     loading::FontAssets,
-    tasks::{IdlingWorker, WorkerTask},
+    tasks::{CreatureTask, IdlingCreature},
 };
 
 #[derive(Component)]
-pub struct WorkerTaskTooltip {
+pub struct CreatureTaskTooltip {
     pub title: String,
     pub child: Entity,
 }
 
 pub fn update_tooltip_text(
-    task_tooltips: Query<&WorkerTaskTooltip, Changed<WorkerTaskTooltip>>,
+    task_tooltips: Query<&CreatureTaskTooltip, Changed<CreatureTaskTooltip>>,
     mut texts: Query<&mut Text>,
     fonts: Res<FontAssets>,
 ) {
@@ -59,22 +58,22 @@ pub fn create_tooltip_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle 
 
 pub fn update_tooltip(
     mut work_completed_query: Query<
-        &mut WorkerTaskTooltip,
-        (Without<WorkerTask>, Added<IdlingWorker>),
+        &mut CreatureTaskTooltip,
+        (Without<CreatureTask>, Added<IdlingCreature>),
     >,
     mut work_started_query: Query<
-        (&mut WorkerTaskTooltip, &WorkerTask),
-        (With<WorkerTask>, Added<WorkerTask>),
+        (&mut CreatureTaskTooltip, &CreatureTask),
+        (With<CreatureTask>, Added<CreatureTask>),
     >,
 ) {
     for (mut tootltip, task) in &mut work_started_query {
         let task_name = match task {
-            WorkerTask::Plant { .. } => "Planting",
-            WorkerTask::CutTree { .. } => "Cutting tree",
-            WorkerTask::Harvest { .. } => "Harvesting",
-            WorkerTask::MoveToTarget { .. } => "Moving to target",
-            WorkerTask::MoveToPosition { .. } => "Moving to position",
-            WorkerTask::DropItems { .. } => "Dropping items",
+            CreatureTask::Plant { .. } => "Planting",
+            CreatureTask::CutTree { .. } => "Cutting tree",
+            CreatureTask::Harvest { .. } => "Harvesting",
+            CreatureTask::MoveToTarget { .. } => "Moving to target",
+            CreatureTask::MoveToPosition { .. } => "Moving to position",
+            CreatureTask::DropItems { .. } => "Dropping items",
         };
         tootltip.title = format!("Task: {task_name}");
     }

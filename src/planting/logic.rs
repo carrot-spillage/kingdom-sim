@@ -4,7 +4,7 @@ use crate::{
         bundle::{PlantPrefab, PlantPrefabId},
         spawn_plant, PlantMaturityStage,
     },
-    tasks::{IdlingWorker, WorkerTask},
+    tasks::{CreatureTask, IdlingCreature},
 };
 use bevy::{
     prelude::{Commands, Component, Entity, Handle, Image, Query, Res, ResMut, Resource, Vec3},
@@ -63,6 +63,6 @@ pub fn start_planting(
 fn cleanup(commands: &mut Commands, worker_id: Entity) {
     commands
         .entity(worker_id)
-        .remove::<(WorkerTask, Planting, PlantingCountdown)>()
-        .insert(IdlingWorker);
+        .remove::<(CreatureTask, Planting, PlantingCountdown)>()
+        .insert(IdlingCreature);
 }

@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    tasks::{IdlingWorker, WorkerTask},
+    tasks::{CreatureTask, IdlingCreature},
     GameState,
 };
 
@@ -86,8 +86,8 @@ fn move_to_position(
             walker.stop();
             commands
                 .entity(entity_id)
-                .remove::<(WorkerTask, MovingToPosition)>()
-                .insert(IdlingWorker);
+                .remove::<(CreatureTask, MovingToPosition)>()
+                .insert(IdlingCreature);
         }
     }
 }
@@ -116,8 +116,8 @@ fn move_to_entity(
                 walker.stop();
                 commands
                     .entity(entity_id)
-                    .remove::<(WorkerTask, MovingToEntity)>()
-                    .insert(IdlingWorker);
+                    .remove::<(CreatureTask, MovingToEntity)>()
+                    .insert(IdlingCreature);
             }
         }
     }
