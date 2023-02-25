@@ -7,12 +7,21 @@ use bevy::{
         State, SystemSet, With, Without,
     },
 };
+use bevy_ecs_tilemap::{
+    prelude::{
+        get_tilemap_center_transform, IsoCoordSystem, TilemapId, TilemapSize, TilemapTexture,
+        TilemapTileSize, TilemapType,
+    },
+    tiles::{TileBundle, TilePos, TileStorage},
+    TilemapBundle,
+};
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
+    creature::{spawn_creature, Creature},
     items::ItemPrefabId,
     loading::{FontAssets, TextureAssets},
     movement::Position,
@@ -22,7 +31,6 @@ use crate::{
         PlantResourceProducer,
     },
     tasks::{CreatureTask, CreatureTasks},
-    creature::{spawn_creature, Creature},
     GameState,
 };
 
@@ -57,64 +65,7 @@ fn init(
 ) {
     commands.spawn(Camera2dBundle::default());
 
-    // for _ in 0..1 {
-    //     let pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-    //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
-
-    //     let work_id = MonkeyPlanner::plan_house(
-    //         &mut commands,
-    //         &textures,
-    //         get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 4.0),
-    //     );
-
-    //     MonkeyPlanner::temp_recruit_workers(
-    //         &mut commands,
-    //         work_id,
-    //         vec![worker_id],
-    //         BUILDING_JOB_NAME,
-    //     )
-    // }
-
-    // for _ in 0..1 {
-    //     let pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-    //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, pos);
-
-    //     let work_id = plan_farm_field(
-    //         &mut commands,
-    //         get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 4.0),
-    //     );
-
-    //     MonkeyPlanner::temp_recruit_workers(
-    //         &mut commands,
-    //         work_id,
-    //         vec![worker_id],
-    //         PLANTING_JOB_NAME,
-    //     )
-    // }
-
-    // TODO: new tree cutting
-    // for _ in 0..2 {
-    //     let worker_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
-    //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
-    //     let tree_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
-
-    //     let tree_id = spawn_tree(&mut commands, &textures, tree_pos);
-    //     let work_id = plan_tree_cutting(&mut commands, tree_id);
-
-    //     // MonkeyPlanner::temp_recruit_workers(
-    //     //     &mut commands,
-    //     //     work_id,
-    //     //     vec![worker_id],
-    //     //     TREE_CUTTING_JOB_NAME,
-    //     // )
-    // }
-
-    // for _ in 0..1 {
-    //     let worker_pos = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
-    //     let worker_id = spawn_worker(&mut commands, &textures, &fonts, worker_pos);
-    //     plan_resource_gathering(&mut commands, worker_id);
-    // }
-
+    create_tilemap(&mut commands, &world_params, &textures);
     let house_textures = BuildingTextureSet {
         in_progress: vec![textures.house_in_progress.clone()],
         completed: textures.house.clone(),
@@ -147,36 +98,34 @@ fn init(
         if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
             commands.entity(construction_site_id).insert(new_texture);
         }
-
-        // convert_construction_site_to_building(construction_site_id, &mut commands, &house_textures);
     }
 
-    // MOVE TO THE WORK ENTITY
-    // Use move_to_work()
-
-    // for _ in 0..20 {
-    //     let position = get_random_pos_2(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-    //     let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
-    //     spawn_plant(
-    //         &mut commands,
-    //         prefab,
-    //         texture.clone(),
-    //         position,
-    //         &PlantMaturityStage::FullyGrown,
-    //     );
-    // }
-
-    for _ in 0..30 {
-        let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
+    // putting them all in line
+    let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, Vec2::new(10.0, 10.0));
+    for i in 0..10 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_id = spawn_plant(
             &mut commands,
             &mut global_rng,
             prefab,
             texture.clone(),
-            tree_pos,
+            Vec3::new(100.0, 100. - (i as f32) * 20.0, 0.),
             &PlantMaturityStage::FullyGrown,
         );
+        println!("spawns a tree");
+    }
+
+    for i in 0..10 {
+        let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
+        let tree_id = spawn_plant(
+            &mut commands,
+            &mut global_rng,
+            prefab,
+            textures.logs.clone(),
+            Vec3::new(-300.0, 100. - (i as f32) * 20.0, 0.),
+            &PlantMaturityStage::FullyGrown,
+        );
+        println!("spawns a log");
     }
 
     for _ in 0..5 {
@@ -205,6 +154,73 @@ fn init(
 
     game_state.overwrite_set(GameState::Playing).unwrap();
 }
+
+fn create_tilemap(
+    commands: &mut Commands,
+    world_params: &Res<WorldParams>,
+    textures: &Res<TextureAssets>,
+) {
+    let tile_size = TilemapTileSize { x: 19.0, y: 11.0 };
+    let grid_size = tile_size.into();
+    let map_type = TilemapType::Isometric(IsoCoordSystem::Diamond);
+
+    let tilemap_entity = commands.spawn_empty().id();
+    let side = (world_params.size.x / tile_size.x) as u32;
+    let map_size = TilemapSize { x: side, y: side };
+    let mut tile_storage = TileStorage::empty(map_size);
+
+    for x in 0..map_size.x {
+        for y in 0..map_size.y {
+            let tile_pos = TilePos { x, y };
+            let tile_entity = commands
+                .spawn(TileBundle {
+                    position: tile_pos,
+                    tilemap_id: TilemapId(tilemap_entity),
+                    ..Default::default()
+                })
+                .id();
+            tile_storage.set(&tile_pos, tile_entity);
+        }
+    }
+
+    commands.entity(tilemap_entity).insert(TilemapBundle {
+        grid_size,
+        map_type,
+        size: map_size,
+        storage: tile_storage,
+        texture: TilemapTexture::Single(textures.tile.clone()),
+        tile_size,
+        transform: get_tilemap_center_transform(&map_size, &grid_size, &map_type, 0.0),
+        ..Default::default()
+    });
+}
+
+// fn swap_texture_or_hide(
+//     asset_server: Res<AssetServer>,
+//     keyboard_input: Res<Input<KeyCode>>,
+//     mut query: Query<(&mut TilemapTexture, &mut Visibility)>,
+// ) {
+//     if keyboard_input.just_pressed(KeyCode::Space) {
+//         let texture_a = TilemapTexture::Single(asset_server.load("tiles.png"));
+//         let texture_b = TilemapTexture::Single(asset_server.load("tiles2.png"));
+//         for (mut tilemap_tex, _) in &mut query {
+//             if *tilemap_tex == texture_a {
+//                 *tilemap_tex = texture_b.clone();
+//             } else {
+//                 *tilemap_tex = texture_a.clone();
+//             }
+//         }
+//     }
+//     if keyboard_input.just_pressed(KeyCode::H) {
+//         for (_, mut visibility) in &mut query {
+//             if visibility.is_visible {
+//                 visibility.is_visible = false;
+//             } else {
+//                 visibility.is_visible = true;
+//             }
+//         }
+//     }
+// }
 
 #[derive(Component)]
 struct Campfire;
@@ -281,9 +297,10 @@ fn run_dummy_commands(
 }
 
 pub fn get_random_pos(global_rng: &mut ResMut<GlobalRng>, origin: Vec2, range: Vec2) -> Vec3 {
-    (Vec2::new(
+    let pos = (Vec2::new(
         global_rng.f32_normalized() * range.x,
         global_rng.f32_normalized() * range.y,
-    ) + origin)
-        .extend(0.0)
+    ) + origin);
+
+    pos.extend(1000.0 - pos.y)
 }

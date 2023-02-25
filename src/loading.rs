@@ -1,7 +1,7 @@
 use crate::{
-    items::{ItemPrefab, ItemPrefabId, ItemPrefabMap},
+    items::{ItemPrefab, ItemPrefabMap},
     planting::logic::PlantPrefabMap,
-    plants::bundle::{PlantPrefab, PlantPrefabId},
+    plants::bundle::PlantPrefab,
     GameState,
 };
 use bevy::{prelude::*, utils::hashbrown::HashMap};
@@ -70,8 +70,8 @@ pub struct AudioAssets {
 
 #[derive(AssetCollection, Resource)]
 pub struct TextureAssets {
-    #[asset(path = "textures/bevy.png")]
-    pub texture_bevy: Handle<Image>,
+    #[asset(path = "textures/tile.png")]
+    pub tile: Handle<Image>,
 
     #[asset(path = "textures/house.png")]
     pub house: Handle<Image>,

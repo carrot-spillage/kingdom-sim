@@ -24,6 +24,7 @@ use crate::loading::LoadingPlugin;
 
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
+use bevy_ecs_tilemap::{helpers, TilemapPlugin};
 use bevy_turborand::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
@@ -64,7 +65,7 @@ pub struct Dummy;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let world_params = WorldParams {
-            size: Vec2::new(800.0, 800.0),
+            size: Vec2::new(1200.0, 1200.0),
         };
         app.insert_resource(world_params);
 
@@ -84,7 +85,12 @@ impl Plugin for GamePlugin {
             .add_plugin(PlantingPlugin)
             .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(BuildingJobPlugin)
-            .add_plugin(InitPlugin);
+            .add_plugin(InitPlugin)
+            // stuff added for tilemap
+            //.set(ImagePlugin::default_nearest())
+            .add_plugin(TilemapPlugin);
+        // .add_startup_system(startup)
+        // .add_system(helpers::camera::movement);
         // #[cfg(debug_assertions)]
         // {
         //     app.add_plugin(FrameTimeDiagnosticsPlugin::default())

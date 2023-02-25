@@ -1,6 +1,8 @@
+use std::f32::consts::PI;
+
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Transform},
+    prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Transform, Vec2},
 };
 
 use crate::{
@@ -52,7 +54,17 @@ pub struct ArrivedToEntityEvent {
 pub struct MovementPlugin;
 
 pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
-    Vec3::new(position.x, position.y, 500.0 + position.y) // z cannot be negative so adding 1000.0 just to be sure
+    let result = isometric(position.truncate());
+    println!(
+        "before {:?} after {:?}",
+        position,
+        result.extend(1000.0 - result.y).clone()
+    );
+    result.extend(1000.0 - result.y)
+}
+
+fn isometric(vec: Vec2) -> Vec2 {
+    Vec2::from_angle(-PI * 0.25).rotate(vec) * Vec2::new(1.0, 0.5)
 }
 
 impl Plugin for MovementPlugin {
