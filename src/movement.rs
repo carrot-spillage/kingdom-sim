@@ -2,7 +2,9 @@ use std::f32::consts::PI;
 
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Transform, Vec2},
+    prelude::{
+        App, Changed, Commands, Component, Entity, Plugin, Query, SystemSet, Transform, Vec2,
+    },
 };
 
 use crate::{
@@ -55,11 +57,6 @@ pub struct MovementPlugin;
 
 pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
     let result = isometric(position.truncate());
-    println!(
-        "before {:?} after {:?}",
-        position,
-        result.extend(1000.0 - result.y).clone()
-    );
     result.extend(1000.0 - result.y)
 }
 
@@ -74,25 +71,31 @@ impl Plugin for MovementPlugin {
             .add_system_set(
                 SystemSet::on_update(GameState::Playing)
                     .with_system(move_to_position)
-                    .with_system(move_to_entity),
+                    .with_system(move_to_entity)
+                    .with_system(isometrify_from_position),
             );
+    }
+}
+
+fn isometrify_from_position(mut positions: Query<(&mut Transform, &Position), Changed<Position>>) {
+    for (mut transform, position) in &mut positions {
+        transform.translation = hack_3d_position_to_2d(position.0);
     }
 }
 
 fn move_to_position(
     mut moving: Query<(Entity, &mut Walker, &MovingToPosition)>,
-    mut positions: Query<(&mut Position, &mut Transform)>,
+    mut positions: Query<&mut Position>,
     mut commands: Commands,
 ) {
     for (entity_id, mut walker, moving_to_position) in moving.iter_mut() {
-        let (mut this_pos_res, mut this_transform) = positions.get_mut(entity_id).unwrap();
+        let mut this_pos_res = positions.get_mut(entity_id).unwrap();
 
         let distance = this_pos_res.0.distance(moving_to_position.position);
         if distance > moving_to_position.sufficient_range {
             this_pos_res.0 = this_pos_res
                 .0
                 .lerp(moving_to_position.position, walker.current_speed / distance);
-            this_transform.translation = this_pos_res.0;
             walker.walk();
         } else {
             walker.stop();
@@ -106,22 +109,20 @@ fn move_to_position(
 
 fn move_to_entity(
     mut moving: Query<(Entity, &mut Walker, &MovingToEntity)>,
-    mut positions_and_transforms: Query<(&mut Position, Option<&mut Transform>)>,
+    mut positions: Query<&mut Position>,
     mut commands: Commands,
 ) {
     for (entity_id, mut walker, moving) in moving.iter_mut() {
-        let maybe_destination_position = positions_and_transforms
+        let maybe_destination_position = positions
             .get(moving.destination_entity)
-            .map(|x| x.0 .0.clone());
+            .map(|x| x.0.clone());
         if let Ok(destination_position) = maybe_destination_position {
-            let (mut this_pos_res, this_transform) =
-                positions_and_transforms.get_mut(entity_id).unwrap();
+            let mut this_pos_res = positions.get_mut(entity_id).unwrap();
             let distance = this_pos_res.0.distance(destination_position);
             if distance > moving.sufficient_range {
                 this_pos_res.0 = this_pos_res
                     .0
                     .lerp(destination_position, walker.current_speed / distance);
-                this_transform.unwrap().translation = this_pos_res.0;
                 walker.walk();
             } else {
                 println!("Stopped {:?}", entity_id);

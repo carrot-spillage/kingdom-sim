@@ -4,8 +4,10 @@ use bevy::{
     math::{Vec2, Vec3},
     prelude::{
         App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut, Resource,
-        State, SystemSet, With, Without,
+        State, SystemSet, Transform, With, Without,
     },
+    render::primitives::Frustum,
+    sprite::SpriteBundle,
 };
 use bevy_ecs_tilemap::{
     prelude::{
@@ -24,7 +26,7 @@ use crate::{
     creature::{spawn_creature, Creature},
     items::ItemPrefabId,
     loading::{FontAssets, TextureAssets},
-    movement::Position,
+    movement::{hack_3d_position_to_2d, Position},
     planting::logic::{PlantPrefabMap, Planting},
     plants::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
@@ -63,7 +65,9 @@ fn init(
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
 ) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::new_with_far(
+        2000.0, //hack_3d_position_to_2d(world_params.size.extend(0.0)).z,
+    ));
 
     create_tilemap(&mut commands, &world_params, &textures);
     let house_textures = BuildingTextureSet {
@@ -73,56 +77,55 @@ fn init(
     };
 
     let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
-    commands.spawn((Campfire, Position(campfire_pos)));
-    // CONSTRUCTION SITES
-    for _ in 0..5 {
-        let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
-
-        let construction_site_id = commands.spawn_empty().id();
-        spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
-        let building_prefab = BuildingPrefab {
-            name: "House",
-            max_hp: 2000.0,
-            units_of_work: 100.0,
-            texture_set: BuildingTextureSet {
-                in_progress: vec![
-                    textures.house_in_progress.clone(),
-                    textures.house_in_progress.clone(),
-                ],
-                completed: textures.house.clone(),
-                scale: 0.03,
+    commands.spawn((
+        Campfire,
+        Position(campfire_pos),
+        SpriteBundle {
+            transform: Transform {
+                translation: hack_3d_position_to_2d(campfire_pos),
+                ..Default::default()
             },
-            max_workers: 2,
-            required_resources: vec![(ItemPrefabId(3), 4)],
-        };
-        if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
-            commands.entity(construction_site_id).insert(new_texture);
-        }
-    }
+            texture: textures.campfire.clone(),
+            ..Default::default()
+        },
+    ));
+    // CONSTRUCTION SITES
+    // for _ in 0..5 {
+    //     let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
+
+    //     let construction_site_id = commands.spawn_empty().id();
+    //     spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
+    //     let building_prefab = BuildingPrefab {
+    //         name: "House",
+    //         max_hp: 2000.0,
+    //         units_of_work: 100.0,
+    //         texture_set: BuildingTextureSet {
+    //             in_progress: vec![
+    //                 textures.house_in_progress.clone(),
+    //                 textures.house_in_progress.clone(),
+    //             ],
+    //             completed: textures.house.clone(),
+    //             scale: 0.03,
+    //         },
+    //         max_workers: 2,
+    //         required_resources: vec![(ItemPrefabId(3), 4)],
+    //     };
+    //     if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
+    //         commands.entity(construction_site_id).insert(new_texture);
+    //     }
+    // }
 
     // putting them all in line
-    let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, Vec2::new(10.0, 10.0));
-    for i in 0..10 {
+
+    for i in 0..20 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
+        let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size);
         let tree_id = spawn_plant(
             &mut commands,
             &mut global_rng,
             prefab,
             texture.clone(),
-            Vec3::new(100.0, 100. - (i as f32) * 20.0, 0.),
-            &PlantMaturityStage::FullyGrown,
-        );
-        println!("spawns a tree");
-    }
-
-    for i in 0..10 {
-        let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
-        let tree_id = spawn_plant(
-            &mut commands,
-            &mut global_rng,
-            prefab,
-            textures.logs.clone(),
-            Vec3::new(-300.0, 100. - (i as f32) * 20.0, 0.),
+            tree_pos,
             &PlantMaturityStage::FullyGrown,
         );
         println!("spawns a log");
@@ -297,10 +300,10 @@ fn run_dummy_commands(
 }
 
 pub fn get_random_pos(global_rng: &mut ResMut<GlobalRng>, origin: Vec2, range: Vec2) -> Vec3 {
-    let pos = (Vec2::new(
+    let pos = Vec2::new(
         global_rng.f32_normalized() * range.x,
         global_rng.f32_normalized() * range.y,
-    ) + origin);
+    ) + origin;
 
-    pos.extend(1000.0 - pos.y)
+    pos.extend(0.0)
 }
