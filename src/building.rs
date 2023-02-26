@@ -1,10 +1,10 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, Res, Transform},
     sprite::SpriteBundle,
 };
 
-use crate::{items::ItemPrefabId, movement::hack_3d_position_to_2d};
+use crate::{init::WorldParams, items::ItemPrefabId, movement::isometrify_position};
 
 #[derive(Component)]
 pub struct ConstructionSite;
@@ -33,6 +33,7 @@ pub fn spawn_construction_site(
     construction_site_id: Entity,
     position: Vec3,
     texture_set: &BuildingTextureSet,
+    world_params: &Res<WorldParams>,
 ) {
     println!("Spawning construction site at {:?}", position);
     commands
@@ -40,7 +41,7 @@ pub fn spawn_construction_site(
         .insert(ConstructionSite)
         .insert(SpriteBundle {
             transform: Transform {
-                translation: hack_3d_position_to_2d(position),
+                translation: isometrify_position(position, &world_params),
                 scale: Vec3::new(texture_set.scale, texture_set.scale, 1.0),
                 ..Transform::default()
             },

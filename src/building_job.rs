@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet},
+    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet, Res},
 };
 
 use crate::{
@@ -9,6 +9,7 @@ use crate::{
         spawn_construction_site, BuildingPrefab,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
+    init::WorldParams,
     movement::{MovingToEntity, Position},
     planned_work::{
         NotWorking, PlannedWork, WorkerCompletedWorkEvent, WorkingOn, BUILDING_JOB_NAME,
@@ -100,6 +101,7 @@ pub fn plan_building(
     commands: &mut Commands,
     building_prefab: BuildingPrefab,
     position: Vec3,
+    world_params: &Res<WorldParams>,
 ) -> Entity {
     let id = commands
         .spawn_empty()
@@ -115,7 +117,13 @@ pub fn plan_building(
         .insert(Position(position))
         .id();
 
-    spawn_construction_site(commands, id, position, &building_prefab.texture_set);
+    spawn_construction_site(
+        commands,
+        id,
+        position,
+        &building_prefab.texture_set,
+        world_params,
+    );
 
     commands.entity(id).insert(building_prefab);
 

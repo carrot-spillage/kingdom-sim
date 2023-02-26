@@ -1,5 +1,6 @@
 use crate::{
     common::Countdown,
+    init::WorldParams,
     plants::{
         bundle::{PlantPrefab, PlantPrefabId},
         spawn_plant, PlantMaturityStage,
@@ -28,6 +29,7 @@ pub fn handle_task_progress(
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
     plants: Res<PlantPrefabMap>,
+    world_params: Res<WorldParams>,
     mut planters_query: Query<(Entity, &Planting, &mut PlantingCountdown)>,
 ) {
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
@@ -38,6 +40,7 @@ pub fn handle_task_progress(
                 spawn_plant(
                     &mut commands,
                     &mut global_rng,
+                    &world_params,
                     &prefab,
                     texture.clone(),
                     planting.position,

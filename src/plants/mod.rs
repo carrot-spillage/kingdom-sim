@@ -14,7 +14,8 @@ use bevy_turborand::{GlobalRng, RngComponent};
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
-    movement::{hack_3d_position_to_2d, Position},
+    init::WorldParams,
+    movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
     GameState,
 };
@@ -38,6 +39,7 @@ pub enum PlantMaturityStage {
 pub fn spawn_plant(
     commands: &mut Commands,
     global_rng: &mut ResMut<GlobalRng>,
+    world_params: &Res<WorldParams>,
     prefab: &PlantPrefab,
     texture: Handle<Image>,
     position: Vec3,
@@ -68,7 +70,7 @@ pub fn spawn_plant(
             SpriteBundle {
                 texture,
                 transform: Transform {
-                    translation: hack_3d_position_to_2d(position),
+                    translation: isometrify_position(position, &world_params),
                     scale: match maturity_state {
                         PlantMaturityStage::Germ => Vec3::new(0.0, 0.0, 1.0),
                         PlantMaturityStage::FullyGrown => Vec3::new(1.0, 1.0, 1.0),
@@ -113,6 +115,7 @@ pub fn germinate(
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
     plant_prefab_map: Res<PlantPrefabMap>,
+    world_params: Res<WorldParams>,
     mut germinator_params_query: Query<(
         &PlantPrefabId,
         &Position,
@@ -127,6 +130,7 @@ pub fn germinate(
             spawn_plant(
                 &mut commands,
                 &mut global_rng,
+                &world_params,
                 prefab,
                 texture.clone(),
                 germ_position,

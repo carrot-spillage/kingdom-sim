@@ -6,6 +6,7 @@ use bevy::{
 use crate::{
     building::{BuildingPrefab, BuildingTextureSet},
     building_job::plan_building,
+    init::WorldParams,
     items::ItemPrefabId,
     loading::TextureAssets,
     movement::MovingToEntity,
@@ -47,6 +48,7 @@ impl MonkeyPlanner {
         commands: &mut Commands,
         textures: &Res<TextureAssets>,
         position: Vec3,
+        world_params: &Res<WorldParams>,
     ) -> Entity {
         let building_prefab = BuildingPrefab {
             name: "House",
@@ -63,7 +65,7 @@ impl MonkeyPlanner {
             max_workers: 2,
             required_resources: vec![(ItemPrefabId(3), 4)],
         };
-        plan_building(commands, building_prefab, position)
+        plan_building(commands, building_prefab, position, world_params)
     }
 
     pub fn plan_training_ground() {

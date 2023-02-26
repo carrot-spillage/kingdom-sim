@@ -8,9 +8,10 @@ use bevy::{
 use bevy_turborand::{GlobalRng, RngComponent};
 
 use crate::{
+    init::WorldParams,
     items::{spawn_item_batch, CarrierInventory, ItemPrefabMap},
     loading::{FontAssets, TextureAssets},
-    movement::{hack_3d_position_to_2d, Position, Walker},
+    movement::{isometrify_position, Position, Walker},
     tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
     GameState,
 };
@@ -32,6 +33,7 @@ pub fn spawn_creature(
     global_rng: &mut ResMut<GlobalRng>,
     textures: &Res<TextureAssets>,
     fonts: &Res<FontAssets>,
+    world_params: &Res<WorldParams>,
     position: Vec3,
 ) -> Entity {
     let bundle = WorkerBundle {
@@ -49,7 +51,7 @@ pub fn spawn_creature(
         sprite: SpriteBundle {
             texture: textures.peasant.clone(),
             transform: Transform {
-                translation: hack_3d_position_to_2d(position),
+                translation: isometrify_position(position, &world_params),
                 ..Transform::default()
             },
             sprite: Sprite {
@@ -101,6 +103,7 @@ fn drop_items(
     mut commands: Commands,
     mut carriers: Query<(Entity, &Position, &mut CarrierInventory), With<CarrierDroppingItems>>,
     items: Res<ItemPrefabMap>,
+    world_params: Res<WorldParams>,
 ) {
     for (carrier_id, position, mut item_container) in &mut carriers {
         for item_batch in &item_container.items {
@@ -110,6 +113,7 @@ fn drop_items(
                 texture.clone(),
                 item_batch.clone(),
                 position.0,
+                &world_params,
             );
         }
 

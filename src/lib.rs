@@ -18,13 +18,15 @@ mod plants;
 mod skills;
 mod tasks;
 mod work_progress;
+use std::f32::consts::PI;
+
 use crate::loading::LoadingPlugin;
 
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
-use bevy_ecs_tilemap::{helpers, TilemapPlugin};
+use bevy_ecs_tilemap::TilemapPlugin;
 use bevy_turborand::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
@@ -37,7 +39,7 @@ use bevy::prelude::*;
 use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 
-use movement::MovementPlugin;
+use movement::{isometric, MovementPlugin};
 
 use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
@@ -64,9 +66,12 @@ pub struct Dummy;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        let size = Vec2::new(1200.0, 1200.0);
         let world_params = WorldParams {
-            size: Vec2::new(1200.0, 1200.0),
+            size,
+            half_max_isometric_z: isometric(Vec2::new(-size.x / 2.0, size.y / 2.0)).y + 10.0, // 10 z layers to cover special cases
         };
+        println!("{:?}", world_params.half_max_isometric_z);
         app.insert_resource(world_params);
 
         app.add_state(GameState::Loading)

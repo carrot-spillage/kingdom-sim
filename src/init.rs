@@ -26,7 +26,7 @@ use crate::{
     creature::{spawn_creature, Creature},
     items::ItemPrefabId,
     loading::{FontAssets, TextureAssets},
-    movement::{hack_3d_position_to_2d, Position},
+    movement::{isometrify_position, Position},
     planting::logic::{PlantPrefabMap, Planting},
     plants::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
@@ -54,6 +54,7 @@ impl Plugin for InitPlugin {
 #[derive(Resource)]
 pub struct WorldParams {
     pub size: Vec2,
+    pub half_max_isometric_z: f32,
 }
 
 fn init(
@@ -66,7 +67,7 @@ fn init(
     plants: Res<PlantPrefabMap>,
 ) {
     commands.spawn(Camera2dBundle::new_with_far(
-        2000.0, //hack_3d_position_to_2d(world_params.size.extend(0.0)).z,
+        world_params.half_max_isometric_z * 2.0,
     ));
 
     create_tilemap(&mut commands, &world_params, &textures);
@@ -82,7 +83,7 @@ fn init(
         Position(campfire_pos),
         SpriteBundle {
             transform: Transform {
-                translation: hack_3d_position_to_2d(campfire_pos),
+                translation: isometrify_position(campfire_pos, &world_params),
                 ..Default::default()
             },
             texture: textures.campfire.clone(),
@@ -119,16 +120,16 @@ fn init(
 
     for i in 0..20 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
-        let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size);
+        let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_id = spawn_plant(
             &mut commands,
             &mut global_rng,
+            &world_params,
             prefab,
             texture.clone(),
             tree_pos,
             &PlantMaturityStage::FullyGrown,
         );
-        println!("spawns a log");
     }
 
     for _ in 0..5 {
@@ -137,6 +138,7 @@ fn init(
         let bush_id = spawn_plant(
             &mut commands,
             &mut global_rng,
+            &world_params,
             prefab,
             texture.clone(),
             bush_pos,
@@ -151,6 +153,7 @@ fn init(
             &mut global_rng,
             &textures,
             &fonts,
+            &world_params,
             worker_pos,
         );
     }

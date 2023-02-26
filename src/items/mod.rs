@@ -1,11 +1,14 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Resource, Transform},
+    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform},
     sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
 
-use crate::movement::{hack_3d_position_to_2d, Position};
+use crate::{
+    init::WorldParams,
+    movement::{isometrify_position, Position},
+};
 
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
@@ -140,6 +143,7 @@ pub fn spawn_item_batch(
     texture: Handle<Image>,
     item_batch: ItemBatch,
     position: Vec3,
+    world_params: &Res<WorldParams>,
 ) -> Entity {
     println!("Spawning resource");
     commands
@@ -149,7 +153,7 @@ pub fn spawn_item_batch(
         .insert(SpriteBundle {
             texture,
             transform: Transform {
-                translation: hack_3d_position_to_2d(position),
+                translation: isometrify_position(position, &world_params),
                 scale: Vec3::new(1.0, 1.0, 1.0),
                 ..Transform::default()
             },

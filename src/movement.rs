@@ -3,11 +3,12 @@ use std::f32::consts::PI;
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Changed, Commands, Component, Entity, Plugin, Query, SystemSet, Transform, Vec2,
+        App, Changed, Commands, Component, Entity, Plugin, Query, Res, SystemSet, Transform, Vec2,
     },
 };
 
 use crate::{
+    init::WorldParams,
     tasks::{CreatureTask, IdlingCreature},
     GameState,
 };
@@ -55,12 +56,22 @@ pub struct ArrivedToEntityEvent {
 
 pub struct MovementPlugin;
 
-pub fn hack_3d_position_to_2d(position: Vec3) -> Vec3 {
-    let result = isometric(position.truncate());
-    result.extend(1000.0 - result.y)
+pub fn isometrify_position(position: Vec3, world_params: &Res<WorldParams>) -> Vec3 {
+    let mut result = isometric(position.truncate());
+    let z = world_params.half_max_isometric_z - result.y;
+    if position.z > 0.0 {
+        result.y += position.z;
+    }
+    println!(
+        "{:?} {:?} {:?}",
+        position,
+        Vec2::from_angle(-PI * 0.25).rotate(position.truncate()),
+        Vec2::from_angle(-PI * 0.25).rotate(position.truncate()) * Vec2::new(1.0, 0.5)
+    );
+    result.extend(z)
 }
 
-fn isometric(vec: Vec2) -> Vec2 {
+pub fn isometric(vec: Vec2) -> Vec2 {
     Vec2::from_angle(-PI * 0.25).rotate(vec) * Vec2::new(1.0, 0.5)
 }
 
@@ -77,9 +88,12 @@ impl Plugin for MovementPlugin {
     }
 }
 
-fn isometrify_from_position(mut positions: Query<(&mut Transform, &Position), Changed<Position>>) {
+fn isometrify_from_position(
+    mut positions: Query<(&mut Transform, &Position), Changed<Position>>,
+    world_params: Res<WorldParams>,
+) {
     for (mut transform, position) in &mut positions {
-        transform.translation = hack_3d_position_to_2d(position.0);
+        transform.translation = isometrify_position(position.0, &world_params);
     }
 }
 
