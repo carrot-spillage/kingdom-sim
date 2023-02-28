@@ -145,7 +145,6 @@ pub fn spawn_item_batch(
     position: Vec3,
     world_params: &Res<WorldParams>,
 ) -> Entity {
-    println!("Spawning resource");
     commands
         .spawn_empty()
         .insert(Position(position))

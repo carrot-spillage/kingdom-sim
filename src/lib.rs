@@ -18,7 +18,6 @@ mod plants;
 mod skills;
 mod tasks;
 mod work_progress;
-use std::f32::consts::PI;
 
 use crate::loading::LoadingPlugin;
 
@@ -66,10 +65,11 @@ pub struct Dummy;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        let size = Vec2::new(1200.0, 1200.0);
+        let side = 600.0;
+        let size = Vec2::new(side, side);
         let world_params = WorldParams {
             size,
-            half_max_isometric_z: isometric(Vec2::new(-size.x / 2.0, size.y / 2.0)).y + 10.0, // 10 z layers to cover special cases
+            half_max_isometric_z: side + 10.0, // 10 z layers to cover special cases
         };
         println!("{:?}", world_params.half_max_isometric_z);
         app.insert_resource(world_params);

@@ -6,7 +6,6 @@ use bevy::{
         App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut, Resource,
         State, SystemSet, Transform, With, Without,
     },
-    render::primitives::Frustum,
     sprite::SpriteBundle,
 };
 use bevy_ecs_tilemap::{
@@ -24,7 +23,6 @@ use crate::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
     },
     creature::{spawn_creature, Creature},
-    items::ItemPrefabId,
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position},
     planting::logic::{PlantPrefabMap, Planting},
@@ -118,7 +116,7 @@ fn init(
 
     // putting them all in line
 
-    for i in 0..20 {
+    for i in 0..1 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_id = spawn_plant(
@@ -126,8 +124,9 @@ fn init(
             &mut global_rng,
             &world_params,
             prefab,
-            texture.clone(),
-            tree_pos,
+            textures.logs.clone(),
+            Vec2::new(300.0, 300.0).extend(10.0),
+            //Vec2::new(0.0, i as f32 * 20.0).extend(10.0),
             &PlantMaturityStage::FullyGrown,
         );
     }
@@ -166,13 +165,20 @@ fn create_tilemap(
     world_params: &Res<WorldParams>,
     textures: &Res<TextureAssets>,
 ) {
-    let tile_size = TilemapTileSize { x: 19.0, y: 11.0 };
+    let tile_side = 16.0;
+    let tile_size = TilemapTileSize {
+        x: tile_side * 2.0,
+        y: tile_side,
+    };
     let grid_size = tile_size.into();
     let map_type = TilemapType::Isometric(IsoCoordSystem::Diamond);
 
     let tilemap_entity = commands.spawn_empty().id();
-    let side = (world_params.size.x / tile_size.x) as u32;
-    let map_size = TilemapSize { x: side, y: side };
+    let map_size = TilemapSize {
+        x: (world_params.size.x / tile_side) as u32,
+        y: (world_params.size.y / tile_side) as u32,
+    };
+
     let mut tile_storage = TileStorage::empty(map_size);
 
     for x in 0..map_size.x {

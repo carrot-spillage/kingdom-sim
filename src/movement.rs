@@ -1,9 +1,8 @@
-use std::f32::consts::PI;
-
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Changed, Commands, Component, Entity, Plugin, Query, Res, SystemSet, Transform, Vec2,
+        App, Changed, Commands, Component, Entity, Mat2, Plugin, Query, Res, SystemSet, Transform,
+        Vec2,
     },
 };
 
@@ -62,17 +61,14 @@ pub fn isometrify_position(position: Vec3, world_params: &Res<WorldParams>) -> V
     if position.z > 0.0 {
         result.y += position.z;
     }
-    println!(
-        "{:?} {:?} {:?}",
-        position,
-        Vec2::from_angle(-PI * 0.25).rotate(position.truncate()),
-        Vec2::from_angle(-PI * 0.25).rotate(position.truncate()) * Vec2::new(1.0, 0.5)
-    );
+
     result.extend(z)
 }
 
+static ISO_MAT: Mat2 = Mat2::from_cols(Vec2::new(1.0, -0.5), Vec2::new(1.0, 0.5));
+
 pub fn isometric(vec: Vec2) -> Vec2 {
-    Vec2::from_angle(-PI * 0.25).rotate(vec) * Vec2::new(1.0, 0.5)
+    ISO_MAT * vec
 }
 
 impl Plugin for MovementPlugin {
