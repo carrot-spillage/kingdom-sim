@@ -15,12 +15,13 @@ mod harvesting;
 mod items;
 mod planting;
 mod plants;
+mod quad_tree;
 mod skills;
 mod tasks;
 mod work_progress;
 
 use crate::loading::LoadingPlugin;
-
+use crate::quad_tree::QuadTree;
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
@@ -38,7 +39,7 @@ use bevy::prelude::*;
 use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 
-use movement::{isometric, MovementPlugin};
+use movement::MovementPlugin;
 
 use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
@@ -68,12 +69,13 @@ impl Plugin for GamePlugin {
         let side = 600.0;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
+            side,
             size,
             half_max_isometric_z: side + 10.0, // 10 z layers to cover special cases
         };
         println!("{:?}", world_params.half_max_isometric_z);
         app.insert_resource(world_params);
-
+        app.insert_resource(QuadTree);
         app.add_state(GameState::Loading)
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))

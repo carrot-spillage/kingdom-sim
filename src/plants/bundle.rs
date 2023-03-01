@@ -1,9 +1,8 @@
 use crate::{
-    common::Countdown,
     common::{SimpleDestructible, VariableCountdown},
     items::ItemPrefabId,
 };
-use bevy::prelude::{Bundle, Component, ResMut, Vec2};
+use bevy::prelude::{Bundle, Component, Rect, ResMut, Vec2};
 use bevy_turborand::prelude::*;
 use std::f32::consts::PI;
 
@@ -94,12 +93,26 @@ pub struct ResourceProducerParams {
     pub item_prefab_id: ItemPrefabId,
 }
 
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
+#[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f62055"]
+pub struct Size {
+    x: f32,
+    y: f32,
+}
+
+impl Size {
+    pub fn to_vec(&self) -> Vec2 {
+        Vec2::new(self.x, self.y)
+    }
+}
+
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
 pub struct PlantPrefab {
     pub id: PlantPrefabId,
     pub name: String,
     pub texture: String,
+    pub collision_box: Size,
     pub health: u32,
     pub growth_rate: f32,
     pub germinator: GerminatorParams,

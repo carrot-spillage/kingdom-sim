@@ -2,6 +2,9 @@ plants:
   - id: 1
     name: Oak
     texture: "prefabs/oak_1.png"
+    collision_box:
+      x: 24
+      y: 24
     growth_rate: 0.0010
     germinator:
       radius: 100
@@ -17,6 +20,9 @@ plants:
   - id: 2
     name: BerryBush
     texture: "prefabs/bush_1.png"
+    collision_box:
+      x: 16
+      y: 16
     growth_rate: 0.0012
     germinator:
       radius: 130

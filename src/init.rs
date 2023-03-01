@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Res, ResMut, Resource,
-        State, SystemSet, Transform, With, Without,
+        App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Rect, Res, ResMut,
+        Resource, State, SystemSet, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -17,6 +17,8 @@ use bevy_ecs_tilemap::{
     TilemapBundle,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
+
+use crate::quad_tree::QuadTree;
 
 use crate::{
     building::{
@@ -51,6 +53,7 @@ impl Plugin for InitPlugin {
 
 #[derive(Resource)]
 pub struct WorldParams {
+    pub side: f32,
     pub size: Vec2,
     pub half_max_isometric_z: f32,
 }
@@ -63,6 +66,7 @@ fn init(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
+    mut quad_tree: ResMut<QuadTree>,
 ) {
     commands.spawn(Camera2dBundle::new_with_far(
         world_params.half_max_isometric_z * 2.0,
@@ -114,18 +118,18 @@ fn init(
     //     }
     // }
 
-    // putting them all in line
-
-    for i in 0..1 {
+    for i in 0..50 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
+        let tree_rect = Rect::from_center_size(tree_pos.truncate(), prefab.collision_box.to_vec());
+        let fit_tree_rect = quad_tree.fit_rect_in_radius(tree_rect, 128.0).unwrap();
         let tree_id = spawn_plant(
             &mut commands,
             &mut global_rng,
             &world_params,
             prefab,
-            textures.logs.clone(),
-            Vec2::new(300.0, 300.0).extend(10.0),
+            texture.clone(),
+            fit_tree_rect.center().extend(tree_pos.z),
             //Vec2::new(0.0, i as f32 * 20.0).extend(10.0),
             &PlantMaturityStage::FullyGrown,
         );

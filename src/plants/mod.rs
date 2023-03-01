@@ -5,8 +5,8 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, Handle, Image, Plugin, Query, Res, ResMut, SystemSet, Transform,
-        Vec3,
+        App, Commands, Entity, Handle, Image, Plugin, Query, Rect, Res, ResMut, SystemSet,
+        Transform, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -17,6 +17,7 @@ use crate::{
     init::WorldParams,
     movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
+    quad_tree::QuadTree,
     GameState,
 };
 
@@ -122,20 +123,26 @@ pub fn germinate(
         &mut Germinator,
         &mut RngComponent,
     )>,
+    mut quad_tree: ResMut<QuadTree>,
 ) {
     for (plant_prefab_id, position, mut germinator, mut rng) in &mut germinator_params_query {
         if let Some(germ_offset) = germinator.try_produce(&mut rng) {
             let germ_position = position.0 + germ_offset.extend(0.0);
             let (prefab, texture) = plant_prefab_map.0.get(plant_prefab_id).unwrap();
-            spawn_plant(
-                &mut commands,
-                &mut global_rng,
-                &world_params,
-                prefab,
-                texture.clone(),
-                germ_position,
-                &PlantMaturityStage::Germ,
-            );
+            let germ_rect =
+                Rect::from_center_size(germ_position.truncate(), prefab.collision_box.to_vec());
+            let maybe_actual_germ_rect = quad_tree.fit_rect_in_radius(germ_rect, 128.0);
+            if let Some(actual_germ_rect) = maybe_actual_germ_rect {
+                spawn_plant(
+                    &mut commands,
+                    &mut global_rng,
+                    &world_params,
+                    prefab,
+                    texture.clone(),
+                    actual_germ_rect.center().extend(germ_position.z),
+                    &PlantMaturityStage::Germ,
+                );
+            }
         }
     }
 }
