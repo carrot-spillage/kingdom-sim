@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Camera2dBundle, Commands, Component, Entity, Plugin, Query, Rect, Res, ResMut,
-        Resource, State, SystemSet, Transform, With, Without,
+        App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter, Plugin,
+        Query, Rect, Res, ResMut, Resource, State, SystemSet, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -13,7 +13,7 @@ use bevy_ecs_tilemap::{
         get_tilemap_center_transform, IsoCoordSystem, TilemapId, TilemapSize, TilemapTexture,
         TilemapTileSize, TilemapType,
     },
-    tiles::{TileBundle, TilePos, TileStorage},
+    tiles::{TileBundle, TileColor, TilePos, TileStorage},
     TilemapBundle,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
@@ -56,6 +56,7 @@ pub struct WorldParams {
     pub side: f32,
     pub size: Vec2,
     pub half_max_isometric_z: f32,
+    pub tile_side: f32,
 }
 
 fn init(
@@ -67,6 +68,7 @@ fn init(
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
     mut quad_tree: ResMut<QuadTree>,
+    mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
 ) {
     commands.spawn(Camera2dBundle::new_with_far(
         world_params.half_max_isometric_z * 2.0,
@@ -118,11 +120,16 @@ fn init(
     //     }
     // }
 
-    for i in 0..50 {
+    for _ in 0..1 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_rect = Rect::from_center_size(tree_pos.truncate(), prefab.collision_box.to_vec());
         let fit_tree_rect = quad_tree.fit_rect_in_radius(tree_rect, 128.0).unwrap();
+        println!("tree_pos {:?} tree_rect {:?}", tree_pos, tree_rect);
+        area_occupied_events.send(AreaOccupiedEvent {
+            area: fit_tree_rect,
+        });
+
         let tree_id = spawn_plant(
             &mut commands,
             &mut global_rng,
@@ -164,23 +171,73 @@ fn init(
     game_state.overwrite_set(GameState::Playing).unwrap();
 }
 
+pub struct AreaOccupiedEvent {
+    pub area: Rect,
+}
+
+pub struct OccupyTilesPlugin;
+
+impl Plugin for OccupyTilesPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<AreaOccupiedEvent>().add_system_set(
+            SystemSet::on_update(GameState::Playing).with_system(mark_tiles_in_area_as_occupied),
+        );
+    }
+
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+}
+
+fn mark_tiles_in_area_as_occupied(
+    mut commands: Commands,
+    grids: Query<&TileStorage>,
+    mut events: EventReader<AreaOccupiedEvent>,
+    world_params: Res<WorldParams>,
+) {
+    if events.is_empty() {
+        return;
+    }
+
+    let tile_storage = grids.single();
+    for AreaOccupiedEvent { area } in events.iter() {
+        let world_offset = world_params.size / 2.0;
+        let offset_area = Rect {
+            min: area.min + world_offset,
+            max: area.max + world_offset,
+        };
+
+        let start_grid_x = (offset_area.min.x / world_params.tile_side).floor() as u32;
+        let end_grid_x = (offset_area.max.x / world_params.tile_side).floor() as u32;
+
+        let start_grid_y = (offset_area.min.y / world_params.tile_side).floor() as u32;
+        let end_grid_y = (offset_area.max.y / world_params.tile_side).floor() as u32;
+
+        for x in start_grid_x..=end_grid_x {
+            for y in start_grid_y..=end_grid_y {
+                let tile = tile_storage.get(&TilePos { x, y }).unwrap();
+                commands.entity(tile).insert(TileColor(Color::ORANGE_RED));
+            }
+        }
+    }
+}
+
 fn create_tilemap(
     commands: &mut Commands,
     world_params: &Res<WorldParams>,
     textures: &Res<TextureAssets>,
 ) {
-    let tile_side = 16.0;
     let tile_size = TilemapTileSize {
-        x: tile_side * 2.0,
-        y: tile_side,
+        x: world_params.tile_side * 2.0,
+        y: world_params.tile_side,
     };
     let grid_size = tile_size.into();
     let map_type = TilemapType::Isometric(IsoCoordSystem::Diamond);
 
     let tilemap_entity = commands.spawn_empty().id();
     let map_size = TilemapSize {
-        x: (world_params.size.x / tile_side) as u32,
-        y: (world_params.size.y / tile_side) as u32,
+        x: (world_params.size.x / world_params.tile_side) as u32,
+        y: (world_params.size.y / world_params.tile_side) as u32,
     };
 
     let mut tile_storage = TileStorage::empty(map_size);

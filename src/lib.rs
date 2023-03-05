@@ -20,8 +20,8 @@ mod skills;
 mod tasks;
 mod work_progress;
 
-use crate::loading::LoadingPlugin;
 use crate::quad_tree::QuadTree;
+use crate::{init::OccupyTilesPlugin, loading::LoadingPlugin};
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
@@ -71,9 +71,10 @@ impl Plugin for GamePlugin {
         let world_params = WorldParams {
             side,
             size,
+            tile_side: 16.0,
             half_max_isometric_z: side + 10.0, // 10 z layers to cover special cases
         };
-        println!("{:?}", world_params.half_max_isometric_z);
+
         app.insert_resource(world_params);
         app.insert_resource(QuadTree);
         app.add_state(GameState::Loading)
@@ -82,6 +83,7 @@ impl Plugin for GamePlugin {
             .add_plugin(LoadingPlugin)
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
             .add_plugin(CarrierPlugin)
+            .add_plugin(OccupyTilesPlugin)
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)

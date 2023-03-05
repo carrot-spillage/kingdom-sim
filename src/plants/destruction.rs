@@ -30,7 +30,7 @@ pub fn break_into_resources(
                 continue;
             }
             let (prefab, texture) = items.0.get(&item_batch.prefab_id).unwrap();
-            println!("Dumping grower");
+
             spawn_item_batch(
                 &mut commands,
                 texture.clone(),
