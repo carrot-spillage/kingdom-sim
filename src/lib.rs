@@ -80,7 +80,7 @@ impl Plugin for GamePlugin {
         println!("World params {:?}", world_params);
         app.insert_resource(world_params);
         app.insert_resource(QuadTree::<Entity>::new(
-            Rect::from_corners(Vec2::ZERO, size),
+            Rect::from_corners(-size / 2.0, size / 2.0),
             map_size_factor,
         ));
         app.add_state(GameState::Loading)

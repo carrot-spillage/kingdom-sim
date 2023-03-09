@@ -124,8 +124,8 @@ fn init(
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_rect = Rect::from_center_size(tree_pos.truncate(), prefab.collision_box.to_vec());
-        let occupant_id = commands.spawn_empty().id();
-        if quad_tree.try_occupy_rect(tree_rect, occupant_id) {
+        let tenant_id = commands.spawn_empty().id();
+        if quad_tree.try_occupy_rect(tree_rect, tenant_id) {
             println!(
                 "Occupied: tree_pos {:?} tree_rect {:?}",
                 tree_pos, tree_rect

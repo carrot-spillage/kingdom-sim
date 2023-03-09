@@ -49,8 +49,8 @@ pub fn handle_task_progress(
                     planting.position.truncate(),
                     prefab.collision_box.to_vec(),
                 );
-                let occupant_id = commands.spawn_empty().id();
-                if quad_tree.try_occupy_rect(germ_rect, occupant_id) {
+                let tenant_id = commands.spawn_empty().id();
+                if quad_tree.try_occupy_rect(germ_rect, tenant_id) {
                     println!("Sends AreaOccupiedEvent");
                     area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
                     spawn_plant(
