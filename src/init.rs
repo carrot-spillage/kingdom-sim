@@ -51,7 +51,7 @@ impl Plugin for InitPlugin {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct WorldParams {
     pub side: f32,
     pub size: Vec2,
@@ -67,7 +67,7 @@ fn init(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
-    mut quad_tree: ResMut<QuadTree>,
+    mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
 ) {
     commands.spawn(Camera2dBundle::new_with_far(
@@ -120,26 +120,31 @@ fn init(
     //     }
     // }
 
-    for _ in 0..1 {
+    for _ in 0..100 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_rect = Rect::from_center_size(tree_pos.truncate(), prefab.collision_box.to_vec());
-        let fit_tree_rect = quad_tree.fit_rect_in_radius(tree_rect, 128.0).unwrap();
-        println!("tree_pos {:?} tree_rect {:?}", tree_pos, tree_rect);
-        area_occupied_events.send(AreaOccupiedEvent {
-            area: fit_tree_rect,
-        });
+        let occupant_id = commands.spawn_empty().id();
+        if quad_tree.try_occupy_rect(tree_rect, occupant_id) {
+            println!(
+                "Occupied: tree_pos {:?} tree_rect {:?}",
+                tree_pos, tree_rect
+            );
+            area_occupied_events.send(AreaOccupiedEvent { area: tree_rect });
 
-        let tree_id = spawn_plant(
-            &mut commands,
-            &mut global_rng,
-            &world_params,
-            prefab,
-            texture.clone(),
-            fit_tree_rect.center().extend(tree_pos.z),
-            //Vec2::new(0.0, i as f32 * 20.0).extend(10.0),
-            &PlantMaturityStage::FullyGrown,
-        );
+            let tree_id = spawn_plant(
+                &mut commands,
+                &mut global_rng,
+                &world_params,
+                prefab,
+                texture.clone(),
+                tree_rect.center().extend(tree_pos.z),
+                //Vec2::new(0.0, i as f32 * 20.0).extend(10.0),
+                &PlantMaturityStage::FullyGrown,
+            );
+        } else {
+            println!("Failed to occupy");
+        }
     }
 
     for _ in 0..5 {
@@ -213,6 +218,11 @@ fn mark_tiles_in_area_as_occupied(
         let start_grid_y = (offset_area.min.y / world_params.tile_side).floor() as u32;
         let end_grid_y = (offset_area.max.y / world_params.tile_side).floor() as u32;
 
+        println!(
+            "Occupying area {:?} {:?} start xy {:?} {:?} end xy {:?} {:?}",
+            area, offset_area, start_grid_x, start_grid_y, end_grid_x, end_grid_y
+        );
+
         for x in start_grid_x..=end_grid_x {
             for y in start_grid_y..=end_grid_y {
                 let tile = tile_storage.get(&TilePos { x, y }).unwrap();
@@ -239,7 +249,7 @@ fn create_tilemap(
         x: (world_params.size.x / world_params.tile_side) as u32,
         y: (world_params.size.y / world_params.tile_side) as u32,
     };
-
+    println!("Map size {:?}", map_size);
     let mut tile_storage = TileStorage::empty(map_size);
 
     for x in 0..map_size.x {

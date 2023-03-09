@@ -5,8 +5,8 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, Handle, Image, Plugin, Query, Rect, Res, ResMut, SystemSet,
-        Transform, Vec3,
+        App, Commands, Entity, EventWriter, Handle, Image, Plugin, Query, Rect, Res, ResMut,
+        SystemSet, Transform, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -14,7 +14,7 @@ use bevy_turborand::{GlobalRng, RngComponent};
 use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
-    init::WorldParams,
+    init::{AreaOccupiedEvent, WorldParams},
     movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
     quad_tree::QuadTree,
@@ -123,7 +123,8 @@ pub fn germinate(
         &mut Germinator,
         &mut RngComponent,
     )>,
-    mut quad_tree: ResMut<QuadTree>,
+    mut quad_tree: ResMut<QuadTree<Entity>>,
+    mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
 ) {
     for (plant_prefab_id, position, mut germinator, mut rng) in &mut germinator_params_query {
         if let Some(germ_offset) = germinator.try_produce(&mut rng) {
@@ -131,15 +132,17 @@ pub fn germinate(
             let (prefab, texture) = plant_prefab_map.0.get(plant_prefab_id).unwrap();
             let germ_rect =
                 Rect::from_center_size(germ_position.truncate(), prefab.collision_box.to_vec());
-            let maybe_actual_germ_rect = quad_tree.fit_rect_in_radius(germ_rect, 128.0);
-            if let Some(actual_germ_rect) = maybe_actual_germ_rect {
+            let occupant_id = commands.spawn_empty().id();
+            if quad_tree.try_occupy_rect(germ_rect, occupant_id) {
+                println!("Sends AreaOccupiedEvent");
+                area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
                 spawn_plant(
                     &mut commands,
                     &mut global_rng,
                     &world_params,
                     prefab,
                     texture.clone(),
-                    actual_germ_rect.center().extend(germ_position.z),
+                    germ_rect.center().extend(germ_position.z),
                     &PlantMaturityStage::Germ,
                 );
             }

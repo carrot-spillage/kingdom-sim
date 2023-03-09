@@ -9,8 +9,8 @@ plants:
     germinator:
       radius: 100
       period_range:
-        from: 500
-        to: 1300
+        from: 5
+        to: 13
     health: 250
     intrinsic_resource:
       max_quantity_range:

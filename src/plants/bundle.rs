@@ -2,7 +2,7 @@ use crate::{
     common::{SimpleDestructible, VariableCountdown},
     items::ItemPrefabId,
 };
-use bevy::prelude::{Bundle, Component, Rect, ResMut, Vec2};
+use bevy::prelude::{Bundle, Component, ResMut, Vec2};
 use bevy_turborand::prelude::*;
 use std::f32::consts::PI;
 

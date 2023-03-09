@@ -25,6 +25,7 @@ use crate::{init::OccupyTilesPlugin, loading::LoadingPlugin};
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
+use bevy::prelude::system_adapter::new;
 use bevy_common_assets::yaml::YamlAssetPlugin;
 use bevy_ecs_tilemap::TilemapPlugin;
 use bevy_turborand::RngPlugin;
@@ -66,17 +67,22 @@ pub struct Dummy;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        let side = 600.0;
+        let tile_side = 16;
+        let map_size_factor: u32 = 5; // 2^5 tiles = 512
+        let side = (2_u32.pow(map_size_factor) * tile_side) as f32;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
             side,
             size,
-            tile_side: 16.0,
+            tile_side: tile_side as f32,
             half_max_isometric_z: side + 10.0, // 10 z layers to cover special cases
         };
-
+        println!("World params {:?}", world_params);
         app.insert_resource(world_params);
-        app.insert_resource(QuadTree);
+        app.insert_resource(QuadTree::<Entity>::new(
+            Rect::from_corners(Vec2::ZERO, size),
+            map_size_factor,
+        ));
         app.add_state(GameState::Loading)
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
