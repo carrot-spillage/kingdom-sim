@@ -51,7 +51,6 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         }
 
         let success = self.try_find_leaf_indexes(0, rect, &mut found_indexes);
-        println!("find_leaf_indexes {:?} {:?}", rect, found_indexes);
         if success {
             for index in &found_indexes {
                 self.nodes
@@ -60,6 +59,8 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             }
 
             self.tenant_keys_and_nodes.insert(tenant_key, found_indexes);
+            println!("Tenant occupied rect {:?}", rect);
+
             return true;
         }
 
@@ -118,9 +119,11 @@ fn traverse_nodes<T: Copy + Eq + Hash + Debug>(quad: Rect, max_level: u32) -> Ve
 
     while !untraversed_node_indexes.is_empty() {
         let node_index = untraversed_node_indexes.pop_back().unwrap();
-        let level = nodes.get_mut(node_index).unwrap().level;
+        let node = nodes.get(node_index).unwrap();
+        let quad = node.quad;
+        let level = node.level;
         if level < max_level {
-            let child_indexes = build_children(&mut nodes, node_index, level + 1, quad);
+            let child_indexes = build_children(&mut nodes, node_index, level + 1, &quad);
             child_indexes
                 .iter()
                 .for_each(|index| untraversed_node_indexes.push_front(*index));
@@ -135,7 +138,7 @@ fn build_children<T: Copy + Eq + Hash + Debug>(
     all_nodes: &mut Vec<QuadTreeNode<T>>,
     parent_index: usize,
     level: u32,
-    quad: Rect,
+    quad: &Rect,
 ) -> Vec<usize> {
     let mut result: Vec<usize> = vec![];
 
