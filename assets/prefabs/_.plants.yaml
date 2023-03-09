@@ -9,8 +9,8 @@ plants:
     germinator:
       radius: 100
       period_range:
-        from: 5
-        to: 13
+        from: 500
+        to: 1300
     health: 250
     intrinsic_resource:
       max_quantity_range:
@@ -33,8 +33,8 @@ plants:
     resource_producer:
       max_quantity: 20
       period_range:
-        from: 5
-        to: 12
+        from: 500
+        to: 1200
       item_prefab_id: 4
 # Oak
 # Maple

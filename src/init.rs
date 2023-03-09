@@ -120,7 +120,7 @@ fn init(
     //     }
     // }
 
-    for _ in 0..100 {
+    for _ in 0..50 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
         let tree_rect = Rect::from_center_size(tree_pos.truncate(), prefab.collision_box.to_vec());
