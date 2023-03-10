@@ -1,15 +1,16 @@
 use bevy::{
     math::Vec3,
-    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, SystemSet, Res},
+    prelude::{App, Commands, Entity, EventWriter, Plugin, Query, Res, SystemSet},
 };
 
 use crate::{
     building::{
         convert_construction_site_to_building, get_construction_site_texture,
-        spawn_construction_site, BuildingPrefab,
+        spawn_construction_site, BuildingPrefab, BuildingPrefabId,
     },
     crafting_progress::{advance_crafting_process_state, CraftingProgress, CraftingProgressUpdate},
     init::WorldParams,
+    loading::BuildingPrefabRawVec,
     movement::{MovingToEntity, Position},
     planned_work::{
         NotWorking, PlannedWork, WorkerCompletedWorkEvent, WorkingOn, BUILDING_JOB_NAME,
@@ -34,9 +35,15 @@ impl Plugin for BuildingJobPlugin {
 
 fn handle_building_process(
     mut commands: Commands,
-    mut construction_sites: Query<(Entity, &PlannedWork, &mut CraftingProgress, &BuildingPrefab)>,
+    mut construction_sites: Query<(
+        Entity,
+        &PlannedWork,
+        &mut CraftingProgress,
+        &BuildingPrefabId,
+    )>,
     workers: Query<&Skilled>,
     mut worker_completion_events: EventWriter<WorkerCompletedWorkEvent>,
+    mut buildings: BuildingPrefabRawVec,
 ) {
     for (planned_work_id, work, mut crafting_progress, building_prefab) in
         construction_sites.iter_mut()
@@ -76,7 +83,7 @@ fn handle_building_process(
                 convert_construction_site_to_building(
                     building_id,
                     &mut commands,
-                    &building_prefab.texture_set,
+                    &building_prefab.textures,
                 );
             }
             CraftingProgressUpdate::Incomplete { progress, delta } => {
@@ -121,7 +128,7 @@ pub fn plan_building(
         commands,
         id,
         position,
-        &building_prefab.texture_set,
+        &building_prefab.textures,
         world_params,
     );
 

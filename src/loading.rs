@@ -1,4 +1,5 @@
 use crate::{
+    building::{BuildingPrefab, BuildingPrefabMap, BuildingPrefabRaw, BuildingTextureSet},
     items::{ItemPrefab, ItemPrefabMap},
     planting::logic::PlantPrefabMap,
     plants::bundle::PlantPrefab,
@@ -22,6 +23,7 @@ impl Plugin for LoadingPlugin {
             .with_collection::<TextureAssets>()
             .with_collection::<PlantPrefabAssets>()
             .with_collection::<ItemPrefabAssets>()
+            .with_collection::<BuildingPrefabAssets>()
             .continue_to_state(GameState::CreatingWorld)
             .build(app);
 
@@ -44,6 +46,12 @@ pub struct ItemPrefabVec {
     pub items: Vec<ItemPrefab>,
 }
 
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[uuid = "2d6e164e-73cc-4b74-b7d3-cdbfc59ef727"]
+pub struct BuildingPrefabRawVec {
+    pub buildings: Vec<BuildingPrefabRaw>,
+}
+
 #[derive(AssetCollection, Resource)]
 pub struct PlantPrefabAssets {
     #[asset(path = "prefabs/_.plants.yaml", typed)]
@@ -54,6 +62,12 @@ pub struct PlantPrefabAssets {
 pub struct ItemPrefabAssets {
     #[asset(path = "prefabs/_.items.yaml", typed)]
     pub items: Handle<ItemPrefabVec>,
+}
+
+#[derive(AssetCollection, Resource)]
+pub struct BuildingPrefabAssets {
+    #[asset(path = "prefabs/_.buildings.yaml", typed)]
+    pub buildings: Handle<BuildingPrefabRawVec>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -117,8 +131,10 @@ fn setup_prefabs(
     mut commands: Commands,
     plants: Res<Assets<PlantPrefabVec>>,
     items: Res<Assets<ItemPrefabVec>>,
+    buildings: Res<Assets<BuildingPrefabRawVec>>,
     p: Res<PlantPrefabAssets>,
     ip: Res<ItemPrefabAssets>,
+    bp: Res<BuildingPrefabAssets>,
     asset_server: Res<AssetServer>,
 ) {
     let plant_vec = plants.get(&p.plants).unwrap();
@@ -142,4 +158,36 @@ fn setup_prefabs(
         })
         .collect();
     commands.insert_resource(ItemPrefabMap(item_prefab_map));
+    let building_vec = buildings.get(&bp.buildings).unwrap();
+    let building_prefab_map: HashMap<_, _> = building_vec
+        .buildings
+        .iter()
+        .map(|x| {
+            let in_progress: Vec<Handle<Image>> = x
+                .textures
+                .in_progress
+                .iter()
+                .map(|path| asset_server.load(path.clone()))
+                .collect();
+            let completed: Handle<Image> = asset_server.load(x.textures.completed.clone());
+
+            (
+                x.id,
+                BuildingPrefab {
+                    id: x.id,
+                    collision_box: x.collision_box.to_vec(),
+                    max_hp: x.max_hp,
+                    max_workers: x.max_workers,
+                    name: x.name.clone(),
+                    required_resources: x.required_resources.clone(),
+                    units_of_work: x.units_of_work,
+                    textures: BuildingTextureSet {
+                        in_progress,
+                        completed,
+                    },
+                },
+            )
+        })
+        .collect();
+    commands.insert_resource(BuildingPrefabMap(building_prefab_map));
 }

@@ -78,7 +78,6 @@ fn init(
     let house_textures = BuildingTextureSet {
         in_progress: vec![textures.house_in_progress.clone()],
         completed: textures.house.clone(),
-        scale: 0.03,
     };
 
     let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
@@ -104,7 +103,7 @@ fn init(
     //         name: "House",
     //         max_hp: 2000.0,
     //         units_of_work: 100.0,
-    //         texture_set: BuildingTextureSet {
+    //         textures: BuildingTextureSet {
     //             in_progress: vec![
     //                 textures.house_in_progress.clone(),
     //                 textures.house_in_progress.clone(),

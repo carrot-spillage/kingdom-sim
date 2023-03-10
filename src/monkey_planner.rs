@@ -1,10 +1,10 @@
 use bevy::{
     math::Vec3,
-    prelude::{Commands, Entity, Query, Res, With, Without},
+    prelude::{Commands, Entity, Query, Res, Vec2, With, Without},
 };
 
 use crate::{
-    building::{BuildingPrefab, BuildingTextureSet},
+    building::{BuildingPrefab, BuildingPrefabId, BuildingTextureSet},
     building_job::plan_building,
     init::WorldParams,
     items::ItemPrefabId,
@@ -51,16 +51,17 @@ impl MonkeyPlanner {
         world_params: &Res<WorldParams>,
     ) -> Entity {
         let building_prefab = BuildingPrefab {
+            id: BuildingPrefabId(55),
             name: "House",
             max_hp: 2000.0,
             units_of_work: 100.0,
-            texture_set: BuildingTextureSet {
+            collision_box: Vec2::new(32.0, 32.0),
+            textures: BuildingTextureSet {
                 in_progress: vec![
                     textures.house_in_progress.clone(),
                     textures.house_in_progress.clone(),
                 ],
                 completed: textures.house.clone(),
-                scale: 0.03,
             },
             max_workers: 2,
             required_resources: vec![(ItemPrefabId(3), 4)],

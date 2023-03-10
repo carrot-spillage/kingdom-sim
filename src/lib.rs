@@ -1,10 +1,8 @@
 mod building;
-mod building_job;
 mod common;
 mod init;
 mod loading;
 // mod menu;
-mod monkey_planner;
 mod movement;
 mod planned_work;
 
@@ -20,12 +18,12 @@ mod skills;
 mod tasks;
 mod work_progress;
 
+use crate::loading::BuildingPrefabRawVec;
 use crate::quad_tree::QuadTree;
 use crate::{init::OccupyTilesPlugin, loading::LoadingPlugin};
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
-use bevy::prelude::system_adapter::new;
 use bevy_common_assets::yaml::YamlAssetPlugin;
 use bevy_ecs_tilemap::TilemapPlugin;
 use bevy_turborand::RngPlugin;
@@ -37,7 +35,6 @@ use tasks::TaskPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use building_job::BuildingJobPlugin;
 use init::{InitPlugin, WorldParams};
 
 use movement::MovementPlugin;
@@ -86,6 +83,9 @@ impl Plugin for GamePlugin {
         app.add_state(GameState::Loading)
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
+            .add_plugin(YamlAssetPlugin::<BuildingPrefabRawVec>::new(&[
+                "buildings.yaml",
+            ]))
             .add_plugin(LoadingPlugin)
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
             .add_plugin(CarrierPlugin)
@@ -99,7 +99,6 @@ impl Plugin for GamePlugin {
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
             .add_plugin(WorkOnArrivalPlugin)
-            .add_plugin(BuildingJobPlugin)
             .add_plugin(InitPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())

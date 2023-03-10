@@ -96,8 +96,8 @@ pub struct ResourceProducerParams {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
 #[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f62055"]
 pub struct Size {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
 }
 
 impl Size {
