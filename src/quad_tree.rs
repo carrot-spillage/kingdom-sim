@@ -51,6 +51,15 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         }
 
         let success = self.try_find_leaf_indexes(0, rect, &mut found_indexes);
+
+        println!("Tenant {:?}. found_indexes:", tenant_key);
+
+        for index in &found_indexes {
+            self.nodes
+                .get(*index)
+                .map(|node| println!("tile {:?}", node.quad.center() / 16.0));
+        }
+
         if success {
             for index in &found_indexes {
                 self.nodes
@@ -59,7 +68,12 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             }
 
             self.tenant_keys_and_nodes.insert(tenant_key, found_indexes);
-            println!("Tenant occupied rect {:?}", rect);
+            println!(
+                "Tenant {:?} occupied rect from {:?} to {:?}",
+                tenant_key,
+                rect.min / 16.0,
+                rect.max / 16.0
+            );
 
             return true;
         }
@@ -79,7 +93,7 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             // branch node
             for index in child_indexes {
                 let child = self.nodes.get(*index).unwrap();
-                let intersects = child.quad.contains(rect.min) || child.quad.contains(rect.max);
+                let intersects = rect.contains(child.quad.min) || rect.contains(child.quad.max);
                 let descendants_have_tenant =
                     intersects && !self.try_find_leaf_indexes(child.index, rect, found_indexes);
                 if descendants_have_tenant {

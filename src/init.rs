@@ -379,11 +379,16 @@ fn run_dummy_commands(
     }
 }
 
-pub fn get_random_pos(global_rng: &mut ResMut<GlobalRng>, origin: Vec2, range: Vec2) -> Vec3 {
-    let pos = Vec2::new(
-        global_rng.f32_normalized() * range.x,
-        global_rng.f32_normalized() * range.y,
-    ) + origin;
+pub fn get_random_pos(
+    global_rng: &mut ResMut<GlobalRng>,
+    origin: Vec2,
+    //entity_box: Vec2,
+    range: Vec2,
+) -> Vec3 {
+    let entity_box = Vec2::new(24.0, 24.0);
+    let pos = Vec2::new(global_rng.f32_normalized(), global_rng.f32_normalized())
+        * (range - entity_box)
+        + origin;
 
     pos.extend(0.0)
 }
