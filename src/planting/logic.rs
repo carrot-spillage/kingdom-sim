@@ -49,11 +49,9 @@ pub fn handle_task_progress(
                     planting.position.truncate(),
                     prefab.collision_box.to_vec(),
                 );
-                let tenant_id = commands.spawn_empty().id();
-                if quad_tree.try_occupy_rect(germ_rect, tenant_id) {
-                    println!("Sends AreaOccupiedEvent");
+                quad_tree.try_occupy_rect(germ_rect, || {
                     area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
-                    spawn_plant(
+                    return spawn_plant(
                         &mut commands,
                         &mut global_rng,
                         &world_params,
@@ -62,7 +60,7 @@ pub fn handle_task_progress(
                         planting.position,
                         &PlantMaturityStage::Germ,
                     );
-                }
+                });
             }
         } else {
             *planting_countdown = PlantingCountdown(countdown);

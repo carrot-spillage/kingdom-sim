@@ -32,7 +32,10 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         }
     }
 
-    pub fn try_occupy_rect(&mut self, rect: Rect, tenant_key: T) -> bool {
+    pub fn try_occupy_rect<F>(&mut self, rect: Rect, get_tenant_key_on_success: F) -> Option<T>
+    where
+        F: FnOnce() -> T,
+    {
         let mut found_indexes: Vec<usize> = vec![];
         let root_quad = self.nodes[0].quad;
         if rect.min.x < root_quad.min.x
@@ -47,12 +50,10 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
                 rect.min.distance(root_quad.min),
                 rect.max.distance(root_quad.max)
             );
-            return false;
+            return None;
         }
 
         let success = self.try_find_leaf_indexes(0, rect, &mut found_indexes);
-
-        println!("Tenant {:?}. found_indexes:", tenant_key);
 
         for index in &found_indexes {
             self.nodes
@@ -61,6 +62,9 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         }
 
         if success {
+            let tenant_key = get_tenant_key_on_success();
+            println!("Tenant {:?}. found_indexes:", tenant_key);
+
             for index in &found_indexes {
                 self.nodes
                     .get_mut(*index)
@@ -75,10 +79,10 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
                 rect.max / 16.0
             );
 
-            return true;
+            return Some(tenant_key);
         }
 
-        return false;
+        return None;
     }
 
     fn try_find_leaf_indexes(
