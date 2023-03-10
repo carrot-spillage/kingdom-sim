@@ -93,7 +93,14 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             // branch node
             for index in child_indexes {
                 let child = self.nodes.get(*index).unwrap();
-                let intersects = rect.contains(child.quad.min) || rect.contains(child.quad.max);
+                let intersects = rect.min.x < child.quad.max.x
+                    && rect.max.x > child.quad.min.x
+                    && rect.max.y > child.quad.min.y
+                    && rect.min.y < child.quad.max.y;
+                // println!(
+                //     "Checking {:?} against child {:?}. intersects? {intersects}",
+                //     rect, child.quad
+                // );
                 let descendants_have_tenant =
                     intersects && !self.try_find_leaf_indexes(child.index, rect, found_indexes);
                 if descendants_have_tenant {

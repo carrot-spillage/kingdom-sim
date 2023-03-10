@@ -16,18 +16,10 @@ lto = true
 codegen-units = 1
 
 [features]
-default = [
-    "bevy/bevy_winit",
-    "bevy/render",
-    "bevy/png",
-    "bevy/x11",
-    "bevy_kira_audio/ogg",
-]
-
 dev = ["bevy/dynamic"]
 
 [dependencies]
-bevy = { version = "0.9", default-features = false }
+bevy = { version = "0.9", features = ["bevy_asset", "bevy_winit", "render", "png", "x11"] }
 bevy_kira_audio = { version = "0.13" }
 bevy_asset_loader = { version = "0.14" }
 rand = "0.8"
