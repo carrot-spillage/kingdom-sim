@@ -3,7 +3,7 @@ use bevy::{
     prelude::{
         default, Added, Changed, Color, Component, Entity, Query, Res, Transform, With, Without,
     },
-    text::{HorizontalAlign, Text, Text2dBundle, TextAlignment, TextStyle, VerticalAlign},
+    text::{Text, Text2dBundle, TextAlignment, TextStyle},
 };
 
 use crate::{
@@ -38,10 +38,7 @@ where
         font_size: 11.0,
         color: Color::ORANGE_RED,
     };
-    let text_alignment = TextAlignment {
-        vertical: VerticalAlign::Center,
-        horizontal: HorizontalAlign::Center,
-    };
+    let text_alignment = TextAlignment::Center;
     Text::from_section(text, text_style.clone()).with_alignment(text_alignment)
 }
 

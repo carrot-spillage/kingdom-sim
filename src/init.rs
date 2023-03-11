@@ -3,10 +3,12 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter, Plugin,
-        Query, Rect, Res, ResMut, Resource, State, SystemSet, Transform, With, Without,
+        default, App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter,
+        IntoSystemAppConfig, IntoSystemConfig, NextState, OnEnter, OnUpdate, Plugin, Query, Rect,
+        Res, ResMut, Resource, State, Transform, With, Without,
     },
     sprite::SpriteBundle,
+    window::{Window, WindowResolution},
 };
 use bevy_ecs_tilemap::{
     prelude::{
@@ -21,9 +23,7 @@ use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 use crate::quad_tree::QuadTree;
 
 use crate::{
-    building::{
-        get_construction_site_texture, spawn_construction_site, BuildingPrefab, BuildingTextureSet,
-    },
+    building::BuildingTextureSet,
     creature::{spawn_creature, Creature},
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position},
@@ -40,10 +40,8 @@ pub struct InitPlugin;
 
 impl Plugin for InitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::CreatingWorld).with_system(init))
-            .add_system_set(
-                SystemSet::on_enter(GameState::Playing).with_system(run_dummy_commands),
-            );
+        app.add_system(init.in_schedule(OnEnter(GameState::CreatingWorld)))
+            .add_system(run_dummy_commands.in_schedule(OnEnter(GameState::Playing)));
     }
 
     fn name(&self) -> &str {
@@ -60,7 +58,6 @@ pub struct WorldParams {
 }
 
 fn init(
-    mut game_state: ResMut<State<GameState>>,
     world_params: Res<WorldParams>,
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
@@ -69,7 +66,14 @@ fn init(
     plants: Res<PlantPrefabMap>,
     mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
+    mut next_state: ResMut<NextState<GameState>>,
 ) {
+    // commands.spawn(Window {
+    //     resolution: WindowResolution::new(800., 600.),
+    //     title: "kingdom_sim".to_string(),
+    //     ..default()
+    // });
+
     commands.spawn(Camera2dBundle::new_with_far(
         world_params.half_max_isometric_z * 2.0,
     ));
@@ -165,8 +169,7 @@ fn init(
             worker_pos,
         );
     }
-
-    game_state.overwrite_set(GameState::Playing).unwrap();
+    next_state.set(GameState::Playing);
 }
 
 pub struct AreaOccupiedEvent {
@@ -177,9 +180,8 @@ pub struct OccupyTilesPlugin;
 
 impl Plugin for OccupyTilesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AreaOccupiedEvent>().add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(mark_tiles_in_area_as_occupied),
-        );
+        app.add_event::<AreaOccupiedEvent>()
+            .add_system(mark_tiles_in_area_as_occupied.in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

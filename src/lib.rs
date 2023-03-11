@@ -47,9 +47,10 @@ use plants::PlantsPlugin;
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
 // Or https://github.com/bevyengine/bevy/blob/main/examples/ecs/state.rs
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(States, PartialEq, Eq, Debug, Hash, Clone, Default)]
 enum GameState {
     // During the loading State the LoadingPlugin will load our assets
+    #[default]
     Loading,
     CreatingWorld,
     // During this State the actual game logic is executed
@@ -80,7 +81,7 @@ impl Plugin for GamePlugin {
             Rect::from_corners(-size / 2.0, size / 2.0),
             map_size_factor,
         ));
-        app.add_state(GameState::Loading)
+        app.add_state::<GameState>()
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
             .add_plugin(YamlAssetPlugin::<BuildingPrefabRawVec>::new(&[

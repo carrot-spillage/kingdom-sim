@@ -1,6 +1,6 @@
 mod logic;
 
-use bevy::prelude::{App, Plugin, SystemSet};
+use bevy::prelude::{App, IntoSystemConfig, OnUpdate, Plugin};
 
 use crate::GameState;
 
@@ -12,9 +12,7 @@ pub struct TreeCuttingPlugin;
 
 impl Plugin for TreeCuttingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(GameState::Playing).with_system(handle_task_progress),
-        );
+        app.add_system(handle_task_progress.in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

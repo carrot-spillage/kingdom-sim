@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        App, BuildChildren, Bundle, Commands, Component, Entity, Plugin, Query, Res, ResMut,
-        SystemSet, Transform, Vec2, Vec3, With,
+        App, BuildChildren, Bundle, Commands, Component, Entity, IntoSystemConfig, OnUpdate,
+        Plugin, Query, Res, ResMut, Transform, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -84,7 +84,7 @@ pub struct CarrierPlugin;
 
 impl Plugin for CarrierPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_update(GameState::Playing).with_system(drop_items));
+        app.add_system(drop_items.in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

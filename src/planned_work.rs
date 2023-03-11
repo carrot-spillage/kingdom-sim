@@ -1,4 +1,6 @@
-use bevy::prelude::{App, Component, Entity, EventReader, EventWriter, Plugin, Query, SystemSet};
+use bevy::prelude::{
+    App, Component, Entity, EventReader, EventWriter, IntoSystemConfig, OnUpdate, Plugin, Query,
+};
 
 use crate::{movement::ArrivedToEntityEvent, GameState};
 
@@ -53,9 +55,7 @@ impl Plugin for WorkOnArrivalPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<WorkerCompletedWorkEvent>()
             .add_event::<WorkerStartedWorkEvent>()
-            .add_system_set(
-                SystemSet::on_update(GameState::Playing).with_system(make_arrivals_work),
-            );
+            .add_system(make_arrivals_work.in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

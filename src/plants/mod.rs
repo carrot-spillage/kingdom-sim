@@ -5,13 +5,12 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, EventWriter, Handle, Image, Plugin, Query, Rect, Res, ResMut,
-        SystemSet, Transform, Vec3,
+        App, Commands, Entity, EventWriter, Handle, Image, IntoSystemConfigs, OnUpdate, Plugin,
+        Query, Rect, Res, ResMut, Transform, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_turborand::{GlobalRng, RngComponent};
-use conditional_commands::ConditionalInsertBundleExt;
 
 use crate::{
     init::{AreaOccupiedEvent, WorldParams},
@@ -68,36 +67,44 @@ pub fn spawn_plant(
         "Spawning plant at tile {:?}",
         (position.truncate() + (world_params.size / 2.0)) / 16.0
     );
-    commands
-        .spawn((
-            plant_bundle,
-            Position(position),
-            SpriteBundle {
-                texture,
-                transform: Transform {
-                    translation: isometrify_position(position, &world_params),
-                    scale: match maturity_state {
-                        PlantMaturityStage::Germ => Vec3::new(0.0, 0.0, 1.0),
-                        PlantMaturityStage::FullyGrown => Vec3::new(1.0, 1.0, 1.0),
-                    },
-                    ..Transform::default()
+    let mut sub_commands = commands.spawn((
+        plant_bundle,
+        Position(position),
+        SpriteBundle {
+            texture,
+            transform: Transform {
+                translation: isometrify_position(position, &world_params),
+                scale: match maturity_state {
+                    PlantMaturityStage::Germ => Vec3::new(0.0, 0.0, 1.0),
+                    PlantMaturityStage::FullyGrown => Vec3::new(1.0, 1.0, 1.0),
                 },
-                sprite: Sprite {
-                    anchor: bevy::sprite::Anchor::BottomCenter,
-                    ..Default::default()
-                },
+                ..Transform::default()
+            },
+            sprite: Sprite {
+                anchor: bevy::sprite::Anchor::BottomCenter,
                 ..Default::default()
             },
-        ))
-        .insert_if(maybe_maturity_based_grower.is_some(), || {
-            maybe_maturity_based_grower.unwrap()
-        })
-        .insert_if(maybe_maturity_based_producer.is_some(), || {
-            maybe_maturity_based_producer.unwrap()
-        })
-        .insert_if(maybe_growing.is_some(), || maybe_growing.unwrap())
-        .insert_if(maybe_germinator.is_some(), || maybe_germinator.unwrap())
-        .id()
+            ..Default::default()
+        },
+    ));
+
+    if let Some(component) = maybe_maturity_based_grower {
+        sub_commands.insert(component);
+    }
+
+    if let Some(component) = maybe_maturity_based_producer {
+        sub_commands.insert(component);
+    }
+
+    if let Some(component) = maybe_growing {
+        sub_commands.insert(component);
+    }
+
+    if let Some(component) = maybe_germinator {
+        sub_commands.insert(component);
+    }
+
+    sub_commands.id()
 }
 
 pub fn grow(
@@ -155,13 +162,15 @@ pub fn germinate(
 pub struct PlantsPlugin;
 impl Plugin for PlantsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(grow)
-                .with_system(germinate)
-                .with_system(grow_resource)
-                .with_system(produce_resources)
-                .with_system(break_into_resources),
+        app.add_systems(
+            (
+                grow,
+                germinate,
+                grow_resource,
+                produce_resources,
+                break_into_resources,
+            )
+                .in_set(OnUpdate(GameState::Playing)),
         );
     }
 

@@ -7,7 +7,7 @@ use crate::{
 };
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
-use bevy_asset_loader::prelude::{AssetCollection, LoadingState};
+use bevy_asset_loader::prelude::{AssetCollection, LoadingState, LoadingStateAppExt};
 use bevy_kira_audio::AudioSource;
 
 pub struct LoadingPlugin;
@@ -17,17 +17,17 @@ pub struct LoadingPlugin;
 /// If interested, take a look at https://bevy-cheatbook.github.io/features/assets.html
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        LoadingState::new(GameState::Loading)
-            .with_collection::<FontAssets>()
-            // .with_collection::<AudioAssets>() // NOTE: disabled audio, as if this failes to load, the game never starts
-            .with_collection::<TextureAssets>()
-            .with_collection::<PlantPrefabAssets>()
-            .with_collection::<ItemPrefabAssets>()
-            .with_collection::<BuildingPrefabAssets>()
-            .continue_to_state(GameState::CreatingWorld)
-            .build(app);
+        app.add_loading_state(
+            LoadingState::new(GameState::Loading).continue_to_state(GameState::CreatingWorld),
+        )
+        .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
+        // .add_collection_to_loading_state::<_, AudioAssets>(GameState::Loading) // NOTE: disabled audio, as if this failes to load, the game never starts
+        .add_collection_to_loading_state::<_, TextureAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, PlantPrefabAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, ItemPrefabAssets>(GameState::Loading)
+        .add_collection_to_loading_state::<_, BuildingPrefabAssets>(GameState::Loading);
 
-        app.add_system_set(SystemSet::on_exit(GameState::Loading).with_system(setup_prefabs));
+        app.add_system(setup_prefabs.in_schedule(OnExit(GameState::Loading)));
     }
 }
 

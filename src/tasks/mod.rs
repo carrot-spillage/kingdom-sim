@@ -8,7 +8,9 @@ use crate::{
     planting::logic::{start_planting, Planting},
     GameState,
 };
-use bevy::prelude::{App, Commands, Component, Entity, Plugin, Query, SystemSet, Vec3, With};
+use bevy::prelude::{
+    App, Commands, Component, Entity, IntoSystemConfigs, OnUpdate, Plugin, Query, Vec3, With,
+};
 use std::collections::VecDeque;
 
 pub use self::tooltip::{create_tooltip_bundle, CreatureTaskTooltip};
@@ -18,11 +20,9 @@ pub struct TaskPlugin;
 
 impl Plugin for TaskPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(GameState::Playing)
-                .with_system(proceed_to_next_task)
-                .with_system(update_tooltip_text)
-                .with_system(update_tooltip),
+        app.add_systems(
+            (proceed_to_next_task, update_tooltip_text, update_tooltip)
+                .in_set(OnUpdate(GameState::Playing)),
         );
     }
 
