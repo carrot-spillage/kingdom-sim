@@ -8,7 +8,7 @@ use bevy::{
 use bevy_turborand::{GlobalRng, RngComponent};
 
 use crate::{
-    init::WorldParams,
+    create_world::WorldParams,
     items::{spawn_item_batch, CarrierInventory, ItemPrefabMap},
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},

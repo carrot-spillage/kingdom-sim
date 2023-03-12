@@ -1,12 +1,14 @@
+mod logic;
+
 use bevy::{
-    math::Vec3,
-    prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform, Vec2},
-    sprite::SpriteBundle,
+    prelude::{Component, Handle, Image, Resource, Vec2},
     utils::hashbrown::HashMap,
 };
 
-use crate::{
-    init::WorldParams, items::ItemPrefabId, movement::isometrify_position, plants::bundle::Size,
+use crate::{items::ItemPrefabId, plants::bundle::Size};
+
+pub use self::logic::{
+    convert_construction_site_to_building, get_construction_site_texture, spawn_construction_site,
 };
 
 #[derive(Component)]
@@ -60,52 +62,4 @@ pub struct BuildingPrefabMap(pub HashMap<BuildingPrefabId, BuildingPrefab>);
 pub struct BuildingTextureSet {
     pub in_progress: Vec<Handle<Image>>,
     pub completed: Handle<Image>,
-}
-
-pub fn spawn_construction_site(
-    commands: &mut Commands,
-    construction_site_id: Entity,
-    position: Vec3,
-    textures: &BuildingTextureSet,
-    world_params: &Res<WorldParams>,
-) {
-    println!("Spawning construction site at {:?}", position);
-    commands
-        .entity(construction_site_id)
-        .insert(ConstructionSite)
-        .insert(SpriteBundle {
-            transform: Transform {
-                translation: isometrify_position(position, &world_params),
-                ..Transform::default()
-            },
-            ..Default::default()
-        });
-}
-
-pub fn get_construction_site_texture(
-    previous_progress: f32,
-    progress: f32,
-    building_prefab: &BuildingPrefab,
-) -> Option<Handle<Image>> {
-    let max_index = building_prefab.textures.in_progress.len() - 1;
-    let old_index = (max_index as f32 * previous_progress).round() as usize;
-    let index = (max_index as f32 * progress).round() as usize;
-
-    if previous_progress == 0.0 || index != old_index {
-        return Some(building_prefab.textures.in_progress[index].clone());
-    } else {
-        return None;
-    }
-}
-
-pub fn convert_construction_site_to_building(
-    id: Entity,
-    commands: &mut Commands,
-    textures: &BuildingTextureSet,
-) {
-    commands
-        .entity(id)
-        .remove::<ConstructionSite>()
-        .insert(Building)
-        .insert(textures.completed.clone());
 }

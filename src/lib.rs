@@ -1,6 +1,6 @@
 mod building;
 mod common;
-mod init;
+mod create_world;
 mod loading;
 // mod menu;
 mod movement;
@@ -11,6 +11,7 @@ mod creature;
 mod cutting_tree;
 mod harvesting;
 mod items;
+mod occupy_tiles_plugin;
 mod planting;
 mod plants;
 mod quad_tree;
@@ -19,8 +20,9 @@ mod tasks;
 mod work_progress;
 
 use crate::loading::BuildingPrefabRawVec;
+use crate::loading::LoadingPlugin;
+use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::quad_tree::QuadTree;
-use crate::{init::OccupyTilesPlugin, loading::LoadingPlugin};
 // use crate::menu::MenuPlugin;
 
 use bevy::app::App;
@@ -35,7 +37,7 @@ use tasks::TaskPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use init::{InitPlugin, WorldParams};
+use create_world::{InitPlugin, WorldParams};
 
 use movement::MovementPlugin;
 

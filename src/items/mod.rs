@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    init::WorldParams,
+    create_world::WorldParams,
     movement::{isometrify_position, Position},
 };
 

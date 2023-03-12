@@ -3,12 +3,11 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        default, App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter,
+        App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter,
         IntoSystemAppConfig, IntoSystemConfig, NextState, OnEnter, OnUpdate, Plugin, Query, Rect,
-        Res, ResMut, Resource, State, Transform, With, Without,
+        Res, ResMut, Resource, Transform, With, Without,
     },
     sprite::SpriteBundle,
-    window::{Window, WindowResolution},
 };
 use bevy_ecs_tilemap::{
     prelude::{
@@ -20,7 +19,12 @@ use bevy_ecs_tilemap::{
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
-use crate::quad_tree::QuadTree;
+use crate::{
+    building::{
+        get_construction_site_texture, spawn_construction_site, BuildingPrefabId, BuildingPrefabMap,
+    },
+    quad_tree::QuadTree,
+};
 
 use crate::{
     building::BuildingTextureSet,
@@ -40,7 +44,7 @@ pub struct InitPlugin;
 
 impl Plugin for InitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(init.in_schedule(OnEnter(GameState::CreatingWorld)))
+        app.add_system(create_world.in_schedule(OnEnter(GameState::CreatingWorld)))
             .add_system(run_dummy_commands.in_schedule(OnEnter(GameState::Playing)));
     }
 
@@ -57,13 +61,15 @@ pub struct WorldParams {
     pub tile_side: f32,
 }
 
-fn init(
+fn create_world(
     world_params: Res<WorldParams>,
     mut commands: Commands,
     mut global_rng: ResMut<GlobalRng>,
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
+    buildings: Res<BuildingPrefabMap>,
+
     mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
     mut next_state: ResMut<NextState<GameState>>,
@@ -98,30 +104,22 @@ fn init(
         },
     ));
     // CONSTRUCTION SITES
-    // for _ in 0..5 {
-    //     let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
+    for _ in 0..5 {
+        let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
 
-    //     let construction_site_id = commands.spawn_empty().id();
-    //     spawn_construction_site(&mut commands, construction_site_id, pos, &house_textures);
-    //     let building_prefab = BuildingPrefab {
-    //         name: "House",
-    //         max_hp: 2000.0,
-    //         units_of_work: 100.0,
-    //         textures: BuildingTextureSet {
-    //             in_progress: vec![
-    //                 textures.house_in_progress.clone(),
-    //                 textures.house_in_progress.clone(),
-    //             ],
-    //             completed: textures.house.clone(),
-    //             scale: 0.03,
-    //         },
-    //         max_workers: 2,
-    //         required_resources: vec![(ItemPrefabId(3), 4)],
-    //     };
-    //     if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
-    //         commands.entity(construction_site_id).insert(new_texture);
-    //     }
-    // }
+        let construction_site_id = commands.spawn_empty().id();
+        spawn_construction_site(
+            &mut commands,
+            construction_site_id,
+            pos,
+            &house_textures,
+            &world_params,
+        );
+        let building_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
+        if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
+            commands.entity(construction_site_id).insert(new_texture);
+        }
+    }
 
     for _ in 0..50 {
         let (prefab, texture) = plants.0.get(&PlantPrefabId(1)).unwrap();
@@ -174,57 +172,6 @@ fn init(
 
 pub struct AreaOccupiedEvent {
     pub area: Rect,
-}
-
-pub struct OccupyTilesPlugin;
-
-impl Plugin for OccupyTilesPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<AreaOccupiedEvent>()
-            .add_system(mark_tiles_in_area_as_occupied.in_set(OnUpdate(GameState::Playing)));
-    }
-
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
-}
-
-fn mark_tiles_in_area_as_occupied(
-    mut commands: Commands,
-    grids: Query<&TileStorage>,
-    mut events: EventReader<AreaOccupiedEvent>,
-    world_params: Res<WorldParams>,
-) {
-    if events.is_empty() {
-        return;
-    }
-
-    let tile_storage = grids.single();
-    for AreaOccupiedEvent { area } in events.iter() {
-        let world_offset = world_params.size / 2.0;
-        let offset_area = Rect {
-            min: area.min + world_offset,
-            max: area.max + world_offset,
-        };
-
-        let start_grid_x = (offset_area.min.x / world_params.tile_side).floor() as u32;
-        let end_grid_x = (offset_area.max.x / world_params.tile_side).floor() as u32;
-
-        let start_grid_y = (offset_area.min.y / world_params.tile_side).floor() as u32;
-        let end_grid_y = (offset_area.max.y / world_params.tile_side).floor() as u32;
-
-        println!(
-            "Occupying area {:?} {:?} start xy {:?} {:?} end xy {:?} {:?}",
-            area, offset_area, start_grid_x, start_grid_y, end_grid_x, end_grid_y
-        );
-
-        for x in start_grid_x..=end_grid_x {
-            for y in start_grid_y..=end_grid_y {
-                let tile = tile_storage.get(&TilePos { x, y }).unwrap();
-                commands.entity(tile).insert(TileColor(Color::ORANGE_RED));
-            }
-        }
-    }
 }
 
 fn create_tilemap(

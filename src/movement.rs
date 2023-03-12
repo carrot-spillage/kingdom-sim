@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    init::WorldParams,
+    create_world::WorldParams,
     tasks::{CreatureTask, IdlingCreature},
     GameState,
 };

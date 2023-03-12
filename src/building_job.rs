@@ -23,7 +23,7 @@ pub struct BuildingJobPlugin;
 
 impl Plugin for BuildingJobPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems((handle_building_process).in_set(OnUpdate(GameState::Playing));
+        app.add_systems((handle_building_process).in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

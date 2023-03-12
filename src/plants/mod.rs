@@ -13,7 +13,7 @@ use bevy::{
 use bevy_turborand::{GlobalRng, RngComponent};
 
 use crate::{
-    init::{AreaOccupiedEvent, WorldParams},
+    create_world::{AreaOccupiedEvent, WorldParams},
     movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
     quad_tree::QuadTree,

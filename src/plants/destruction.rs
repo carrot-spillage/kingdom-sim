@@ -2,7 +2,7 @@ use bevy::prelude::{Added, Commands, Entity, Query, Res};
 
 use crate::{
     common::NeedsDestroying,
-    init::WorldParams,
+    create_world::WorldParams,
     items::{spawn_item_batch, ItemPrefabMap},
     movement::Position,
 };

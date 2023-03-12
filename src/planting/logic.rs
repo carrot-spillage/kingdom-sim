@@ -1,7 +1,7 @@
 use crate::quad_tree::QuadTree;
 use crate::{
     common::Countdown,
-    init::{AreaOccupiedEvent, WorldParams},
+    create_world::{AreaOccupiedEvent, WorldParams},
     plants::{
         bundle::{PlantPrefab, PlantPrefabId},
         spawn_plant, PlantMaturityStage,
