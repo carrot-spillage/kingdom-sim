@@ -1,7 +1,8 @@
 plants:
   - id: 1
     name: Oak
-    texture: "prefabs/oak_1.png"
+    textures:
+      default: "prefabs/oak_1.png"
     collision_box:
       x: 24
       y: 24
@@ -19,7 +20,8 @@ plants:
       item_prefab_id: 3
   - id: 2
     name: BerryBush
-    texture: "prefabs/bush_1.png"
+    textures:
+      default: "prefabs/bush_1.png"
     collision_box:
       x: 16
       y: 16

@@ -37,7 +37,7 @@ impl Plugin for LoadingPlugin {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
 pub struct PlantPrefabVec {
-    pub plants: Vec<PlantPrefab>,
+    pub plants: Vec<PlantPrefab<String>>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
@@ -142,8 +142,23 @@ fn setup_prefabs(
         .plants
         .iter()
         .map(|x| {
-            let texture: Handle<Image> = asset_server.load(x.texture.clone());
-            (x.id, (x.clone(), texture))
+            let default: Handle<Image> = asset_server.load(x.textures.default.clone());
+            (
+                x.id,
+                PlantPrefab::<Handle<Image>> {
+                    collision_box: x.collision_box,
+                    germinator: x.germinator,
+                    growth_rate: x.growth_rate,
+                    health: x.health,
+                    id: x.id,
+                    intrinsic_resource: x.intrinsic_resource,
+                    name: x.name.clone(),
+                    resource_producer: x.resource_producer,
+                    textures: crate::plants::bundle::PlantPrefabTextureSet::<Handle<Image>> {
+                        default,
+                    },
+                },
+            )
         })
         .collect();
     commands.insert_resource(PlantPrefabMap(map));

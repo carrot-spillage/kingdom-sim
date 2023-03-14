@@ -108,10 +108,10 @@ impl Size {
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
-pub struct PlantPrefab {
+pub struct PlantPrefab<T> {
     pub id: PlantPrefabId,
     pub name: String,
-    pub texture: String,
+    pub textures: PlantPrefabTextureSet<T>,
     pub collision_box: Size,
     pub health: u32,
     pub growth_rate: f32,
@@ -120,7 +120,13 @@ pub struct PlantPrefab {
     pub resource_producer: Option<ResourceProducerParams>,
 }
 
-impl PlantPrefab {
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
+#[uuid = "413be529-bfeb-41b3-9db0-4b44380a2c4a"]
+pub struct PlantPrefabTextureSet<T> {
+    pub default: T,
+}
+
+impl<T> PlantPrefab<T> {
     pub fn to_plant_components(
         &self,
         maturity_state: &PlantMaturityStage,

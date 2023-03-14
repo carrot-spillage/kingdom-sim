@@ -28,7 +28,7 @@ pub struct Planting {
 pub struct PlantingCountdown(Countdown);
 
 #[derive(Resource, Debug)]
-pub struct PlantPrefabMap(pub HashMap<PlantPrefabId, (PlantPrefab, Handle<Image>)>);
+pub struct PlantPrefabMap(pub HashMap<PlantPrefabId, PlantPrefab<Handle<Image>>>);
 
 pub fn handle_task_progress(
     mut commands: Commands,
@@ -42,7 +42,7 @@ pub fn handle_task_progress(
     for (worker_id, planting, mut planting_countdown) in &mut planters_query {
         let mut countdown = planting_countdown.0;
         if countdown.tick_yield() {
-            if let Some((prefab, texture)) = plants.0.get(&planting.plant_prefab_id) {
+            if let Some(prefab) = plants.0.get(&planting.plant_prefab_id) {
                 cleanup(&mut commands, worker_id);
 
                 let germ_rect = Rect::from_center_size(
@@ -56,7 +56,6 @@ pub fn handle_task_progress(
                         &mut global_rng,
                         &world_params,
                         &prefab,
-                        texture.clone(),
                         planting.position,
                         &PlantMaturityStage::Germ,
                     );
