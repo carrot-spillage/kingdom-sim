@@ -4,9 +4,9 @@ use bevy::{
     sprite::SpriteBundle,
 };
 
-use crate::{create_world::WorldParams, movement::isometrify_position, building::ConstructionSite};
+use crate::{building::ConstructionSite, create_world::WorldParams, movement::isometrify_position};
 
-use super::{BuildingTextureSet, BuildingPrefab, Building};
+use super::{Building, BuildingPrefab, BuildingTextureSet};
 
 pub fn spawn_construction_site(
     commands: &mut Commands,

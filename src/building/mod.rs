@@ -23,43 +23,25 @@ pub struct Building; // TODO: do we need it?
 #[uuid = "38192aaa-9f90-47dc-b5df-bc99f8fec014"]
 pub struct BuildingPrefabId(pub u32);
 
-#[derive(Resource, Debug)]
-pub struct BuildingPrefab {
-    pub id: BuildingPrefabId,
-    pub name: String,
-    pub textures: BuildingTextureSet,
-    pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
-    pub units_of_work: f32,
-    pub max_workers: u32,
-    pub collision_box: Vec2,
-    pub required_resources: Vec<(ItemPrefabId, u32)>,
-}
-
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "78612f76-3507-4c70-a926-65baf3e042ae"]
-pub struct BuildingPrefabRaw {
+pub struct BuildingPrefab<T = Handle<Image>, V = Vec2> {
     pub id: BuildingPrefabId,
     pub name: String,
-    pub textures: BuildingTextureSetRaw,
+    pub textures: BuildingTextureSet<T>,
     pub max_hp: f32, // max_hp and units_of_work can be probably calculated from the number of resources needed
     pub units_of_work: f32,
     pub max_workers: u32,
-    pub collision_box: Size,
+    pub collision_box: V,
     pub required_resources: Vec<(ItemPrefabId, u32)>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "7aa12f76-3507-4c70-a926-65baf3e042ae"]
-pub struct BuildingTextureSetRaw {
-    pub in_progress: Vec<String>,
-    pub completed: String,
+pub struct BuildingTextureSet<T = Handle<Image>> {
+    pub in_progress: Vec<T>,
+    pub completed: T,
 }
 
 #[derive(Resource, Debug)]
 pub struct BuildingPrefabMap(pub HashMap<BuildingPrefabId, BuildingPrefab>);
-
-#[derive(Debug)]
-pub struct BuildingTextureSet {
-    pub in_progress: Vec<Handle<Image>>,
-    pub completed: Handle<Image>,
-}

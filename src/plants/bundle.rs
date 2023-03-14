@@ -2,7 +2,7 @@ use crate::{
     common::{SimpleDestructible, VariableCountdown},
     items::ItemPrefabId,
 };
-use bevy::prelude::{Bundle, Component, ResMut, Vec2};
+use bevy::prelude::{Bundle, Component, Handle, Image, ResMut, Vec2};
 use bevy_turborand::prelude::*;
 use std::f32::consts::PI;
 
@@ -108,11 +108,11 @@ impl Size {
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
-pub struct PlantPrefab<T> {
+pub struct PlantPrefab<T = Handle<Image>, V = Vec2> {
     pub id: PlantPrefabId,
     pub name: String,
     pub textures: PlantPrefabTextureSet<T>,
-    pub collision_box: Size,
+    pub collision_box: V,
     pub health: u32,
     pub growth_rate: f32,
     pub germinator: GerminatorParams,

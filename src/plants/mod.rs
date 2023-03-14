@@ -140,8 +140,7 @@ pub fn germinate(
         if let Some(germ_offset) = germinator.try_produce(&mut rng) {
             let germ_position = position.0 + germ_offset.extend(0.0);
             let prefab = plant_prefab_map.0.get(plant_prefab_id).unwrap();
-            let germ_rect =
-                Rect::from_center_size(germ_position.truncate(), prefab.collision_box.to_vec());
+            let germ_rect = Rect::from_center_size(germ_position.truncate(), prefab.collision_box);
             quad_tree.try_occupy_rect(germ_rect, || {
                 area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
                 return spawn_plant(

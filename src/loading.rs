@@ -1,8 +1,8 @@
 use crate::{
-    building::{BuildingPrefab, BuildingPrefabMap, BuildingPrefabRaw, BuildingTextureSet},
-    items::{ItemPrefab, ItemPrefabMap, ItemPrefabRaw, ItemPrefabTextures},
+    building::{BuildingPrefab, BuildingPrefabMap, BuildingTextureSet},
+    items::{ItemPrefab, ItemPrefabMap, ItemPrefabTextures},
     planting::logic::PlantPrefabMap,
-    plants::bundle::PlantPrefab,
+    plants::bundle::{PlantPrefab, Size},
     GameState,
 };
 use bevy::{prelude::*, utils::hashbrown::HashMap};
@@ -37,19 +37,19 @@ impl Plugin for LoadingPlugin {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
 pub struct PlantPrefabVec {
-    pub plants: Vec<PlantPrefab<String>>,
+    pub plants: Vec<PlantPrefab<String, Size>>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "160a57b6-2417-47c7-bd3b-52ace245cc49"]
 pub struct ItemPrefabVec {
-    pub items: Vec<ItemPrefabRaw>,
+    pub items: Vec<ItemPrefab<String>>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "2d6e164e-73cc-4b74-b7d3-cdbfc59ef727"]
-pub struct BuildingPrefabRawVec {
-    pub buildings: Vec<BuildingPrefabRaw>,
+pub struct BuildingPrefabVec {
+    pub buildings: Vec<BuildingPrefab<String, Size>>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -67,7 +67,7 @@ pub struct ItemPrefabAssets {
 #[derive(AssetCollection, Resource)]
 pub struct BuildingPrefabAssets {
     #[asset(path = "prefabs/_.buildings.yaml", typed)]
-    pub buildings: Handle<BuildingPrefabRawVec>,
+    pub buildings: Handle<BuildingPrefabVec>,
 }
 
 #[derive(AssetCollection, Resource)]
@@ -131,7 +131,7 @@ fn setup_prefabs(
     mut commands: Commands,
     plants: Res<Assets<PlantPrefabVec>>,
     items: Res<Assets<ItemPrefabVec>>,
-    buildings: Res<Assets<BuildingPrefabRawVec>>,
+    buildings: Res<Assets<BuildingPrefabVec>>,
     p: Res<PlantPrefabAssets>,
     ip: Res<ItemPrefabAssets>,
     bp: Res<BuildingPrefabAssets>,
@@ -146,7 +146,7 @@ fn setup_prefabs(
             (
                 x.id,
                 PlantPrefab::<Handle<Image>> {
-                    collision_box: x.collision_box,
+                    collision_box: x.collision_box.to_vec(),
                     germinator: x.germinator,
                     growth_rate: x.growth_rate,
                     health: x.health,

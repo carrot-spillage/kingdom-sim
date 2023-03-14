@@ -19,8 +19,7 @@ mod skills;
 mod tasks;
 mod work_progress;
 
-use crate::loading::BuildingPrefabRawVec;
-use crate::loading::LoadingPlugin;
+use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::quad_tree::QuadTree;
 // use crate::menu::MenuPlugin;
@@ -86,7 +85,7 @@ impl Plugin for GamePlugin {
         app.add_state::<GameState>()
             .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
-            .add_plugin(YamlAssetPlugin::<BuildingPrefabRawVec>::new(&[
+            .add_plugin(YamlAssetPlugin::<BuildingPrefabVec>::new(&[
                 "buildings.yaml",
             ]))
             .add_plugin(LoadingPlugin)
