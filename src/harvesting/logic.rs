@@ -62,7 +62,6 @@ fn produce(
         .0
         .get(&resource_producer.current.prefab_id)
         .unwrap()
-        .0
         .clone();
 
     let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);

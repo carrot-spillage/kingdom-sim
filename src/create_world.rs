@@ -3,9 +3,8 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Camera2dBundle, Color, Commands, Component, Entity, EventReader, EventWriter,
-        IntoSystemAppConfig, IntoSystemConfig, NextState, OnEnter, OnUpdate, Plugin, Query, Rect,
-        Res, ResMut, Resource, Transform, With, Without,
+        App, Camera2dBundle, Commands, Component, Entity, EventWriter, IntoSystemAppConfig,
+        NextState, OnEnter, Plugin, Query, Rect, Res, ResMut, Resource, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -14,7 +13,7 @@ use bevy_ecs_tilemap::{
         get_tilemap_center_transform, IsoCoordSystem, TilemapId, TilemapSize, TilemapTexture,
         TilemapTileSize, TilemapType,
     },
-    tiles::{TileBundle, TileColor, TilePos, TileStorage},
+    tiles::{TileBundle, TilePos, TileStorage},
     TilemapBundle,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
@@ -23,6 +22,7 @@ use crate::{
     building::{
         get_construction_site_texture, spawn_construction_site, BuildingPrefabId, BuildingPrefabMap,
     },
+    items::{spawn_item_batch, ItemBatch, ItemPrefabId, ItemPrefabMap},
     quad_tree::QuadTree,
 };
 
@@ -68,6 +68,7 @@ fn create_world(
     textures: Res<TextureAssets>,
     fonts: Res<FontAssets>,
     plants: Res<PlantPrefabMap>,
+    items: Res<ItemPrefabMap>,
     buildings: Res<BuildingPrefabMap>,
 
     mut quad_tree: ResMut<QuadTree<Entity>>,
@@ -103,8 +104,9 @@ fn create_world(
             ..Default::default()
         },
     ));
+
     // CONSTRUCTION SITES
-    for _ in 0..5 {
+    for _ in 0..1 {
         let pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
 
         let construction_site_id = commands.spawn_empty().id();
@@ -118,6 +120,33 @@ fn create_world(
         let building_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
         if let Some(new_texture) = get_construction_site_texture(0.0, 0.1, &building_prefab) {
             commands.entity(construction_site_id).insert(new_texture);
+        }
+
+        let wood_prefab_id = ItemPrefabId(3);
+        let wood_prefab = items.0.get(&wood_prefab_id).unwrap();
+        for _ in 0..5 {
+            let worker_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
+            let worker_id = spawn_creature(
+                &mut commands,
+                &mut global_rng,
+                &textures,
+                &fonts,
+                &world_params,
+                worker_pos,
+            );
+
+            let resource_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
+
+            let item_batch_id = spawn_item_batch(
+                &mut commands,
+                wood_prefab.textures.dropped.clone(),
+                ItemBatch {
+                    prefab_id: wood_prefab_id,
+                    quantity: 5,
+                },
+                resource_pos,
+                &world_params,
+            );
         }
     }
 
@@ -255,6 +284,7 @@ fn run_dummy_commands(
     mut commands: Commands,
     campfires: Query<&Position, With<Campfire>>,
     mut workers: Query<(Entity, &mut RngComponent), With<Creature>>,
+    item_batches: Query<Entity, With<ItemBatch>>,
     world_params: Res<WorldParams>,
     trees: Query<
         Entity,
@@ -267,11 +297,30 @@ fn run_dummy_commands(
 ) {
     let mut trees_iter = trees.iter();
     let mut bushes_iter = bushes.iter();
+    let mut item_batches_iter = item_batches.iter();
     let campfire_pos = campfires.single().0.clone();
 
     for (worker_id, mut rng) in &mut workers {
         let val = rng.f32();
-        if val < 0.3 {
+        // if val < 0.3 {
+        //     let construction_site_id = costruction_sites_iter.next().unwrap();
+
+        //     let item_batch_id = item_batches_iter.next().unwrap();
+        //     commands
+        //         .entity(worker_id)
+        //         .insert(CreatureTasks(VecDeque::from(vec![
+        //             CreatureTask::MoveToTarget {
+        //                 target_id: item_batch_id,
+        //             },
+        //             CreatureTask::PickItemBatch {
+        //                 target_id: item_batch_id,
+        //             },
+        //             CreatureTask::DropAtConstructionSite {
+        //                 target_id: construction_site_id,
+        //             },
+        //         ])));
+        // } else
+        if val < 0.5 {
             let tree_id = trees_iter.next().unwrap();
             let drop_pos = get_random_pos(
                 &mut global_rng,
@@ -285,7 +334,7 @@ fn run_dummy_commands(
                     CreatureTask::MoveToTarget { target_id: tree_id },
                     CreatureTask::CutTree { target_id: tree_id },
                 ])));
-        } else if val < 0.6 {
+        } else if val < 0.8 {
             let bush_id = bushes_iter.next().unwrap();
             let drop_pos = get_random_pos(
                 &mut global_rng,

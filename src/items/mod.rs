@@ -47,27 +47,41 @@ pub enum CarrierHands {
     Combined(ItemBatch),
 }
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
+#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
 #[uuid = "7df1e471-50ac-4f76-a7d9-c8507f28fde4"]
 pub enum ItemHandlingKind {
     TwoHanded,
     SingleHanded,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527a"]
-pub struct ItemPrefabTextures {
+pub struct ItemPrefabTexturesRaw {
     pub dropped: String,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527b"]
+pub struct ItemPrefabRaw {
+    pub id: ItemPrefabId,
+    pub packable: bool, // false - only handheld
+    pub handling_kind: ItemHandlingKind,
+    pub weight: u32,
+    pub textures: ItemPrefabTexturesRaw,
+}
+
+#[derive(Debug, Clone)]
 pub struct ItemPrefab {
     pub id: ItemPrefabId,
     pub packable: bool, // false - only handheld
     pub handling_kind: ItemHandlingKind,
     pub weight: u32,
     pub textures: ItemPrefabTextures,
+}
+
+#[derive(Debug, Clone)]
+pub struct ItemPrefabTextures {
+    pub dropped: Handle<Image>,
 }
 
 #[derive(
@@ -88,7 +102,7 @@ pub struct ItemTakingResult {
 }
 
 #[derive(Resource, Debug)]
-pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, (ItemPrefab, Handle<Image>)>);
+pub struct ItemPrefabMap(pub HashMap<ItemPrefabId, ItemPrefab>);
 
 // pub struct ItemPlugin;
 

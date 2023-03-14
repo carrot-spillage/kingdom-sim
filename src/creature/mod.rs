@@ -107,11 +107,11 @@ fn drop_items(
 ) {
     for (carrier_id, position, mut item_container) in &mut carriers {
         for item_batch in &item_container.items {
-            let (_, texture) = items.0.get(&item_batch.prefab_id).unwrap();
+            let prefab = items.0.get(&item_batch.prefab_id).unwrap();
 
             spawn_item_batch(
                 &mut commands,
-                texture.clone(),
+                prefab.textures.dropped.clone(),
                 item_batch.clone(),
                 position.0,
                 &world_params,

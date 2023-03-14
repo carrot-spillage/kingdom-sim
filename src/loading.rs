@@ -1,6 +1,6 @@
 use crate::{
     building::{BuildingPrefab, BuildingPrefabMap, BuildingPrefabRaw, BuildingTextureSet},
-    items::{ItemPrefab, ItemPrefabMap},
+    items::{ItemPrefab, ItemPrefabMap, ItemPrefabRaw, ItemPrefabTextures},
     planting::logic::PlantPrefabMap,
     plants::bundle::PlantPrefab,
     GameState,
@@ -43,7 +43,7 @@ pub struct PlantPrefabVec {
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "160a57b6-2417-47c7-bd3b-52ace245cc49"]
 pub struct ItemPrefabVec {
-    pub items: Vec<ItemPrefab>,
+    pub items: Vec<ItemPrefabRaw>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
@@ -153,8 +153,17 @@ fn setup_prefabs(
         .items
         .iter()
         .map(|x| {
-            let texture: Handle<Image> = asset_server.load(x.textures.dropped.clone());
-            (x.id, (x.clone(), texture))
+            let dropped: Handle<Image> = asset_server.load(x.textures.dropped.clone());
+            (
+                x.id,
+                ItemPrefab {
+                    id: x.id,
+                    packable: x.packable,
+                    weight: x.weight,
+                    handling_kind: x.handling_kind,
+                    textures: ItemPrefabTextures { dropped },
+                },
+            )
         })
         .collect();
     commands.insert_resource(ItemPrefabMap(item_prefab_map));
