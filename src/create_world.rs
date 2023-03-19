@@ -20,7 +20,8 @@ use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
     building::{
-        get_construction_site_texture, spawn_construction_site, BuildingPrefabId, BuildingPrefabMap,
+        get_construction_site_texture, spawn_construction_site, BuildingPrefabId,
+        BuildingPrefabMap, ConstructionSite,
     },
     items::{spawn_item_batch, ItemBatch, ItemPrefabId, ItemPrefabMap},
     quad_tree::QuadTree,
@@ -284,6 +285,7 @@ fn run_dummy_commands(
     mut workers: Query<(Entity, &mut RngComponent), With<Creature>>,
     item_batches: Query<Entity, With<ItemBatch>>,
     world_params: Res<WorldParams>,
+    costruction_sites: Query<Entity, With<ConstructionSite>>,
     trees: Query<
         Entity,
         (
@@ -294,31 +296,35 @@ fn run_dummy_commands(
     bushes: Query<Entity, With<PlantResourceProducer>>,
 ) {
     let mut trees_iter = trees.iter();
+    let mut costruction_sites_iter = costruction_sites.iter();
+
     let mut bushes_iter = bushes.iter();
     let mut item_batches_iter = item_batches.iter();
     let campfire_pos = campfires.single().0.clone();
 
     for (worker_id, mut rng) in &mut workers {
         let val = rng.f32();
-        // if val < 0.3 {
-        //     let construction_site_id = costruction_sites_iter.next().unwrap();
+        if val < 0.3 {
+            let construction_site_id = costruction_sites_iter.next().unwrap();
 
-        //     let item_batch_id = item_batches_iter.next().unwrap();
-        //     commands
-        //         .entity(worker_id)
-        //         .insert(CreatureTasks(VecDeque::from(vec![
-        //             CreatureTask::MoveToTarget {
-        //                 target_id: item_batch_id,
-        //             },
-        //             CreatureTask::PickItemBatch {
-        //                 target_id: item_batch_id,
-        //             },
-        //             CreatureTask::DropAtConstructionSite {
-        //                 target_id: construction_site_id,
-        //             },
-        //         ])));
-        // } else
-        if val < 0.5 {
+            let item_batch_id = item_batches_iter.next().unwrap();
+            commands
+                .entity(worker_id)
+                .insert(CreatureTasks(VecDeque::from(vec![
+                    CreatureTask::MoveToTarget {
+                        target_id: item_batch_id,
+                    },
+                    CreatureTask::CollectItems {
+                        target_id: item_batch_id,
+                    },
+                    CreatureTask::MoveToTarget {
+                        target_id: construction_site_id,
+                    },
+                    CreatureTask::TransferItems {
+                        target_id: construction_site_id,
+                    },
+                ])));
+        } else if val < 0.5 {
             let tree_id = trees_iter.next().unwrap();
             let drop_pos = get_random_pos(
                 &mut global_rng,

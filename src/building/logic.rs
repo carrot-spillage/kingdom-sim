@@ -20,6 +20,7 @@ pub fn spawn_construction_site(
         .entity(construction_site_id)
         .insert(ConstructionSite)
         .insert(SpriteBundle {
+            texture: textures.in_progress.first().unwrap().clone(),
             transform: Transform {
                 translation: isometrify_position(position, &world_params),
                 ..Transform::default()

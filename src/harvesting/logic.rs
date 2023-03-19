@@ -1,6 +1,6 @@
 use crate::{
     common::{ClaimedBy, Countdown},
-    items::{CarrierInventory, ItemBatch, ItemPrefabMap},
+    items::{CarrierInventory, ItemPrefabMap},
     plants::PlantResourceProducer,
     tasks::{CreatureTask, IdlingCreature},
 };
@@ -64,12 +64,7 @@ fn produce(
         .unwrap()
         .clone();
 
-    let rest = receiver_inventory.put_and_get_rest(&prefab, resource_producer.current);
-
-    resource_producer.current = rest.unwrap_or(ItemBatch {
-        quantity: 0,
-        prefab_id: resource_producer.current.prefab_id,
-    });
+    receiver_inventory.accept(&prefab, &mut resource_producer.current);
 }
 
 fn cleanup(commands: &mut Commands, worker_id: Entity, maybe_target_id: Option<Entity>) {

@@ -1,7 +1,7 @@
 mod tooltip;
 
 use crate::{
-    creature::schedule_dropping_items,
+    creature::{schedule_collecting_items, schedule_dropping_items, schedule_transferring_items},
     cutting_tree::start_cutting_tree,
     harvesting::start_harvesting,
     movement::{MovingToEntity, MovingToPosition},
@@ -36,6 +36,8 @@ pub enum CreatureTask {
     CutTree { target_id: Entity },
     Plant { planting: Planting },
     DropItems,
+    CollectItems { target_id: Entity },
+    TransferItems { target_id: Entity },
     Harvest { target_id: Entity },
     MoveToTarget { target_id: Entity },
     MoveToPosition { position: Vec3 },
@@ -84,7 +86,13 @@ fn arrange_next_task(commands: &mut Commands, creature_id: Entity, next_task: Cr
         CreatureTask::Harvest { target_id } => {
             start_harvesting(commands, creature_id, target_id, 1.0)
         }
-        CreatureTask::Plant { planting } => start_planting(commands, planting, creature_id, 1.0),
+        CreatureTask::Plant { planting } => start_planting(commands, creature_id, planting, 1.0),
         CreatureTask::DropItems => schedule_dropping_items(commands, creature_id),
+        CreatureTask::CollectItems { target_id } => {
+            schedule_collecting_items(commands, creature_id, target_id);
+        }
+        CreatureTask::TransferItems { target_id } => {
+            schedule_transferring_items(commands, creature_id, target_id);
+        }
     }
 }

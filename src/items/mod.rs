@@ -11,18 +11,41 @@ use crate::{
 };
 
 #[derive(Component, Debug)]
+pub struct ItemContainer {
+    pub items: Vec<ItemBatch>,
+}
+
+// impl ItemContainer {
+//     pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
+//         let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.max_weight);
+
+//         let maybe_item_batch = self
+//             .items
+//             .iter_mut()
+//             .find(|x| x.prefab_id == item_prefab.id);
+
+//         if let Some(picked_item_batch) = picked {
+//             if let Some(item_batch) = maybe_item_batch {
+//                 item_batch.quantity += picked_item_batch.quantity;
+//             } else {
+//                 self.items.push(picked_item_batch);
+//             }
+//         }
+
+//         if let Some(ItemBatch { quantity, .. }) = left {
+//             item_batch.quantity = quantity;
+//         }
+//     }
+// }
+
+#[derive(Component, Debug)]
 pub struct CarrierInventory {
     pub items: Vec<ItemBatch>,
     pub max_weight: u32,
 }
 impl CarrierInventory {
-    pub(crate) fn put_and_get_rest(
-        &mut self,
-        item_prefab: &ItemPrefab,
-        picked_item_batch: ItemBatch,
-    ) -> Option<ItemBatch> {
-        let ItemTakingResult { picked, left } =
-            picked_item_batch.take(item_prefab, self.max_weight);
+    pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
+        let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.max_weight);
 
         let maybe_item_batch = self
             .items
@@ -37,7 +60,9 @@ impl CarrierInventory {
             }
         }
 
-        left
+        if let Some(ItemBatch { quantity, .. }) = left {
+            item_batch.quantity = quantity;
+        }
     }
 }
 

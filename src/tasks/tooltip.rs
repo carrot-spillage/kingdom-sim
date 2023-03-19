@@ -71,6 +71,8 @@ pub fn update_tooltip(
             CreatureTask::MoveToTarget { .. } => "Moving to target",
             CreatureTask::MoveToPosition { .. } => "Moving to position",
             CreatureTask::DropItems { .. } => "Dropping items",
+            CreatureTask::CollectItems { .. } => "Collecting items",
+            CreatureTask::TransferItems { .. } => "Transferring items",
         };
         tootltip.title = format!("Task: {task_name}");
     }

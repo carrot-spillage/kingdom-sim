@@ -9,7 +9,7 @@ use bevy_turborand::{GlobalRng, RngComponent};
 
 use crate::{
     create_world::WorldParams,
-    items::{spawn_item_batch, CarrierInventory, ItemPrefabMap},
+    items::{spawn_item_batch, CarrierInventory, ItemBatch, ItemPrefabMap},
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
     tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
@@ -95,8 +95,30 @@ impl Plugin for CarrierPlugin {
 #[derive(Component)]
 pub struct CarrierDroppingItems;
 
+#[derive(Component)]
+pub struct CarrierCollectingItems {
+    pub target_id: Entity,
+}
+
+#[derive(Component)]
+pub struct CarrierTransferringItems {
+    pub target_id: Entity,
+}
+
 pub fn schedule_dropping_items(commands: &mut Commands, carrier_id: Entity) {
     commands.entity(carrier_id).insert(CarrierDroppingItems);
+}
+
+pub fn schedule_collecting_items(commands: &mut Commands, carrier_id: Entity, target_id: Entity) {
+    commands
+        .entity(carrier_id)
+        .insert(CarrierCollectingItems { target_id });
+}
+
+pub fn schedule_transferring_items(commands: &mut Commands, carrier_id: Entity, target_id: Entity) {
+    commands
+        .entity(carrier_id)
+        .insert(CarrierTransferringItems { target_id });
 }
 
 fn drop_items(
@@ -119,13 +141,98 @@ fn drop_items(
         }
 
         item_container.items.clear();
-        cleanup(&mut commands, carrier_id);
+        cleanup_drop(&mut commands, carrier_id);
     }
 }
 
-fn cleanup(commands: &mut Commands, carrier_id: Entity) {
+fn collect_items(
+    mut commands: Commands,
+    mut carriers: Query<(
+        Entity,
+        &Position,
+        &mut CarrierInventory,
+        &CarrierCollectingItems,
+    )>,
+    mut item_batches: Query<&mut ItemBatch>,
+
+    items: Res<ItemPrefabMap>,
+    world_params: Res<WorldParams>,
+) {
+    for (carrier_id, position, mut item_container, CarrierCollectingItems { target_id }) in
+        &mut carriers
+    {
+        // TODO: check the position
+        let mut item_batch = item_batches.get_mut(*target_id).unwrap();
+        let prefab = items.0.get(&item_batch.prefab_id).unwrap();
+
+        item_container.accept(prefab, &mut item_batch);
+
+        cleanup_collect(
+            &mut commands,
+            carrier_id,
+            if item_batch.quantity == 0 {
+                Some(*target_id)
+            } else {
+                None
+            },
+        );
+    }
+}
+
+fn transfer_items(
+    mut commands: Commands,
+    mut carriers: Query<(
+        Entity,
+        &Position,
+        &mut CarrierInventory,
+        &CarrierCollectingItems,
+    )>,
+    mut item_batches: Query<&mut ItemBatch>,
+
+    items: Res<ItemPrefabMap>,
+    world_params: Res<WorldParams>,
+) {
+    for (carrier_id, position, mut item_container, CarrierCollectingItems { target_id }) in
+        &mut carriers
+    {
+        // TODO: check the position
+        let mut item_batch = item_batches.get_mut(*target_id).unwrap();
+        let prefab = items.0.get(&item_batch.prefab_id).unwrap();
+
+        item_container.accept(prefab, &mut item_batch);
+
+        cleanup_transfer(
+            &mut commands,
+            carrier_id
+        );
+    }
+}
+
+fn cleanup_drop(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
         .remove::<(CreatureTask, CarrierDroppingItems)>()
         .insert(IdlingCreature);
+}
+
+fn cleanup_transfer(commands: &mut Commands, carrier_id: Entity) {
+    commands
+        .entity(carrier_id)
+        .remove::<(CreatureTask, CarrierTransferringItems)>()
+        .insert(IdlingCreature);
+}
+
+fn cleanup_collect(
+    commands: &mut Commands,
+    carrier_id: Entity,
+    item_batch_id_to_remove: Option<Entity>,
+) {
+    commands
+        .entity(carrier_id)
+        .remove::<(CreatureTask, CarrierCollectingItems)>()
+        .insert(IdlingCreature);
+
+    if let Some(item_batch_id) = item_batch_id_to_remove {
+        commands.entity(item_batch_id).despawn();
+    }
 }

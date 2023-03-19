@@ -5,7 +5,7 @@ use bevy::{
     utils::hashbrown::HashMap,
 };
 
-use crate::{items::ItemPrefabId, plants::bundle::Size};
+use crate::items::ItemPrefabId;
 
 pub use self::logic::{
     convert_construction_site_to_building, get_construction_site_texture, spawn_construction_site,
