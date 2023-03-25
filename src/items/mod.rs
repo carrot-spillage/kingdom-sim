@@ -11,32 +11,41 @@ use crate::{
 };
 
 #[derive(Component, Debug)]
-pub struct ItemContainer {
+pub struct ConstructionSiteContainer {
     pub items: Vec<ItemBatch>,
+    pub unscheduled_item_batches: Vec<ItemBatch>,
+    pub scheduled_item_batches: Vec<ScheduledItemBatch>,
 }
 
-// impl ItemContainer {
-//     pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
-//         let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.max_weight);
+#[derive(Debug)]
+pub struct ScheduledItemBatch {
+    pub owner_id: Entity,
+    pub value: ItemBatch
+}
 
-//         let maybe_item_batch = self
-//             .items
-//             .iter_mut()
-//             .find(|x| x.prefab_id == item_prefab.id);
+impl ConstructionSiteContainer {
+    pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
+        let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.);
 
-//         if let Some(picked_item_batch) = picked {
-//             if let Some(item_batch) = maybe_item_batch {
-//                 item_batch.quantity += picked_item_batch.quantity;
-//             } else {
-//                 self.items.push(picked_item_batch);
-//             }
-//         }
+        let maybe_item_batch = self
+            .items
+            .iter_mut()
+            .find(|x| x.prefab_id == item_prefab.id);
 
-//         if let Some(ItemBatch { quantity, .. }) = left {
-//             item_batch.quantity = quantity;
-//         }
-//     }
-// }
+        if let Some(picked_item_batch) = picked {
+            if let Some(item_batch) = maybe_item_batch {
+                item_batch.quantity += picked_item_batch.quantity;
+            } else {
+                self.items.push(picked_item_batch);
+            }
+        }
+
+        if let Some(ItemBatch { quantity, .. }) = left {
+            item_batch.quantity = quantity;
+        }
+    }
+}
+
 
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
@@ -44,6 +53,11 @@ pub struct CarrierInventory {
     pub max_weight: u32,
 }
 impl CarrierInventory {
+
+    pub fn transfer_to_construction_site(container: &mut ConstructionSiteContainer) {
+
+    }
+
     pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
         let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.max_weight);
 
