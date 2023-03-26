@@ -124,6 +124,7 @@ fn move_to_entity(
         let maybe_destination_position = positions
             .get(moving.destination_entity)
             .map(|x| x.0.clone());
+
         if let Ok(destination_position) = maybe_destination_position {
             let mut this_pos_res = positions.get_mut(entity_id).unwrap();
             let distance = this_pos_res.0.distance(destination_position);

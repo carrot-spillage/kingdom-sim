@@ -4,7 +4,12 @@ use bevy::{
     sprite::SpriteBundle,
 };
 
-use crate::{building::ConstructionSite, create_world::WorldParams, movement::isometrify_position};
+use crate::{
+    building::ConstructionSite,
+    create_world::WorldParams,
+    items::ConstructionSiteStorage,
+    movement::{isometrify_position, Position},
+};
 
 use super::{Building, BuildingPrefab, BuildingTextureSet};
 
@@ -19,6 +24,12 @@ pub fn spawn_construction_site(
     commands
         .entity(construction_site_id)
         .insert(ConstructionSite)
+        .insert(Position(position))
+        .insert(ConstructionSiteStorage {
+            delivered_batches: vec![],
+            expected_batches: vec![],
+            unscheduled_batches: vec![],
+        })
         .insert(SpriteBundle {
             texture: textures.in_progress.first().unwrap().clone(),
             transform: Transform {
