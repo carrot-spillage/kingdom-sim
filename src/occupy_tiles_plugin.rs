@@ -1,7 +1,12 @@
-use bevy::prelude::{Plugin, App, Commands, Query, EventReader, Res, OnUpdate, IntoSystemConfig, Rect, Color};
-use bevy_ecs_tilemap::tiles::{TileStorage, TileColor, TilePos};
+use bevy::prelude::{
+    App, Color, Commands, EventReader, IntoSystemConfig, OnUpdate, Plugin, Query, Rect, Res,
+};
+use bevy_ecs_tilemap::tiles::{TileColor, TilePos, TileStorage};
 
-use crate::{create_world::{AreaOccupiedEvent, WorldParams}, GameState};
+use crate::{
+    create_world::{AreaOccupiedEvent, WorldParams},
+    GameState,
+};
 
 pub struct OccupyTilesPlugin;
 
@@ -40,10 +45,10 @@ fn mark_tiles_in_area_as_occupied(
         let start_grid_y = (offset_area.min.y / world_params.tile_side).floor() as u32;
         let end_grid_y = (offset_area.max.y / world_params.tile_side).floor() as u32;
 
-        println!(
-            "Occupying area {:?} {:?} start xy {:?} {:?} end xy {:?} {:?}",
-            area, offset_area, start_grid_x, start_grid_y, end_grid_x, end_grid_y
-        );
+        // println!(
+        //     "Occupying area {:?} {:?} start xy {:?} {:?} end xy {:?} {:?}",
+        //     area, offset_area, start_grid_x, start_grid_y, end_grid_x, end_grid_y
+        // );
 
         for x in start_grid_x..=end_grid_x {
             for y in start_grid_y..=end_grid_y {

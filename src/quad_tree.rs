@@ -55,15 +55,8 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
 
         let success = self.try_find_leaf_indexes(0, rect, &mut found_indexes);
 
-        for index in &found_indexes {
-            self.nodes
-                .get(*index)
-                .map(|node| println!("tile {:?}", node.quad.center() / 16.0));
-        }
-
         if success {
             let tenant_key = get_tenant_key_on_success();
-            println!("Tenant {:?}. found_indexes:", tenant_key);
 
             for index in &found_indexes {
                 self.nodes
@@ -72,12 +65,12 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             }
 
             self.tenant_keys_and_nodes.insert(tenant_key, found_indexes);
-            println!(
-                "Tenant {:?} occupied rect from {:?} to {:?}",
-                tenant_key,
-                rect.min / 16.0,
-                rect.max / 16.0
-            );
+            // println!(
+            //     "Tenant {:?} occupied rect from {:?} to {:?}",
+            //     tenant_key,
+            //     rect.min / 16.0,
+            //     rect.max / 16.0
+            // );
 
             return Some(tenant_key);
         }

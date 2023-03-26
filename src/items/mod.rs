@@ -4,6 +4,7 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
+use itertools::Itertools;
 
 use crate::{
     create_world::WorldParams,
@@ -11,71 +12,95 @@ use crate::{
 };
 
 #[derive(Component, Debug)]
-pub struct ConstructionSiteContainer {
-    pub items: Vec<ItemBatch>,
-    pub unscheduled_item_batches: Vec<ItemBatch>,
-    pub scheduled_item_batches: Vec<ScheduledItemBatch>,
+pub struct ConstructionSiteStorage {
+    pub delivered_batches: Vec<ItemBatch>,
+    pub unscheduled_batches: Vec<ItemBatch>,
+    pub expected_batches: Vec<ScheduledItemBatch>,
 }
 
 #[derive(Debug)]
 pub struct ScheduledItemBatch {
     pub owner_id: Entity,
-    pub value: ItemBatch
+    pub value: ItemBatch,
 }
 
-impl ConstructionSiteContainer {
-    pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
-        let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.);
-
-        let maybe_item_batch = self
-            .items
-            .iter_mut()
-            .find(|x| x.prefab_id == item_prefab.id);
-
-        if let Some(picked_item_batch) = picked {
-            if let Some(item_batch) = maybe_item_batch {
-                item_batch.quantity += picked_item_batch.quantity;
-            } else {
-                self.items.push(picked_item_batch);
+impl ConstructionSiteStorage {
+    pub(crate) fn accept(&mut self, entity_id: Entity, item_batches: &mut Vec<ItemBatch>) {
+        self.expected_batches.retain_mut(|expected| {
+            if expected.owner_id != entity_id {
+                return true;
             }
-        }
 
-        if let Some(ItemBatch { quantity, .. }) = left {
-            item_batch.quantity = quantity;
-        }
+            let found = item_batches
+                .iter_mut()
+                .find_position(|x| x.prefab_id == expected.value.prefab_id);
+
+            if let Some((index, item_batch)) = found {
+                let result = deliver_quantity(expected.value.quantity, item_batch.quantity);
+                self.delivered_batches.push(ItemBatch {
+                    prefab_id: item_batch.prefab_id,
+                    quantity: result.delivered_used,
+                });
+
+                if result.delivered_unused == 0 {
+                    item_batches.remove(index);
+                } else {
+                    // TODO: if has some unused, try to transfer to unscheduled
+                    item_batch.quantity = result.delivered_unused;
+                }
+                if result.expected_remains == 0 {
+                    return false;
+                } else {
+                    expected.value.quantity = result.expected_remains;
+                    return true;
+                }
+            }
+
+            return false;
+        });
     }
 }
 
+struct TransferResult {
+    expected_remains: u32,
+    delivered_unused: u32,
+    delivered_used: u32,
+}
+
+fn deliver_quantity(expected: u32, delivered: u32) -> TransferResult {
+    let delivered_used = delivered.min(expected);
+
+    TransferResult {
+        delivered_used,
+        expected_remains: (expected - delivered).min(0),
+        delivered_unused: expected - delivered_used,
+    }
+}
 
 #[derive(Component, Debug)]
 pub struct CarrierInventory {
     pub items: Vec<ItemBatch>,
     pub max_weight: u32,
+    pub available_weight: u32,
 }
 impl CarrierInventory {
-
-    pub fn transfer_to_construction_site(container: &mut ConstructionSiteContainer) {
-
-    }
-
     pub(crate) fn accept(&mut self, item_prefab: &ItemPrefab, item_batch: &mut ItemBatch) {
-        let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.max_weight);
+        let ItemTakingResult { picked, left } = item_batch.take(item_prefab, self.available_weight);
 
-        let maybe_item_batch = self
+        let maybe_existing_item_batch = self
             .items
             .iter_mut()
             .find(|x| x.prefab_id == item_prefab.id);
 
-        if let Some(picked_item_batch) = picked {
-            if let Some(item_batch) = maybe_item_batch {
-                item_batch.quantity += picked_item_batch.quantity;
+        if let Some((picked_item_batch, Weight(item_batch_weight))) = picked {
+            if let Some(existing_item_batch) = maybe_existing_item_batch {
+                existing_item_batch.quantity += picked_item_batch.quantity;
             } else {
                 self.items.push(picked_item_batch);
             }
-        }
 
-        if let Some(ItemBatch { quantity, .. }) = left {
-            item_batch.quantity = quantity;
+            self.available_weight -= item_batch_weight;
+            item_batch.quantity = left.map(|x| x.quantity).unwrap_or(0);
         }
     }
 }
@@ -121,8 +146,10 @@ pub struct ItemBatch {
     pub quantity: u32,
 }
 
+pub struct Weight(pub u32);
+
 pub struct ItemTakingResult {
-    picked: Option<ItemBatch>,
+    picked: Option<(ItemBatch, Weight)>,
     left: Option<ItemBatch>,
 }
 
@@ -151,10 +178,13 @@ impl ItemBatch {
 
         if picked_quantity >= self.quantity {
             ItemTakingResult {
-                picked: Some(ItemBatch {
-                    quantity: self.quantity,
-                    prefab_id: self.prefab_id,
-                }),
+                picked: Some((
+                    ItemBatch {
+                        quantity: self.quantity,
+                        prefab_id: self.prefab_id,
+                    },
+                    Weight(item_prefab.weight * picked_quantity),
+                )),
                 left: None,
             }
         } else if picked_quantity == 0 {
@@ -164,10 +194,13 @@ impl ItemBatch {
             }
         } else {
             ItemTakingResult {
-                picked: Some(ItemBatch {
-                    quantity: picked_quantity,
-                    prefab_id: self.prefab_id,
-                }),
+                picked: Some((
+                    ItemBatch {
+                        quantity: picked_quantity,
+                        prefab_id: self.prefab_id,
+                    },
+                    Weight(item_prefab.weight * picked_quantity),
+                )),
                 left: Some(ItemBatch {
                     quantity: self.quantity - picked_quantity,
                     prefab_id: self.prefab_id,

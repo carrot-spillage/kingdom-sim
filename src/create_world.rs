@@ -302,75 +302,75 @@ fn run_dummy_commands(
     let mut item_batches_iter = item_batches.iter();
     let campfire_pos = campfires.single().0.clone();
 
-    for (worker_id, mut rng) in &mut workers {
+    for (worker_id, mut rng) in &mut workers.iter_mut().take(1) {
         let val = rng.f32();
-        if val < 0.3 {
-            let construction_site_id = costruction_sites_iter.next().unwrap();
+        // if val < 0.3 {
+        let construction_site_id = costruction_sites_iter.next().unwrap();
 
-            let item_batch_id = item_batches_iter.next().unwrap();
-            commands
-                .entity(worker_id)
-                .insert(CreatureTasks(VecDeque::from(vec![
-                    CreatureTask::MoveToTarget {
-                        target_id: item_batch_id,
-                    },
-                    CreatureTask::CollectItems {
-                        target_id: item_batch_id,
-                    },
-                    CreatureTask::MoveToTarget {
-                        target_id: construction_site_id,
-                    },
-                    CreatureTask::TransferItems {
-                        target_id: construction_site_id,
-                    },
-                ])));
-        } else if val < 0.5 {
-            let tree_id = trees_iter.next().unwrap();
-            let drop_pos = get_random_pos(
-                &mut global_rng,
-                campfire_pos.truncate(),
-                Vec2::new(20.0, 20.0),
-            );
+        let item_batch_id = item_batches_iter.next().unwrap();
+        commands
+            .entity(worker_id)
+            .insert(CreatureTasks(VecDeque::from(vec![
+                CreatureTask::MoveToTarget {
+                    target_id: item_batch_id,
+                },
+                CreatureTask::CollectItems {
+                    target_id: item_batch_id,
+                },
+                CreatureTask::MoveToTarget {
+                    target_id: construction_site_id,
+                },
+                CreatureTask::TransferItems {
+                    target_id: construction_site_id,
+                },
+            ])));
+        // } else if val < 0.5 {
+        //     let tree_id = trees_iter.next().unwrap();
+        //     let drop_pos = get_random_pos(
+        //         &mut global_rng,
+        //         campfire_pos.truncate(),
+        //         Vec2::new(20.0, 20.0),
+        //     );
 
-            commands
-                .entity(worker_id)
-                .insert(CreatureTasks(VecDeque::from(vec![
-                    CreatureTask::MoveToTarget { target_id: tree_id },
-                    CreatureTask::CutTree { target_id: tree_id },
-                ])));
-        } else if val < 0.8 {
-            let bush_id = bushes_iter.next().unwrap();
-            let drop_pos = get_random_pos(
-                &mut global_rng,
-                campfire_pos.truncate(),
-                Vec2::new(20.0, 20.0),
-            );
-            commands
-                .entity(worker_id)
-                .insert(CreatureTasks(VecDeque::from(vec![
-                    CreatureTask::MoveToTarget { target_id: bush_id },
-                    CreatureTask::Harvest { target_id: bush_id },
-                    CreatureTask::MoveToPosition { position: drop_pos },
-                    CreatureTask::DropItems,
-                ])));
-        } else {
-            let new_plant_pos =
-                get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
+        //     commands
+        //         .entity(worker_id)
+        //         .insert(CreatureTasks(VecDeque::from(vec![
+        //             CreatureTask::MoveToTarget { target_id: tree_id },
+        //             CreatureTask::CutTree { target_id: tree_id },
+        //         ])));
+        // } else if val < 0.8 {
+        //     let bush_id = bushes_iter.next().unwrap();
+        //     let drop_pos = get_random_pos(
+        //         &mut global_rng,
+        //         campfire_pos.truncate(),
+        //         Vec2::new(20.0, 20.0),
+        //     );
+        //     commands
+        //         .entity(worker_id)
+        //         .insert(CreatureTasks(VecDeque::from(vec![
+        //             CreatureTask::MoveToTarget { target_id: bush_id },
+        //             CreatureTask::Harvest { target_id: bush_id },
+        //             CreatureTask::MoveToPosition { position: drop_pos },
+        //             CreatureTask::DropItems,
+        //         ])));
+        // } else {
+        //     let new_plant_pos =
+        //         get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
 
-            commands
-                .entity(worker_id)
-                .insert(CreatureTasks(VecDeque::from(vec![
-                    CreatureTask::MoveToPosition {
-                        position: new_plant_pos,
-                    },
-                    CreatureTask::Plant {
-                        planting: Planting {
-                            plant_prefab_id: PlantPrefabId(1),
-                            position: new_plant_pos,
-                        },
-                    },
-                ])));
-        }
+        //     commands
+        //         .entity(worker_id)
+        //         .insert(CreatureTasks(VecDeque::from(vec![
+        //             CreatureTask::MoveToPosition {
+        //                 position: new_plant_pos,
+        //             },
+        //             CreatureTask::Plant {
+        //                 planting: Planting {
+        //                     plant_prefab_id: PlantPrefabId(1),
+        //                     position: new_plant_pos,
+        //                 },
+        //             },
+        //         ])));
+        // }
     }
 }
 

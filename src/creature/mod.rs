@@ -1,6 +1,6 @@
 use bevy::{
     prelude::{
-        App, BuildChildren, Bundle, Commands, Component, Entity, IntoSystemConfig, OnUpdate,
+        App, BuildChildren, Bundle, Commands, Component, Entity, IntoSystemConfigs, OnUpdate,
         Plugin, Query, Res, ResMut, Transform, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
@@ -8,8 +8,11 @@ use bevy::{
 use bevy_turborand::{GlobalRng, RngComponent};
 
 use crate::{
+    common::NeedsDestroying,
     create_world::WorldParams,
-    items::{spawn_item_batch, CarrierInventory, ItemBatch, ItemPrefabMap},
+    items::{
+        spawn_item_batch, CarrierInventory, ConstructionSiteStorage, ItemBatch, ItemPrefabMap,
+    },
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
     tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
@@ -41,6 +44,7 @@ pub fn spawn_creature(
         inventory: CarrierInventory {
             items: vec![],
             max_weight: 50,
+            available_weight: 50,
         },
         walker: Walker {
             max_speed: 2.0,
@@ -84,7 +88,9 @@ pub struct CarrierPlugin;
 
 impl Plugin for CarrierPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(drop_items.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            (drop_items, collect_items, transfer_items).in_set(OnUpdate(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {
@@ -156,7 +162,6 @@ fn collect_items(
     mut item_batches: Query<&mut ItemBatch>,
 
     items: Res<ItemPrefabMap>,
-    world_params: Res<WorldParams>,
 ) {
     for (carrier_id, position, mut item_container, CarrierCollectingItems { target_id }) in
         &mut carriers
@@ -166,6 +171,7 @@ fn collect_items(
         let prefab = items.0.get(&item_batch.prefab_id).unwrap();
 
         item_container.accept(prefab, &mut item_batch);
+        println!("now item_container contains {:?}", item_container);
 
         cleanup_collect(
             &mut commands,
@@ -185,26 +191,17 @@ fn transfer_items(
         Entity,
         &Position,
         &mut CarrierInventory,
-        &CarrierCollectingItems,
+        &CarrierTransferringItems,
     )>,
-    mut item_batches: Query<&mut ItemBatch>,
-
-    items: Res<ItemPrefabMap>,
-    world_params: Res<WorldParams>,
+    mut construction_site_storages: Query<&mut ConstructionSiteStorage>,
 ) {
-    for (carrier_id, position, mut item_container, CarrierCollectingItems { target_id }) in
+    for (carrier_id, position, mut item_container, CarrierTransferringItems { target_id }) in
         &mut carriers
     {
-        // TODO: check the position
-        let mut item_batch = item_batches.get_mut(*target_id).unwrap();
-        let prefab = items.0.get(&item_batch.prefab_id).unwrap();
-
-        item_container.accept(prefab, &mut item_batch);
-
-        cleanup_transfer(
-            &mut commands,
-            carrier_id
-        );
+        let mut storage = construction_site_storages.get_mut(*target_id).unwrap(); // TODO: there might be other kinds of recepients of items
+                                                                                   // TODO: check the position
+        storage.accept(carrier_id, &mut item_container.items);
+        cleanup_transfer(&mut commands, carrier_id);
     }
 }
 
@@ -233,6 +230,6 @@ fn cleanup_collect(
         .insert(IdlingCreature);
 
     if let Some(item_batch_id) = item_batch_id_to_remove {
-        commands.entity(item_batch_id).despawn();
+        commands.entity(item_batch_id).insert(NeedsDestroying);
     }
 }

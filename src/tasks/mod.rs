@@ -67,6 +67,7 @@ fn proceed_to_next_task(
 }
 
 fn arrange_next_task(commands: &mut Commands, creature_id: Entity, next_task: CreatureTask) {
+    println!("next_task {:?}", next_task);
     match next_task {
         CreatureTask::MoveToTarget { target_id } => {
             commands.entity(creature_id).insert(MovingToEntity {
