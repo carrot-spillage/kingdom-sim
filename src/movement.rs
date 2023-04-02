@@ -8,7 +8,7 @@ use bevy::{
 
 use crate::{
     create_world::WorldParams,
-    tasks::{CreatureTask, IdlingCreature},
+    tasks::{CreatureTaskType, IdlingCreature},
     GameState,
 };
 
@@ -109,7 +109,7 @@ fn move_to_position(
             walker.stop();
             commands
                 .entity(entity_id)
-                .remove::<(CreatureTask, MovingToPosition)>()
+                .remove::<(CreatureTaskType, MovingToPosition)>()
                 .insert(IdlingCreature);
         }
     }
@@ -138,7 +138,7 @@ fn move_to_entity(
                 walker.stop();
                 commands
                     .entity(entity_id)
-                    .remove::<(CreatureTask, MovingToEntity)>()
+                    .remove::<(CreatureTaskType, MovingToEntity)>()
                     .insert(IdlingCreature);
             }
         }

@@ -15,7 +15,7 @@ use crate::{
     },
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
-    tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
+    tasks::{create_tooltip_bundle, CreatureTaskTooltip, CreatureTaskType, IdlingCreature},
     GameState,
 };
 
@@ -208,14 +208,14 @@ fn transfer_items(
 fn cleanup_drop(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTask, CarrierDroppingItems)>()
+        .remove::<(CreatureTaskType, CarrierDroppingItems)>()
         .insert(IdlingCreature);
 }
 
 fn cleanup_transfer(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTask, CarrierTransferringItems)>()
+        .remove::<(CreatureTaskType, CarrierTransferringItems)>()
         .insert(IdlingCreature);
 }
 
@@ -226,7 +226,7 @@ fn cleanup_collect(
 ) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTask, CarrierCollectingItems)>()
+        .remove::<(CreatureTaskType, CarrierCollectingItems)>()
         .insert(IdlingCreature);
 
     if let Some(item_batch_id) = item_batch_id_to_remove {

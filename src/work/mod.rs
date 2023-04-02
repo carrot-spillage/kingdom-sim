@@ -1,9 +1,23 @@
+mod crafting_process;
+
 use bevy::prelude::{Component, Entity};
 
-use crate::skills::{SkillType, Skilled};
+pub use self::crafting_process::CraftingProcess;
+
+#[derive(Clone, Copy, Debug)]
+pub struct WorkParticipant {
+    pub creature_id: Entity,
+    pub proficiency: WorkProficiency,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct WorkProficiency {
+    pub skill: f32,
+    pub performance: f32,
+} // each field has values from 0.0 to 1.0
 
 #[derive(Clone, Debug)]
-pub struct QualityCounter {
+pub struct WorkQualityCounter {
     pub points: f32,
     pub instances: u32,
 }
@@ -11,8 +25,8 @@ pub struct QualityCounter {
 #[derive(Component, Clone, Debug)]
 pub struct WorkProgress {
     pub units_of_work_left: f32,
-    pub quality_counter: QualityCounter,
-    pub work_chunks: Vec<WorkChunk>,
+    pub quality_counter: WorkQualityCounter,
+    pub work_chunks: Vec<WorkProficiency>,
 }
 
 #[derive(Clone)]
@@ -24,7 +38,7 @@ pub enum WorkProgressUpdate {
 impl WorkProgress {
     pub fn new(units_of_work: f32) -> Self {
         Self {
-            quality_counter: QualityCounter {
+            quality_counter: WorkQualityCounter {
                 instances: 0,
                 points: 0.0,
             },
@@ -35,9 +49,8 @@ impl WorkProgress {
 }
 
 pub fn advance_work_progress(
-    workers: Vec<&Skilled>,
+    participants: &Vec<WorkParticipant>,
     state: &WorkProgress,
-    skill_type: SkillType,
 ) -> WorkProgressUpdate {
     let WorkProgress {
         units_of_work_left,
@@ -45,11 +58,11 @@ pub fn advance_work_progress(
         work_chunks,
     } = state;
 
-    let mut new_work_chunks = calc_work_chunks(workers, skill_type);
+    let mut new_work_chunks = participants.iter().map(|x| x.proficiency).collect();
     let progress = calc_work_chunks_progress(&new_work_chunks, 1.0);
     let units_of_work_left = f32::max(units_of_work_left - progress, 0.0);
 
-    let quality_counter = QualityCounter {
+    let quality_counter = WorkQualityCounter {
         instances: quality_counter.instances + new_work_chunks.len() as u32,
         points: quality_counter.points + calc_work_chunks_quality(&new_work_chunks, 1.0),
     };
@@ -72,50 +85,19 @@ pub fn advance_work_progress(
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct WorkChunk {
-    quality: f32,
-    units_of_work: f32,
-} // quality and progress go from 0.0 to 1.0
-
-pub fn calc_work_chunks(workers: Vec<&Skilled>, skill_type: SkillType) -> Vec<WorkChunk> {
-    workers
-        .iter()
-        .map(|x| x.skills.get(&skill_type).unwrap())
-        .map(|skill_value| WorkChunk {
-            units_of_work: 0.5 + skill_value / 2.0,
-            quality: *skill_value,
-        })
-        .collect()
-}
-
-pub fn calc_work_chunks_quality(worker_chunks: &Vec<WorkChunk>, period: f32) -> f32 {
+pub fn calc_work_chunks_quality(worker_chunks: &Vec<WorkProficiency>, period: f32) -> f32 {
     worker_chunks
         .iter()
-        .map(|x| x.quality * period)
+        .map(|x| x.skill * period)
         .reduce(|a, b| a + b)
         .unwrap_or_default()
 }
 
-pub fn calc_work_chunks_progress(worker_chunks: &Vec<WorkChunk>, period: f32) -> f32 {
-    worker_chunks
+pub fn calc_work_chunks_progress(work_chunks: &Vec<WorkProficiency>, period: f32) -> f32 {
+    work_chunks
         .iter()
-        .map(|x| x.units_of_work)
+        .map(|x| x.performance)
         .reduce(|a, b| a + b)
         .unwrap_or_default()
         * period
-}
-
-pub fn get_most_skilled(workers: &Vec<(Entity, Skilled)>, skill_type: SkillType) -> Entity {
-    workers
-        .iter()
-        .max_by(|a, b| {
-            a.1.skills
-                .get(&skill_type)
-                .unwrap()
-                .partial_cmp(b.1.skills.get(&skill_type).unwrap())
-                .unwrap()
-        })
-        .unwrap()
-        .0
 }

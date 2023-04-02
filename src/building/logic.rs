@@ -7,8 +7,9 @@ use bevy::{
 use crate::{
     building::ConstructionSite,
     create_world::WorldParams,
-    items::ConstructionSiteStorage,
+    items::{ConstructionSiteStorage, ItemBatch},
     movement::{isometrify_position, Position},
+    work::CraftingProcess,
 };
 
 use super::{Building, BuildingPrefab, BuildingTextureSet};
@@ -17,7 +18,7 @@ pub fn spawn_construction_site(
     commands: &mut Commands,
     construction_site_id: Entity,
     position: Vec3,
-    textures: &BuildingTextureSet,
+    building_prefab: &BuildingPrefab,
     world_params: &Res<WorldParams>,
 ) {
     println!("Spawning construction site at {:?}", position);
@@ -25,13 +26,29 @@ pub fn spawn_construction_site(
         .entity(construction_site_id)
         .insert(ConstructionSite)
         .insert(Position(position))
+        .insert(CraftingProcess::new(
+            building_prefab.units_of_work,
+            building_prefab
+                .required_resources
+                .iter()
+                .map(|x| ItemBatch {
+                    prefab_id: x.0,
+                    quantity: x.1,
+                })
+                .collect(),
+        ))
         .insert(ConstructionSiteStorage {
             delivered_batches: vec![],
             expected_batches: vec![],
             unscheduled_batches: vec![],
         })
         .insert(SpriteBundle {
-            texture: textures.in_progress.first().unwrap().clone(),
+            texture: building_prefab
+                .textures
+                .in_progress
+                .first()
+                .unwrap()
+                .clone(),
             transform: Transform {
                 translation: isometrify_position(position, &world_params),
                 ..Transform::default()
@@ -63,7 +80,7 @@ pub fn convert_construction_site_to_building(
 ) {
     commands
         .entity(id)
-        .remove::<ConstructionSite>()
+        .remove::<(CraftingProcess, ConstructionSite)>()
         .insert(Building)
         .insert(textures.completed.clone());
 }

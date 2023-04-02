@@ -6,7 +6,6 @@ mod loading;
 mod movement;
 mod planned_work;
 
-mod crafting_progress;
 mod creature;
 mod cutting_tree;
 mod harvesting;
@@ -17,7 +16,7 @@ mod plants;
 mod quad_tree;
 mod skills;
 mod tasks;
-mod work_progress;
+mod work;
 
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;

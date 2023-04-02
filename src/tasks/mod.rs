@@ -1,6 +1,7 @@
 mod tooltip;
 
 use crate::{
+    building::CreatureConstructingTask,
     creature::{schedule_collecting_items, schedule_dropping_items, schedule_transferring_items},
     cutting_tree::start_cutting_tree,
     harvesting::start_harvesting,
@@ -32,7 +33,7 @@ impl Plugin for TaskPlugin {
 }
 
 #[derive(Component, Debug, Clone, Copy)]
-pub enum CreatureTask {
+pub enum CreatureTaskType {
     CutTree { target_id: Entity },
     Plant { planting: Planting },
     DropItems,
@@ -41,10 +42,11 @@ pub enum CreatureTask {
     Harvest { target_id: Entity },
     MoveToTarget { target_id: Entity },
     MoveToPosition { position: Vec3 },
+    Build { target_id: Entity },
 }
 
 #[derive(Component)]
-pub struct CreatureTasks(pub VecDeque<CreatureTask>);
+pub struct CreatureTasks(pub VecDeque<CreatureTaskType>);
 
 #[derive(Component)]
 pub struct IdlingCreature;
@@ -66,34 +68,43 @@ fn proceed_to_next_task(
     }
 }
 
-fn arrange_next_task(commands: &mut Commands, creature_id: Entity, next_task: CreatureTask) {
-    println!("next_task {:?}", next_task);
-    match next_task {
-        CreatureTask::MoveToTarget { target_id } => {
+fn arrange_next_task(
+    commands: &mut Commands,
+    creature_id: Entity,
+    next_task_type: CreatureTaskType,
+) {
+    println!("next_task_type {:?}", next_task_type);
+    match next_task_type {
+        CreatureTaskType::MoveToTarget { target_id } => {
             commands.entity(creature_id).insert(MovingToEntity {
                 destination_entity: target_id,
                 sufficient_range: 20.0,
             });
         }
-        CreatureTask::MoveToPosition { position } => {
+        CreatureTaskType::MoveToPosition { position } => {
             commands.entity(creature_id).insert(MovingToPosition {
                 position,
                 sufficient_range: 20.0,
             });
         }
-        CreatureTask::CutTree { target_id } => {
+        CreatureTaskType::CutTree { target_id } => {
             start_cutting_tree(commands, creature_id, target_id, 1.0);
         }
-        CreatureTask::Harvest { target_id } => {
+        CreatureTaskType::Harvest { target_id } => {
             start_harvesting(commands, creature_id, target_id, 1.0)
         }
-        CreatureTask::Plant { planting } => start_planting(commands, creature_id, planting, 1.0),
-        CreatureTask::DropItems => schedule_dropping_items(commands, creature_id),
-        CreatureTask::CollectItems { target_id } => {
+        CreatureTaskType::Plant { planting } => {
+            start_planting(commands, creature_id, planting, 1.0)
+        }
+        CreatureTaskType::DropItems => schedule_dropping_items(commands, creature_id),
+        CreatureTaskType::CollectItems { target_id } => {
             schedule_collecting_items(commands, creature_id, target_id);
         }
-        CreatureTask::TransferItems { target_id } => {
+        CreatureTaskType::TransferItems { target_id } => {
             schedule_transferring_items(commands, creature_id, target_id);
+        }
+        CreatureTaskType::Build { target_id } => {
+            CreatureConstructingTask::insert(commands, creature_id, target_id);
         }
     }
 }

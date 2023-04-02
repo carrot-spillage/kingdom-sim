@@ -1,3 +1,4 @@
+mod constructing;
 mod logic;
 
 use bevy::{
@@ -7,12 +8,18 @@ use bevy::{
 
 use crate::items::ItemPrefabId;
 
+use self::constructing::ConstructedBy;
 pub use self::logic::{
     convert_construction_site_to_building, get_construction_site_texture, spawn_construction_site,
 };
 
+pub use self::constructing::CreatureConstructingTask;
+
 #[derive(Component)]
 pub struct ConstructionSite;
+
+#[derive(Component)]
+pub struct ConstructionSiteWorkers(pub Vec<ConstructedBy>);
 
 #[derive(Component)]
 pub struct Building; // TODO: do we need it?

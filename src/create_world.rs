@@ -28,16 +28,15 @@ use crate::{
 };
 
 use crate::{
-    building::BuildingTextureSet,
     creature::{spawn_creature, Creature},
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position},
-    planting::logic::{PlantPrefabMap, Planting},
+    planting::logic::PlantPrefabMap,
     plants::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    tasks::{CreatureTask, CreatureTasks},
+    tasks::{CreatureTaskType, CreatureTasks},
     GameState,
 };
 
@@ -87,10 +86,7 @@ fn create_world(
     ));
 
     create_tilemap(&mut commands, &world_params, &textures);
-    let house_textures = BuildingTextureSet {
-        in_progress: vec![textures.house_in_progress.clone()],
-        completed: textures.house.clone(),
-    };
+    let house_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
 
     let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
     commands.spawn((
@@ -115,7 +111,7 @@ fn create_world(
             &mut commands,
             construction_site_id,
             pos,
-            &house_textures,
+            &house_prefab,
             &world_params,
         );
         let building_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
@@ -311,16 +307,16 @@ fn run_dummy_commands(
         commands
             .entity(worker_id)
             .insert(CreatureTasks(VecDeque::from(vec![
-                CreatureTask::MoveToTarget {
+                CreatureTaskType::MoveToTarget {
                     target_id: item_batch_id,
                 },
-                CreatureTask::CollectItems {
+                CreatureTaskType::CollectItems {
                     target_id: item_batch_id,
                 },
-                CreatureTask::MoveToTarget {
+                CreatureTaskType::MoveToTarget {
                     target_id: construction_site_id,
                 },
-                CreatureTask::TransferItems {
+                CreatureTaskType::TransferItems {
                     target_id: construction_site_id,
                 },
             ])));
