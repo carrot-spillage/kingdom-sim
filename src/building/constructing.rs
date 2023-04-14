@@ -1,14 +1,14 @@
 use bevy::{
     prelude::{
         App, Commands, Component, Entity, IntoSystemConfig, IntoSystemConfigs, OnUpdate, Plugin,
-        Query, With, Without,
+        Query, ResMut, With, Without,
     },
     utils::HashSet,
 };
 
 use crate::{
     tasks::{CreatureTaskStopping, IdlingCreature},
-    work::{CraftingProcess, CraftingProcessUpdate},
+    work::{CraftingProcess, CraftingProcessUpdate, WorkParticipant, WorkProficiency},
     GameState,
 };
 
@@ -97,45 +97,66 @@ fn handle_task_process(
         &BuildingPrefabId,
         &ConstructionSiteWorkers,
     )>,
-    //mut workers_query: Query<()>,
-    //mut buildings: BuildingPrefabMap,
+    mut buildings: ResMut<BuildingPrefabMap>,
 ) {
-    for (construction_site_id, mut crafting_process, building_prefab_id, workers) in
-        &mut construction_sites
+    for (
+        construction_site_id,
+        mut crafting_process,
+        building_prefab_id,
+        ConstructionSiteWorkers(workers),
+    ) in &mut construction_sites
     {
-        if workers.0.is_empty() {
+        if workers.is_empty() {
             continue;
         }
 
-        // let work_participants = workers.0
-        // match crafting_process.advance(, 1.0) {
-        //     CraftingProcessUpdate::Complete { .. } => {
-        //         for worker_id in work
-        //             .worker_ids
-        //             .iter()
-        //             .chain(work.tentative_worker_ids.iter())
-        //         {
+        let dummy_proficiency = WorkProficiency {
+            performance: 0.5,
+            skill: 0.5,
+        };
+        let work_participants: Vec<WorkParticipant> = workers
+            .iter()
+            .map(|w| WorkParticipant {
+                creature_id: w.0,
+                proficiency: dummy_proficiency,
+            })
+            .collect();
+        match crafting_process.advance(work_participants, 1.0) {
+            CraftingProcessUpdate::Complete { .. } => {
+                for worker_id in workers.iter().map(|x| x.0) {
+                    commands.entity(worker_id).insert(CreatureTaskStopping); // TODO: more ergonomic way to stop a task
+                }
 
-        //         }
+                commands
+                    .entity(construction_site_id)
+                    .remove::<ConstructionSiteWorkers>();
+                let building_prefab = buildings.0.get(building_prefab_id).unwrap();
+                convert_construction_site_to_building(
+                    construction_site_id,
+                    &mut commands,
+                    &building_prefab.textures,
+                )
+            }
+            CraftingProcessUpdate::Incomplete { delta } => {
+                // TODO: update textures
+                // if let Some(new_texture) = get_construction_site_texture(
+                //     1.0 - (process.units_of_work_left + delta) / work.units_of_work,
+                //     1.0 - process.units_of_work_left / work.units_of_work,
+                //     building_prefab,
+                // ) {
+                //     commands.entity(building_id).insert(new_texture);
+                // }
+            }
+            CraftingProcessUpdate::InsufficientResources => {
+                // release all workers
+                for worker_id in workers.iter().map(|x| x.0) {
+                    commands.entity(worker_id).insert(CreatureTaskStopping); // TODO: more ergonomic way to stop a task
+                }
 
-        //         cleanup()
-        //         let building_prefab = buildings.0.get(building_prefab_id).unwrap();
-        //         convert_construction_site_to_building(construction_site_id, &mut commands, &building_prefab.textures)
-        //     }
-        //     CraftingProcessUpdate::Incomplete { delta } => {
-        //         if let Some(new_texture) = get_construction_site_texture(
-        //             1.0 - (process.units_of_work_left + delta) / work.units_of_work,
-        //             1.0 - process.units_of_work_left / work.units_of_work,
-        //             building_prefab,
-        //         ) {
-        //             commands.entity(building_id).insert(new_texture);
-        //         }
-
-        //         *crafting_process = process;
-        //     }
-        //     CraftingProcessUpdate::NotEnoughResources => {
-        //         free_workers(&mut commands, &work.worker_ids)
-        //     }
-        // }
+                commands
+                    .entity(construction_site_id)
+                    .insert(ConstructionSiteWorkers(HashSet::new()));
+            }
+        }
     }
 }
