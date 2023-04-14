@@ -21,16 +21,16 @@ dev = ["bevy/dynamic_linking"]
 [dependencies]
 bevy = { version = "0.10", features = ["bevy_asset", "bevy_asset", "bevy_render", "bevy_core_pipeline", "bevy_winit", "png", "x11"] }
 bevy_kira_audio = { version = "0.15" }
-bevy_asset_loader = { version = "0.15" }
+bevy_asset_loader = { version = "0.16" }
 rand = "0.8"
 itertools = "0.10"
-bevy_common_assets = { version = "0.5", features = ["yaml"] }
+bevy_common_assets = { version = "0.6", features = ["yaml"] }
 bevy_turborand = { version = "0.5" }
-bevy_ecs_tilemap = { git = "https://github.com/geieredgar/bevy_ecs_tilemap", branch = "bevy_track", features = ["atlas"] }
+bevy_ecs_tilemap = { version = "0.10" }
 serde = "1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 winit = { version = "0.28", features = ["x11"] }
 
 [build-dependencies]
-embed-resource = "1.7"
+embed-resource = "2.1"

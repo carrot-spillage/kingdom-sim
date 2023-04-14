@@ -46,6 +46,9 @@ pub enum CreatureTaskType {
 }
 
 #[derive(Component)]
+pub struct CreatureTaskStopping;
+
+#[derive(Component)]
 pub struct CreatureTasks(pub VecDeque<CreatureTaskType>);
 
 #[derive(Component)]
@@ -104,7 +107,11 @@ fn arrange_next_task(
             schedule_transferring_items(commands, creature_id, target_id);
         }
         CreatureTaskType::Build { target_id } => {
-            CreatureConstructingTask::insert(commands, creature_id, target_id);
+            commands
+                .entity(creature_id)
+                .insert(CreatureConstructingTask {
+                    construction_site_id: target_id,
+                });
         }
     }
 }
