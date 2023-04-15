@@ -36,7 +36,7 @@ use crate::{
         bundle::PlantPrefabId, spawn_plant, IntrinsicPlantResourceGrower, PlantMaturityStage,
         PlantResourceProducer,
     },
-    tasks::{CreatureTaskType, CreatureTasks},
+    tasks::{CreatureTask, CreatureTasks},
     GameState,
 };
 
@@ -307,16 +307,19 @@ fn run_dummy_commands(
         commands
             .entity(worker_id)
             .insert(CreatureTasks(VecDeque::from(vec![
-                CreatureTaskType::MoveToTarget {
+                CreatureTask::MoveToTarget {
                     target_id: item_batch_id,
                 },
-                CreatureTaskType::CollectItems {
+                CreatureTask::CollectItems {
                     target_id: item_batch_id,
                 },
-                CreatureTaskType::MoveToTarget {
+                CreatureTask::MoveToTarget {
                     target_id: construction_site_id,
                 },
-                CreatureTaskType::TransferItems {
+                CreatureTask::TransferItems {
+                    target_id: construction_site_id,
+                },
+                CreatureTask::Build {
                     target_id: construction_site_id,
                 },
             ])));

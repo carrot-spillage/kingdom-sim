@@ -1,6 +1,6 @@
 use bevy::prelude::Component;
 
-use crate::items::ItemBatch;
+use crate::items::{add_batches_to, ItemBatch};
 
 use super::{
     calc_work_chunks_progress, calc_work_chunks_quality, WorkParticipant, WorkProficiency,
@@ -12,7 +12,6 @@ pub struct CraftingProcess {
     pub units_of_work_left: f32,
     pub resources_per_unit_of_work: f32,
     pub quality_counter: WorkQualityCounter,
-    pub work_chunks: Vec<WorkProficiency>,
     pub item_batches: Vec<ItemBatch>,
 }
 
@@ -36,7 +35,6 @@ impl CraftingProcess {
                 .map(|x| x.quantity)
                 .sum::<u32>() as f32
                 / units_of_work),
-            work_chunks: vec![],
             item_batches: initially_required_resources
                 .iter()
                 .map(|initially_required| ItemBatch {
@@ -45,6 +43,10 @@ impl CraftingProcess {
                 })
                 .collect(),
         }
+    }
+
+    pub fn accept_batches(&mut self, item_batches: &mut Vec<ItemBatch>) {
+        add_batches_to(&mut self.item_batches, item_batches);
     }
 
     pub fn advance(
@@ -65,13 +67,12 @@ impl CraftingProcess {
         }
         // check that there is enough resources here to work on?
 
-        let mut new_work_chunks = participants.iter().map(|x| x.proficiency).collect();
+        let new_work_chunks = participants.iter().map(|x| x.proficiency).collect();
         let units_of_work_progress = calc_work_chunks_progress(&new_work_chunks, period);
         self.units_of_work_left = f32::max(*units_of_work_left - units_of_work_progress, 0.0);
 
         self.quality_counter.instances += new_work_chunks.len() as u32;
         self.quality_counter.points += calc_work_chunks_quality(&new_work_chunks, period);
-        self.work_chunks.append(&mut new_work_chunks);
 
         if self.units_of_work_left == 0.0 {
             return CraftingProcessUpdate::Complete {

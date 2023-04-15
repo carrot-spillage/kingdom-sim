@@ -1,13 +1,13 @@
 use bevy::{
     prelude::{
-        App, Commands, Component, Entity, IntoSystemConfig, IntoSystemConfigs, OnUpdate, Plugin,
-        Query, ResMut, With, Without,
+        Added, App, Commands, Component, Entity, IntoSystemConfig, IntoSystemConfigs, OnUpdate,
+        Plugin, Query, ResMut,
     },
     utils::HashSet,
 };
 
 use crate::{
-    tasks::{CreatureTaskStopping, IdlingCreature},
+    tasks::{CreatureTask, CreatureTaskStopping, IdlingCreature},
     work::{CraftingProcess, CraftingProcessUpdate, WorkParticipant, WorkProficiency},
     GameState,
 };
@@ -22,7 +22,7 @@ pub struct CreatureConstructingTask {
     pub construction_site_id: Entity,
 }
 
-#[derive(Component, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Component, Debug, Hash, Eq, PartialEq, PartialOrd)]
 pub struct ConstructedBy(Entity);
 
 pub struct CreatureConstructingTaskPlugin;
@@ -38,10 +38,14 @@ impl Plugin for CreatureConstructingTaskPlugin {
 }
 
 fn start(
-    creatures_with_tasks: Query<(Entity, &CreatureConstructingTask), Without<CreatureTaskStopping>>,
+    creatures_with_tasks: Query<
+        (Entity, &CreatureConstructingTask),
+        Added<CreatureConstructingTask>,
+    >,
     mut construction_sites_with_workers: Query<&mut ConstructionSiteWorkers>,
 ) {
     for (creature_id, task) in &creatures_with_tasks {
+        println!("Construction joined by {:?}", creature_id);
         if let Ok(mut construction_site_workers) =
             construction_sites_with_workers.get_mut(task.construction_site_id)
         {
@@ -54,13 +58,15 @@ fn start(
 
 fn stop(
     mut commands: Commands,
-    creatures_with_tasks: Query<(Entity, &CreatureConstructingTask), With<CreatureTaskStopping>>,
+    creatures_with_tasks: Query<(Entity, &CreatureConstructingTask), Added<CreatureTaskStopping>>,
     mut construction_sites_with_workers: Query<&mut ConstructionSiteWorkers>,
 ) {
     for (creature_id, task) in &creatures_with_tasks {
+        println!("Construction stopped by {:?}", creature_id);
+
         commands
             .entity(creature_id)
-            .remove::<CreatureConstructingTask>()
+            .remove::<(CreatureTask, CreatureConstructingTask)>()
             .insert(IdlingCreature);
 
         if let Ok(mut construction_site_workers) =
@@ -71,10 +77,6 @@ fn stop(
                 .remove(&ConstructedBy(creature_id)); // there is no duplication prevention
         }
     }
-}
-
-pub trait CreatureTask {
-    fn stop(&self, creature_id: Entity);
 }
 
 pub struct ConstructionPlugin;
@@ -97,7 +99,7 @@ fn handle_task_process(
         &BuildingPrefabId,
         &ConstructionSiteWorkers,
     )>,
-    mut buildings: ResMut<BuildingPrefabMap>,
+    buildings: ResMut<BuildingPrefabMap>,
 ) {
     for (
         construction_site_id,
@@ -123,6 +125,8 @@ fn handle_task_process(
             .collect();
         match crafting_process.advance(work_participants, 1.0) {
             CraftingProcessUpdate::Complete { .. } => {
+                println!("Constructing: Complete");
+
                 for worker_id in workers.iter().map(|x| x.0) {
                     commands.entity(worker_id).insert(CreatureTaskStopping); // TODO: more ergonomic way to stop a task
                 }
@@ -138,6 +142,7 @@ fn handle_task_process(
                 )
             }
             CraftingProcessUpdate::Incomplete { delta } => {
+                println!("Constructing: Incomplete");
                 // TODO: update textures
                 // if let Some(new_texture) = get_construction_site_texture(
                 //     1.0 - (process.units_of_work_left + delta) / work.units_of_work,
@@ -148,6 +153,7 @@ fn handle_task_process(
                 // }
             }
             CraftingProcessUpdate::InsufficientResources => {
+                println!("Constructing: InsufficientResources");
                 // release all workers
                 for worker_id in workers.iter().map(|x| x.0) {
                     commands.entity(worker_id).insert(CreatureTaskStopping); // TODO: more ergonomic way to stop a task
@@ -158,5 +164,7 @@ fn handle_task_process(
                     .insert(ConstructionSiteWorkers(HashSet::new()));
             }
         }
+
+        println!("Crafting process updated to {:?}", crafting_process);
     }
 }

@@ -18,7 +18,7 @@ mod skills;
 mod tasks;
 mod work;
 
-use crate::building::ConstructionPlugin;
+use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::quad_tree::QuadTree;
@@ -92,6 +92,7 @@ impl Plugin for GamePlugin {
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
             .add_plugin(CarrierPlugin)
             .add_plugin(OccupyTilesPlugin)
+            .add_plugin(CreatureConstructingTaskPlugin)
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)

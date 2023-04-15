@@ -8,7 +8,7 @@ use bevy::{
 
 use crate::{
     loading::FontAssets,
-    tasks::{CreatureTaskType, IdlingCreature},
+    tasks::{CreatureTask, IdlingCreature},
 };
 
 #[derive(Component)]
@@ -56,24 +56,24 @@ pub fn create_tooltip_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle 
 pub fn update_tooltip(
     mut task_completed_query: Query<
         &mut CreatureTaskTooltip,
-        (Without<CreatureTaskType>, Added<IdlingCreature>),
+        (Without<CreatureTask>, Added<IdlingCreature>),
     >,
     mut task_started_query: Query<
-        (&mut CreatureTaskTooltip, &CreatureTaskType),
-        (With<CreatureTaskType>, Added<CreatureTaskType>),
+        (&mut CreatureTaskTooltip, &CreatureTask),
+        (With<CreatureTask>, Added<CreatureTask>),
     >,
 ) {
     for (mut tootltip, task_type) in &mut task_started_query {
         let task_name = match task_type {
-            CreatureTaskType::Plant { .. } => "Planting",
-            CreatureTaskType::CutTree { .. } => "Cutting tree",
-            CreatureTaskType::Harvest { .. } => "Harvesting",
-            CreatureTaskType::MoveToTarget { .. } => "Moving to target",
-            CreatureTaskType::MoveToPosition { .. } => "Moving to position",
-            CreatureTaskType::DropItems { .. } => "Dropping items",
-            CreatureTaskType::CollectItems { .. } => "Collecting items",
-            CreatureTaskType::TransferItems { .. } => "Transferring items",
-            CreatureTaskType::Build { .. } => "Building",
+            CreatureTask::Plant { .. } => "Planting",
+            CreatureTask::CutTree { .. } => "Cutting tree",
+            CreatureTask::Harvest { .. } => "Harvesting",
+            CreatureTask::MoveToTarget { .. } => "Moving to target",
+            CreatureTask::MoveToPosition { .. } => "Moving to position",
+            CreatureTask::DropItems { .. } => "Dropping items",
+            CreatureTask::CollectItems { .. } => "Collecting items",
+            CreatureTask::TransferItems { .. } => "Transferring items",
+            CreatureTask::Build { .. } => "Building",
         };
         tootltip.title = format!("Task: {task_name}");
     }

@@ -6,10 +6,10 @@ buildings:
       in_progress:
         - "prefabs/house_in_progress.png"
     max_hp: 1200.0
-    units_of_work: 400.0
+    units_of_work: 40.0
     max_workers: 3
     collision_box:
       x: 32
       y: 32
     required_resources:
-      - [3, 10]
+      - [3, 1]

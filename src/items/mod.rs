@@ -13,31 +13,22 @@ use crate::{
 
 #[derive(Component, Debug)]
 pub struct ConstructionSiteStorage {
-    pub delivered_batches: Vec<ItemBatch>,
-    pub unscheduled_batches: Vec<ItemBatch>,
-    pub expected_batches: Vec<ScheduledItemBatch>,
-}
-
-#[derive(Debug)]
-pub struct ScheduledItemBatch {
-    pub owner_id: Entity,
-    pub value: ItemBatch,
+    // The ones, that's been delivered and not part of a crafting process
+    pub available_batches: Vec<ItemBatch>,
+    pub needed_batches: Vec<ItemBatch>,
 }
 
 impl ConstructionSiteStorage {
     pub(crate) fn accept(&mut self, entity_id: Entity, item_batches: &mut Vec<ItemBatch>) {
-        self.expected_batches.retain_mut(|expected| {
-            if expected.owner_id != entity_id {
-                return true;
-            }
-
+        self.needed_batches.retain_mut(|needed| {
             let found = item_batches
                 .iter_mut()
-                .find_position(|x| x.prefab_id == expected.value.prefab_id);
+                .find_position(|x| x.prefab_id == needed.prefab_id);
 
+            println!("ConstructionSiteStorage accept2 {:?}", found);
             if let Some((index, item_batch)) = found {
-                let result = deliver_quantity(expected.value.quantity, item_batch.quantity);
-                self.delivered_batches.push(ItemBatch {
+                let result = deliver_quantity(needed.quantity, item_batch.quantity);
+                self.available_batches.push(ItemBatch {
                     prefab_id: item_batch.prefab_id,
                     quantity: result.delivered_used,
                 });
@@ -51,7 +42,7 @@ impl ConstructionSiteStorage {
                 if result.expected_remains == 0 {
                     return false;
                 } else {
-                    expected.value.quantity = result.expected_remains;
+                    needed.quantity = result.expected_remains;
                     return true;
                 }
             }
@@ -72,7 +63,7 @@ fn deliver_quantity(expected: u32, delivered: u32) -> TransferResult {
 
     TransferResult {
         delivered_used,
-        expected_remains: (expected - delivered).min(0),
+        expected_remains: expected.saturating_sub(delivered),
         delivered_unused: expected - delivered_used,
     }
 }
@@ -235,4 +226,19 @@ pub fn spawn_item_batch(
             ..Default::default()
         })
         .id()
+}
+
+pub fn add_batches_to(consumer: &mut Vec<ItemBatch>, provider: &mut Vec<ItemBatch>) {
+    for incoming_item_batch in provider.iter_mut() {
+        if let Some(receiving_item_batch) = consumer
+            .iter_mut()
+            .find(|x| x.prefab_id == incoming_item_batch.prefab_id)
+        {
+            receiving_item_batch.quantity += incoming_item_batch.quantity;
+        } else {
+            consumer.push(*incoming_item_batch);
+        }
+    }
+
+    provider.clear();
 }

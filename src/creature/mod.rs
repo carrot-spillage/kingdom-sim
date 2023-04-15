@@ -15,7 +15,8 @@ use crate::{
     },
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
-    tasks::{create_tooltip_bundle, CreatureTaskTooltip, CreatureTaskType, IdlingCreature},
+    tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
+    work::CraftingProcess,
     GameState,
 };
 
@@ -193,14 +194,22 @@ fn transfer_items(
         &mut CarrierInventory,
         &CarrierTransferringItems,
     )>,
-    mut construction_site_storages: Query<&mut ConstructionSiteStorage>,
+    mut construction_site_storages: Query<(&mut ConstructionSiteStorage, &mut CraftingProcess)>,
 ) {
     for (carrier_id, position, mut item_container, CarrierTransferringItems { target_id }) in
         &mut carriers
     {
-        let mut storage = construction_site_storages.get_mut(*target_id).unwrap(); // TODO: there might be other kinds of recepients of items
-                                                                                   // TODO: check the position
+        println!("Item container has batches {:?}", item_container.items);
+
+        let (mut storage, mut crafting_process) =
+            construction_site_storages.get_mut(*target_id).unwrap(); // TODO: there might be other kinds of recepients of items
+                                                                     // TODO: check the position
         storage.accept(carrier_id, &mut item_container.items);
+        println!("Storage received batches {:?}", storage);
+
+        crafting_process.accept_batches(&mut storage.available_batches);
+        println!("Crafting process received batches {:?}", crafting_process);
+
         cleanup_transfer(&mut commands, carrier_id);
     }
 }
@@ -208,14 +217,14 @@ fn transfer_items(
 fn cleanup_drop(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTaskType, CarrierDroppingItems)>()
+        .remove::<(CreatureTask, CarrierDroppingItems)>()
         .insert(IdlingCreature);
 }
 
 fn cleanup_transfer(commands: &mut Commands, carrier_id: Entity) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTaskType, CarrierTransferringItems)>()
+        .remove::<(CreatureTask, CarrierTransferringItems)>()
         .insert(IdlingCreature);
 }
 
@@ -226,7 +235,7 @@ fn cleanup_collect(
 ) {
     commands
         .entity(carrier_id)
-        .remove::<(CreatureTaskType, CarrierCollectingItems)>()
+        .remove::<(CreatureTask, CarrierCollectingItems)>()
         .insert(IdlingCreature);
 
     if let Some(item_batch_id) = item_batch_id_to_remove {

@@ -2,12 +2,13 @@ use bevy::{
     math::Vec3,
     prelude::{Commands, Entity, Handle, Image, Res, Transform},
     sprite::SpriteBundle,
+    utils::HashSet,
 };
 
 use crate::{
-    building::ConstructionSite,
+    building::{constructing::ConstructionSiteWorkers, ConstructionSite},
     create_world::WorldParams,
-    items::{ConstructionSiteStorage, ItemBatch},
+    items::{ConstructionSiteStorage, ItemBatch, ItemPrefab},
     movement::{isometrify_position, Position},
     work::CraftingProcess,
 };
@@ -26,6 +27,7 @@ pub fn spawn_construction_site(
         .entity(construction_site_id)
         .insert(ConstructionSite)
         .insert(Position(position))
+        .insert(building_prefab.id)
         .insert(CraftingProcess::new(
             building_prefab.units_of_work,
             building_prefab
@@ -38,10 +40,17 @@ pub fn spawn_construction_site(
                 .collect(),
         ))
         .insert(ConstructionSiteStorage {
-            delivered_batches: vec![],
-            expected_batches: vec![],
-            unscheduled_batches: vec![],
+            available_batches: vec![],
+            needed_batches: building_prefab
+                .required_resources
+                .iter()
+                .map(|x| ItemBatch {
+                    prefab_id: x.0,
+                    quantity: x.1,
+                })
+                .collect(),
         })
+        .insert(ConstructionSiteWorkers(HashSet::new()))
         .insert(SpriteBundle {
             texture: building_prefab
                 .textures

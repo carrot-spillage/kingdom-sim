@@ -43,13 +43,13 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
             || rect.max.x > root_quad.max.x
             || rect.max.y > root_quad.max.y
         {
-            println!(
-                "Rect {:?} is outside of the world {:?} by xy {:?} {:?}",
-                rect,
-                root_quad,
-                rect.min.distance(root_quad.min),
-                rect.max.distance(root_quad.max)
-            );
+            // println!(
+            //     "Rect {:?} is outside of the world {:?} by xy {:?} {:?}",
+            //     rect,
+            //     root_quad,
+            //     rect.min.distance(root_quad.min),
+            //     rect.max.distance(root_quad.max)
+            // );
             return None;
         }
 
@@ -108,7 +108,7 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         } else {
             // leaf node
             if node.tenant_key.is_some() {
-                println!("Node {:?} already has tenant", node);
+                // println!("Node {:?} already has tenant", node);
                 return false;
             }
 
