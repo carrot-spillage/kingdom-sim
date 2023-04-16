@@ -3,8 +3,7 @@ use bevy::prelude::Component;
 use crate::items::{add_batches_to, ItemBatch};
 
 use super::{
-    calc_work_chunks_progress, calc_work_chunks_quality, WorkParticipant, WorkProficiency,
-    WorkQualityCounter,
+    calc_work_chunks_progress, calc_work_chunks_quality, WorkParticipant, WorkQualityCounter,
 };
 
 #[derive(Component, Clone, Debug)]

@@ -8,7 +8,7 @@ use bevy::{
 use crate::{
     building::{constructing::ConstructionSiteWorkers, ConstructionSite},
     create_world::WorldParams,
-    items::{ConstructionSiteStorage, ItemBatch, ItemPrefab},
+    items::{ConstructionSiteStorage, ItemBatch},
     movement::{isometrify_position, Position},
     work::CraftingProcess,
 };

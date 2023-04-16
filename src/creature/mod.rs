@@ -204,7 +204,7 @@ fn transfer_items(
         let (mut storage, mut crafting_process) =
             construction_site_storages.get_mut(*target_id).unwrap(); // TODO: there might be other kinds of recepients of items
                                                                      // TODO: check the position
-        storage.accept(carrier_id, &mut item_container.items);
+        storage.accept(&mut item_container.items);
         println!("Storage received batches {:?}", storage);
 
         crafting_process.accept_batches(&mut storage.available_batches);

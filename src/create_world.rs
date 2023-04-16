@@ -124,7 +124,7 @@ fn create_world(
         let wood_prefab = items.0.get(&wood_prefab_id).unwrap();
         for _ in 0..5 {
             let worker_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-            let worker_id = spawn_creature(
+            spawn_creature(
                 &mut commands,
                 &mut global_rng,
                 &textures,
@@ -135,7 +135,7 @@ fn create_world(
 
             let resource_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
 
-            let item_batch_id = spawn_item_batch(
+            spawn_item_batch(
                 &mut commands,
                 wood_prefab.textures.dropped.clone(),
                 ItemBatch {
@@ -171,7 +171,7 @@ fn create_world(
     for _ in 0..5 {
         let bush_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
         let prefab = plants.0.get(&PlantPrefabId(2)).unwrap();
-        let bush_id = spawn_plant(
+        spawn_plant(
             &mut commands,
             &mut global_rng,
             &world_params,
@@ -183,7 +183,7 @@ fn create_world(
 
     for _ in 0..5 {
         let worker_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
-        let worker_id = spawn_creature(
+        spawn_creature(
             &mut commands,
             &mut global_rng,
             &textures,

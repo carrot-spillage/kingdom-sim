@@ -18,7 +18,6 @@ pub struct QuadTree<T: Copy + Eq + Hash + Debug> {
 struct QuadTreeNode<T: Copy + Eq + Hash + Debug> {
     quad: Rect,
     level: u32,
-    parent_index: Option<usize>,
     index: usize,
     tenant_key: Option<T>,
     child_indexes: Option<Vec<usize>>,
@@ -128,7 +127,6 @@ fn traverse_nodes<T: Copy + Eq + Hash + Debug>(quad: Rect, max_level: u32) -> Ve
         level: 0,
         tenant_key: None,
         child_indexes: None,
-        parent_index: None,
         quad,
     };
     let mut nodes: Vec<QuadTreeNode<T>> = vec![root_node];
@@ -141,7 +139,7 @@ fn traverse_nodes<T: Copy + Eq + Hash + Debug>(quad: Rect, max_level: u32) -> Ve
         let quad = node.quad;
         let level = node.level;
         if level < max_level {
-            let child_indexes = build_children(&mut nodes, node_index, level + 1, &quad);
+            let child_indexes = build_children(&mut nodes, level + 1, &quad);
             child_indexes
                 .iter()
                 .for_each(|index| untraversed_node_indexes.push_front(*index));
@@ -154,7 +152,6 @@ fn traverse_nodes<T: Copy + Eq + Hash + Debug>(quad: Rect, max_level: u32) -> Ve
 
 fn build_children<T: Copy + Eq + Hash + Debug>(
     all_nodes: &mut Vec<QuadTreeNode<T>>,
-    parent_index: usize,
     level: u32,
     quad: &Rect,
 ) -> Vec<usize> {
@@ -181,7 +178,6 @@ fn build_children<T: Copy + Eq + Hash + Debug>(
             level,
             tenant_key: None,
             child_indexes: None,
-            parent_index: Some(parent_index),
             quad,
         };
         result.push(child_node.index);

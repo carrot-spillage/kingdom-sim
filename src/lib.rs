@@ -4,7 +4,6 @@ mod create_world;
 mod loading;
 // mod menu;
 mod movement;
-mod planned_work;
 
 mod creature;
 mod cutting_tree;
@@ -14,7 +13,6 @@ mod occupy_tiles_plugin;
 mod planting;
 mod plants;
 mod quad_tree;
-mod skills;
 mod tasks;
 mod work;
 
@@ -42,7 +40,6 @@ use movement::MovementPlugin;
 
 use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
-use planned_work::WorkOnArrivalPlugin;
 use plants::PlantsPlugin;
 
 // This example game uses States to separate logic
@@ -101,7 +98,6 @@ impl Plugin for GamePlugin {
             .add_plugin(ConstructionPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
-            .add_plugin(WorkOnArrivalPlugin)
             .add_plugin(InitPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())

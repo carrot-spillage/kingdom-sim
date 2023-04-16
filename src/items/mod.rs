@@ -19,7 +19,7 @@ pub struct ConstructionSiteStorage {
 }
 
 impl ConstructionSiteStorage {
-    pub(crate) fn accept(&mut self, entity_id: Entity, item_batches: &mut Vec<ItemBatch>) {
+    pub(crate) fn accept(&mut self, item_batches: &mut Vec<ItemBatch>) {
         self.needed_batches.retain_mut(|needed| {
             let found = item_batches
                 .iter_mut()
