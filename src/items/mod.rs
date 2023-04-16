@@ -25,7 +25,6 @@ impl ConstructionSiteStorage {
                 .iter_mut()
                 .find_position(|x| x.prefab_id == needed.prefab_id);
 
-            println!("ConstructionSiteStorage accept2 {:?}", found);
             if let Some((index, item_batch)) = found {
                 let result = deliver_quantity(needed.quantity, item_batch.quantity);
                 self.available_batches.push(ItemBatch {
@@ -131,7 +130,8 @@ pub struct ItemPrefabTextures<T> {
 #[uuid = "3819241a-9f90-47dc-b5df-bc99f8fec014"]
 pub struct ItemPrefabId(pub u32);
 
-#[derive(Clone, Copy, Component, Debug)]
+#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
+#[uuid = "3819241a-9f90-47dc-b5df-bc99538ec01f"]
 pub struct ItemBatch {
     pub prefab_id: ItemPrefabId,
     pub quantity: u32,

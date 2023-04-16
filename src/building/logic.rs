@@ -8,7 +8,7 @@ use bevy::{
 use crate::{
     building::{constructing::ConstructionSiteWorkers, ConstructionSite},
     create_world::WorldParams,
-    items::{ConstructionSiteStorage, ItemBatch},
+    items::ConstructionSiteStorage,
     movement::{isometrify_position, Position},
     work::CraftingProcess,
 };
@@ -30,25 +30,11 @@ pub fn spawn_construction_site(
         .insert(building_prefab.id)
         .insert(CraftingProcess::new(
             building_prefab.units_of_work,
-            building_prefab
-                .required_resources
-                .iter()
-                .map(|x| ItemBatch {
-                    prefab_id: x.0,
-                    quantity: x.1,
-                })
-                .collect(),
+            building_prefab.required_resources.clone(),
         ))
         .insert(ConstructionSiteStorage {
             available_batches: vec![],
-            needed_batches: building_prefab
-                .required_resources
-                .iter()
-                .map(|x| ItemBatch {
-                    prefab_id: x.0,
-                    quantity: x.1,
-                })
-                .collect(),
+            needed_batches: building_prefab.required_resources.clone(),
         })
         .insert(ConstructionSiteWorkers(HashSet::new()))
         .insert(SpriteBundle {

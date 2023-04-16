@@ -16,7 +16,7 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
     tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
-    work::CraftingProcess,
+    work::{CraftingProcess, CraftingProcessCanContinue},
     GameState,
 };
 
@@ -208,6 +208,7 @@ fn transfer_items(
         println!("Storage received batches {:?}", storage);
 
         crafting_process.accept_batches(&mut storage.available_batches);
+
         println!("Crafting process received batches {:?}", crafting_process);
 
         cleanup_transfer(&mut commands, carrier_id);

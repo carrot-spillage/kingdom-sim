@@ -6,7 +6,7 @@ use bevy::{
     utils::hashbrown::HashMap,
 };
 
-use crate::items::ItemPrefabId;
+use crate::items::{ItemBatch, ItemPrefabId};
 
 pub use self::logic::{
     convert_construction_site_to_building, get_construction_site_texture, spawn_construction_site,
@@ -38,7 +38,7 @@ pub struct BuildingPrefab<T = Handle<Image>, V = Vec2> {
     pub units_of_work: f32,
     pub max_workers: u32,
     pub collision_box: V,
-    pub required_resources: Vec<(ItemPrefabId, u32)>,
+    pub required_resources: Vec<ItemBatch>,
 }
 
 #[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]

@@ -1,14 +1,17 @@
 use bevy::{
     prelude::{
         Added, App, Commands, Component, Entity, IntoSystemConfig, IntoSystemConfigs, OnUpdate,
-        Plugin, Query, ResMut,
+        Plugin, Query, ResMut, With,
     },
     utils::HashSet,
 };
 
 use crate::{
     tasks::{CreatureTask, CreatureTaskStopping, IdlingCreature},
-    work::{CraftingProcess, CraftingProcessUpdate, WorkParticipant, WorkProficiency},
+    work::{
+        CraftingProcess, CraftingProcessCanContinue, CraftingProcessUpdate, WorkParticipant,
+        WorkProficiency,
+    },
     GameState,
 };
 
@@ -93,12 +96,15 @@ impl Plugin for ConstructionPlugin {
 
 fn handle_task_process(
     mut commands: Commands,
-    mut construction_sites: Query<(
-        Entity,
-        &mut CraftingProcess,
-        &BuildingPrefabId,
-        &ConstructionSiteWorkers,
-    )>,
+    mut construction_sites: Query<
+        (
+            Entity,
+            &mut CraftingProcess,
+            &BuildingPrefabId,
+            &ConstructionSiteWorkers,
+        ),
+        With<CraftingProcessCanContinue>,
+    >,
     buildings: ResMut<BuildingPrefabMap>,
 ) {
     for (
@@ -164,7 +170,5 @@ fn handle_task_process(
                     .insert(ConstructionSiteWorkers(HashSet::new()));
             }
         }
-
-        println!("Crafting process updated to {:?}", crafting_process);
     }
 }

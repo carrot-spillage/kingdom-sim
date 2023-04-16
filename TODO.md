@@ -1,5 +1,3 @@
-- Set up Construction Site with a "has resources" component
 - Make other tasks into plugins with start-stop lifecycle
 - create a dispatcher, so the task "start" logic is not directly in the dispatcher match-case code
-- convert building prefab required resources to item batches
 - skills need to be provided for many of the CratureTasks

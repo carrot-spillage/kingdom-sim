@@ -1,6 +1,14 @@
-use bevy::prelude::Component;
+use bevy::{
+    prelude::{
+        App, Changed, Commands, Component, Entity, IntoSystemConfig, OnUpdate, Plugin, Query,
+    },
+    transform::commands,
+};
 
-use crate::items::{add_batches_to, ItemBatch};
+use crate::{
+    items::{add_batches_to, ItemBatch},
+    GameState,
+};
 
 use super::{
     calc_work_chunks_progress, calc_work_chunks_quality, WorkParticipant, WorkQualityCounter,
@@ -14,11 +22,48 @@ pub struct CraftingProcess {
     pub item_batches: Vec<ItemBatch>,
 }
 
+#[derive(Component)]
+pub struct CraftingProcessCanContinue;
+
 #[derive(Clone)]
 pub enum CraftingProcessUpdate {
     Incomplete { delta: f32 },
     InsufficientResources,
     Complete { quality: f32 },
+}
+
+pub struct CraftingProcessPlugin;
+
+impl Plugin for CraftingProcessPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(set_can_continue.in_set(OnUpdate(GameState::Playing)));
+    }
+
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+}
+
+fn set_can_continue(
+    mut commands: Commands,
+    processes: Query<
+        (
+            Entity,
+            &CraftingProcess,
+            Option<&CraftingProcessCanContinue>,
+        ),
+        Changed<CraftingProcess>,
+    >,
+) {
+    for (entity, process, maybe_can_continue) in &processes {
+        if process.can_continue() && !maybe_can_continue.is_some() {
+            commands.entity(entity).insert(CraftingProcessCanContinue);
+        } else if !process.can_continue() && maybe_can_continue.is_some() {
+            commands
+                .entity(entity)
+                .remove::<CraftingProcessCanContinue>();
+        }
+    }
 }
 
 impl CraftingProcess {
@@ -42,6 +87,10 @@ impl CraftingProcess {
                 })
                 .collect(),
         }
+    }
+
+    pub fn can_continue(&self) -> bool {
+        !self.item_batches.is_empty()
     }
 
     pub fn accept_batches(&mut self, item_batches: &mut Vec<ItemBatch>) {

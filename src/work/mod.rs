@@ -2,7 +2,9 @@ mod crafting_process;
 
 use bevy::prelude::Entity;
 
-pub use self::crafting_process::{CraftingProcess, CraftingProcessUpdate};
+pub use self::crafting_process::{
+    CraftingProcess, CraftingProcessCanContinue, CraftingProcessPlugin, CraftingProcessUpdate,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct WorkParticipant {
