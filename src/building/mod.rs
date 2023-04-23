@@ -6,7 +6,7 @@ use bevy::{
     utils::hashbrown::HashMap,
 };
 
-use crate::items::{ItemBatch, ItemPrefabId};
+use crate::items::ItemBatch;
 
 pub use self::logic::{
     convert_construction_site_to_building, get_construction_site_texture, spawn_construction_site,

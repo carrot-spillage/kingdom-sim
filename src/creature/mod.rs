@@ -16,7 +16,7 @@ use crate::{
     loading::{FontAssets, TextureAssets},
     movement::{isometrify_position, Position, Walker},
     tasks::{create_tooltip_bundle, CreatureTask, CreatureTaskTooltip, IdlingCreature},
-    work::{CraftingProcess, CraftingProcessCanContinue},
+    work::CraftingProcess,
     GameState,
 };
 

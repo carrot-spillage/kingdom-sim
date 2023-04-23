@@ -5,8 +5,10 @@ mod loading;
 // mod menu;
 mod movement;
 
+mod biomes;
 mod creature;
 mod cutting_tree;
+mod datetime;
 mod harvesting;
 mod items;
 mod occupy_tiles_plugin;
@@ -17,9 +19,11 @@ mod tasks;
 mod work;
 
 use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
+use crate::datetime::{GameTimePlugin, GameTimeUIPlugin};
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::quad_tree::QuadTree;
+
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
 
@@ -65,7 +69,7 @@ pub struct Dummy;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let tile_side = 16;
-        let map_size_factor: u32 = 5; // 2^5 tiles = 512
+        let map_size_factor: u32 = 6; // 2^5 tiles = 512
         let side = (2_u32.pow(map_size_factor) * tile_side) as f32;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
@@ -88,6 +92,8 @@ impl Plugin for GamePlugin {
             ]))
             .add_plugin(LoadingPlugin)
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
+            .add_plugin(GameTimePlugin)
+            .add_plugin(GameTimeUIPlugin)
             .add_plugin(CarrierPlugin)
             .add_plugin(OccupyTilesPlugin)
             .add_plugin(CraftingProcessPlugin)
