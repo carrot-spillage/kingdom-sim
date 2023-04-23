@@ -30,6 +30,7 @@ use crate::work::CraftingProcessPlugin;
 use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
 use bevy_ecs_tilemap::TilemapPlugin;
+use bevy_pancam::PanCamPlugin;
 use bevy_turborand::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
@@ -69,7 +70,7 @@ pub struct Dummy;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let tile_side = 16;
-        let map_size_factor: u32 = 6; // 2^5 tiles = 512
+        let map_size_factor: u32 = 7; // 2^5 tiles = 512
         let side = (2_u32.pow(map_size_factor) * tile_side) as f32;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
@@ -91,7 +92,9 @@ impl Plugin for GamePlugin {
                 "buildings.yaml",
             ]))
             .add_plugin(LoadingPlugin)
+            .add_plugin(PanCamPlugin::default())
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
+            // game logic plugins
             .add_plugin(GameTimePlugin)
             .add_plugin(GameTimeUIPlugin)
             .add_plugin(CarrierPlugin)

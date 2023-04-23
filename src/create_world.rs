@@ -4,7 +4,8 @@ use bevy::{
     math::{Vec2, Vec3},
     prelude::{
         App, Camera2dBundle, Commands, Component, Entity, EventWriter, IntoSystemAppConfig,
-        NextState, OnEnter, Plugin, Query, Rect, Res, ResMut, Resource, Transform, With, Without,
+        MouseButton, NextState, OnEnter, Plugin, Query, Rect, Res, ResMut, Resource, Transform,
+        With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -16,6 +17,7 @@ use bevy_ecs_tilemap::{
     tiles::{TileBundle, TilePos, TileStorage},
     TilemapBundle,
 };
+use bevy_pancam::PanCam;
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
@@ -81,10 +83,21 @@ fn create_world(
     //     title: "kingdom_sim".to_string(),
     //     ..default()
     // });
-
-    commands.spawn(Camera2dBundle::new_with_far(
-        world_params.half_max_isometric_z * 2.0,
-    ));
+    let mut camera_bundle = Camera2dBundle::new_with_far(world_params.half_max_isometric_z * 2.0);
+    camera_bundle.projection.scale = 2.0;
+    commands
+        // .spawn(Camera2dBundle::new_with_far(
+        //     world_params.half_max_isometric_z * 2.0,
+        // ))
+        .spawn(camera_bundle)
+        .insert(PanCam {
+            grab_buttons: vec![MouseButton::Left, MouseButton::Middle], // which buttons should drag the camera
+            enabled: true, // when false, controls are disabled. See toggle example.
+            zoom_to_cursor: true, // whether to zoom towards the mouse or the center of the screen
+            min_scale: 1., // prevent the camera from zooming too far in
+            max_scale: Some(40.), // prevent the camera from zooming too far out
+            ..PanCam::default()
+        });
 
     create_tilemap(&mut commands, &world_params, &textures);
     let house_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
@@ -302,28 +315,28 @@ fn run_dummy_commands(
     for (worker_id, mut rng) in &mut workers.iter_mut() {
         let val = rng.f32();
         if val < 0.3 {
-            let construction_site_id = costruction_sites_iter.next().unwrap();
-
-            let item_batch_id = item_batches_iter.next().unwrap();
-            commands
-                .entity(worker_id)
-                .insert(CreatureTasks(VecDeque::from(vec![
-                    CreatureTask::MoveToTarget {
-                        target_id: item_batch_id,
-                    },
-                    CreatureTask::CollectItems {
-                        target_id: item_batch_id,
-                    },
-                    CreatureTask::MoveToTarget {
-                        target_id: construction_site_id,
-                    },
-                    CreatureTask::TransferItems {
-                        target_id: construction_site_id,
-                    },
-                    CreatureTask::Build {
-                        target_id: construction_site_id,
-                    },
-                ])));
+            if let Some(construction_site_id) = costruction_sites_iter.next() {
+                let item_batch_id = item_batches_iter.next().unwrap();
+                commands
+                    .entity(worker_id)
+                    .insert(CreatureTasks(VecDeque::from(vec![
+                        CreatureTask::MoveToTarget {
+                            target_id: item_batch_id,
+                        },
+                        CreatureTask::CollectItems {
+                            target_id: item_batch_id,
+                        },
+                        CreatureTask::MoveToTarget {
+                            target_id: construction_site_id,
+                        },
+                        CreatureTask::TransferItems {
+                            target_id: construction_site_id,
+                        },
+                        CreatureTask::Build {
+                            target_id: construction_site_id,
+                        },
+                    ])));
+            }
         } else if val < 0.5 {
             let tree_id = trees_iter.next().unwrap();
 

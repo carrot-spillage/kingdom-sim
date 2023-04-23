@@ -62,10 +62,7 @@ pub fn spawn_plant(
             maxed_grower
         }
     });
-    println!(
-        "Spawning plant at tile {:?}",
-        (position.truncate() + (world_params.size / 2.0)) / 16.0
-    );
+
     let mut sub_commands = commands.spawn((
         plant_bundle,
         Position(position),
