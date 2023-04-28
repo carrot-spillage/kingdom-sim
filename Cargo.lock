@@ -2107,6 +2107,7 @@ dependencies = [
  "itertools",
  "rand",
  "serde",
+ "sun-times",
  "winit",
 ]
 
@@ -3141,6 +3142,15 @@ name = "strict-num"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9df65f20698aeed245efdde3628a6b559ea1239bbb871af1b6e3b58c413b2bd1"
+
+[[package]]
+name = "sun-times"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc36d654e4388a4a79eab4852fd58db0687ac457bf1a097abfa4b8cc40a785c8"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "svg_fmt"
