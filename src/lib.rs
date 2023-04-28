@@ -9,6 +9,8 @@ mod biomes;
 mod creature;
 mod cutting_tree;
 mod datetime;
+
+mod environment_hud;
 mod harvesting;
 mod items;
 mod occupy_tiles_plugin;
@@ -19,11 +21,11 @@ mod tasks;
 mod work;
 
 use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
-use crate::datetime::{GameTimePlugin, GameTimeUIPlugin};
+use crate::datetime::GameTimePlugin;
+use crate::environment_hud::EnvironmentHudPlugin;
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::quad_tree::QuadTree;
-
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
 
@@ -42,10 +44,9 @@ use tasks::TaskPlugin;
 use bevy::prelude::*;
 use create_world::{InitPlugin, WorldParams};
 
-use movement::MovementPlugin;
-
 use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
+use movement::MovementPlugin;
 use plants::PlantsPlugin;
 
 // This example game uses States to separate logic
@@ -92,15 +93,17 @@ impl Plugin for GamePlugin {
                 "buildings.yaml",
             ]))
             .add_plugin(LoadingPlugin)
+            // external plugins
             .add_plugin(PanCamPlugin::default())
             .add_plugin(RngPlugin::default().with_rng_seed(12345))
             // game logic plugins
             .add_plugin(GameTimePlugin)
-            .add_plugin(GameTimeUIPlugin)
             .add_plugin(CarrierPlugin)
             .add_plugin(OccupyTilesPlugin)
             .add_plugin(CraftingProcessPlugin)
             .add_plugin(CreatureConstructingTaskPlugin)
+            // Systems that create Egui widgets should be run during the `CoreSet::Update` set,
+            // or after the `EguiSet::BeginFrame` system (which belongs to the `CoreSet::PreUpdate` set).
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
@@ -110,6 +113,7 @@ impl Plugin for GamePlugin {
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
             .add_plugin(InitPlugin)
+            .add_plugin(EnvironmentHudPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
             .add_plugin(TilemapPlugin);

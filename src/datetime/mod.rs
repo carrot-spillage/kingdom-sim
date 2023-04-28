@@ -1,13 +1,9 @@
-mod tooltip;
-
 use std::{ops::AddAssign, str::FromStr};
 
 use bevy::prelude::{App, IntoSystemConfig, OnUpdate, Plugin, ResMut, Resource};
 use chrono::{Duration, NaiveDateTime};
 
 use crate::GameState;
-
-pub use self::tooltip::GameTimeUIPlugin;
 
 #[derive(Resource)]
 pub struct GameTime(pub NaiveDateTime); // in seconds

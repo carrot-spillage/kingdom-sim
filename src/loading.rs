@@ -74,6 +74,9 @@ pub struct BuildingPrefabAssets {
 pub struct FontAssets {
     #[asset(path = "fonts/FiraSans-Bold.ttf")]
     pub fira_sans: Handle<Font>,
+
+    #[asset(path = "fonts/Hack-Regular.ttf")]
+    pub hack: Handle<Font>,
 }
 
 #[derive(AssetCollection, Resource)]

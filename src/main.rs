@@ -1,8 +1,6 @@
 // disable console on windows for release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod quad_tree;
-
 use bevy::prelude::{App, ClearColor, Color, Msaa};
 use bevy::DefaultPlugins;
 use kingdom_sim::GamePlugin;
