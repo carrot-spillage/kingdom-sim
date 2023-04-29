@@ -26,7 +26,7 @@ rand = "0.8"
 itertools = "0.10"
 bevy_common_assets = { version = "0.6", features = ["yaml"] }
 bevy_turborand = { version = "0.5" }
-bevy_ecs_tilemap = { version = "0.10" }
+bevy_ecs_tilemap = { version = "0.10", features = ["atlas"] }
 serde = "1.0"
 chrono = "0.4"
 bevy_pancam = "0.8"
