@@ -3,9 +3,8 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Camera2dBundle, Commands, Component, Entity, EventWriter, IntoSystemAppConfig,
-        MouseButton, NextState, OnEnter, Plugin, Query, Rect, Res, ResMut, Resource, Transform,
-        With, Without,
+        App, Commands, Component, Entity, EventWriter, IntoSystemAppConfig, NextState, OnEnter,
+        Plugin, Query, Rect, Res, ResMut, Resource, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -17,7 +16,6 @@ use bevy_ecs_tilemap::{
     tiles::{TileBundle, TilePos, TileStorage},
     TilemapBundle,
 };
-use bevy_pancam::PanCam;
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
@@ -78,27 +76,6 @@ fn create_world(
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    // commands.spawn(Window {
-    //     resolution: WindowResolution::new(800., 600.),
-    //     title: "kingdom_sim".to_string(),
-    //     ..default()
-    // });
-    let mut camera_bundle = Camera2dBundle::new_with_far(world_params.half_max_isometric_z * 2.0);
-    camera_bundle.projection.scale = 2.0;
-    commands
-        // .spawn(Camera2dBundle::new_with_far(
-        //     world_params.half_max_isometric_z * 2.0,
-        // ))
-        .spawn(camera_bundle)
-        .insert(PanCam {
-            grab_buttons: vec![MouseButton::Left, MouseButton::Middle], // which buttons should drag the camera
-            enabled: true, // when false, controls are disabled. See toggle example.
-            zoom_to_cursor: true, // whether to zoom towards the mouse or the center of the screen
-            min_scale: 1., // prevent the camera from zooming too far in
-            max_scale: Some(40.), // prevent the camera from zooming too far out
-            ..PanCam::default()
-        });
-
     create_tilemap(&mut commands, &world_params, &textures);
     let house_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
 

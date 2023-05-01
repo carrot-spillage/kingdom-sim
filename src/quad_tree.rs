@@ -116,9 +116,9 @@ impl<T: Copy + Eq + Hash + Debug> QuadTree<T> {
         }
     }
 
-    pub fn fit_rect_in_radius(&mut self, rect: Rect, radius: f32) -> Option<Rect> {
-        return Some(rect);
-    }
+    // pub fn fit_rect_in_radius(&mut self, rect: Rect, radius: f32) -> Option<Rect> {
+    //     return Some(rect);
+    // }
 }
 
 fn traverse_nodes<T: Copy + Eq + Hash + Debug>(quad: Rect, max_level: u32) -> Vec<QuadTreeNode<T>> {

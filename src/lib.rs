@@ -3,12 +3,12 @@ mod common;
 mod create_world;
 mod loading;
 // mod menu;
-mod movement;
-
 mod biomes;
 mod creature;
 mod cutting_tree;
 mod datetime;
+mod movement;
+mod post_processing;
 
 mod environment_hud;
 mod harvesting;
@@ -25,6 +25,7 @@ use crate::datetime::GameTimePlugin;
 use crate::environment_hud::EnvironmentHudPlugin;
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
+use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
@@ -113,6 +114,7 @@ impl Plugin for GamePlugin {
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
             .add_plugin(InitPlugin)
+            .add_plugin(PostProcessPlugin)
             .add_plugin(EnvironmentHudPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())

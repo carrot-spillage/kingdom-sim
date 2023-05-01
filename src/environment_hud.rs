@@ -1,9 +1,8 @@
 use crate::datetime::GameTime;
 use bevy::{
     prelude::{
-        default, App, BuildChildren, Color, Commands, Component, Entity, IntoSystemAppConfig,
-        IntoSystemConfig, IntoSystemConfigs, Label, NodeBundle, OnEnter, OnUpdate, Plugin, Query,
-        Res, TextBundle, With,
+        default, App, BuildChildren, Color, Commands, Component, IntoSystemAppConfig,
+        IntoSystemConfigs, Label, NodeBundle, OnEnter, OnUpdate, Plugin, Query, Res, TextBundle,
     },
     text::{Text, TextStyle},
     ui::{JustifyContent, Size, Style, UiRect, Val},
@@ -16,9 +15,9 @@ use sun_times::altitude;
 struct DateTimeDisplay;
 
 #[derive(Component)]
-struct GameHour(u32);
+struct SunTracker(u32);
 #[derive(Component)]
-struct SunAltitude(f32);
+pub struct SunAltitude(pub f32);
 
 pub struct EnvironmentHudPlugin;
 
@@ -33,16 +32,16 @@ impl Plugin for EnvironmentHudPlugin {
     }
 }
 
-fn altitude_at_point(date_time: DateTime<Utc>) -> f32 {
-    altitude(date_time, 41.0, 26.0) as f32
+fn sun_altitude_at_point(date_time: DateTime<Utc>) -> f32 {
+    altitude(date_time, 51.527178, -0.109798) as f32 / 90.0
 }
 
 use chrono::{DateTime, Timelike, Utc};
 fn update_date_time_display(
-    mut tooltips: Query<(&mut Text, &mut GameHour, &mut SunAltitude), With<DateTimeDisplay>>,
+    mut tooltips: Query<(&mut Text, &mut SunTracker, &mut SunAltitude)>,
     game_time: Res<GameTime>,
 ) {
-    let (mut tooltip, mut game_hour, mut sun_altitude) = tooltips.single_mut();
+    let (mut tooltip, mut sun_tracker, mut sun_altitude) = tooltips.single_mut();
     let time = game_time.0.time();
     let hour = time.hour();
     let minute = time.minute();
@@ -61,10 +60,13 @@ fn update_date_time_display(
     let text = formatted_hour + ":" + &formatted_minute;
     tooltip.sections[0].value = text;
 
-    if game_hour.0 != hour {
-        // updating hour to be used for updating the Sun
-        game_hour.0 = hour;
-        sun_altitude.0 = altitude_at_point(game_time.0);
+    let sun_tracker_step_minutes = 5.0;
+    let next_sun_tracker_value =
+        ((hour as f32 * 60.0 + minute as f32) / sun_tracker_step_minutes).round() as u32;
+
+    if sun_tracker.0 != next_sun_tracker_value {
+        sun_tracker.0 = next_sun_tracker_value;
+        sun_altitude.0 = sun_altitude_at_point(game_time.0);
     }
 }
 
@@ -127,8 +129,8 @@ fn create_environment_hud(
                                 ))
                                 .insert(DateTimeDisplay)
                                 .insert((
-                                    GameHour(game_time.0.hour()), // UTC is wrong as it should be the timezone of the location
-                                    SunAltitude(altitude_at_point(game_time.0)),
+                                    SunTracker(0), // UTC is wrong as it should be the timezone of the location
+                                    SunAltitude(sun_altitude_at_point(game_time.0)),
                                 ));
                         });
                 });

@@ -1,8 +1,5 @@
-use bevy::{
-    prelude::{
-        App, Changed, Commands, Component, Entity, IntoSystemConfig, OnUpdate, Plugin, Query,
-    },
-    transform::commands,
+use bevy::prelude::{
+    App, Changed, Commands, Component, Entity, IntoSystemConfig, OnUpdate, Plugin, Query,
 };
 
 use crate::{
