@@ -8,7 +8,7 @@ var texture: texture_2d<f32>;
 var our_sampler: sampler;
 
 @group(1) @binding(2)
-var<uniform> brightness: f32;
+var<uniform> color_distortion: vec3<f32>;
 
 @fragment
 fn fragment(
@@ -18,10 +18,11 @@ fn fragment(
     let uv = coords_to_viewport_uv(position.xy, view.viewport);
 
     // Sample the texture using the provided sampler and UV coordinates.
-    var output_color = textureSample(texture, our_sampler, uv);
+    var color = vec4<f32>(textureSample(texture, our_sampler, uv));
 
-    // Apply a nighttime color shift by blending the output color with the night color.
-    output_color *= brightness;
+    var r = color.r * color_distortion.r;
+    var g = color.g * color_distortion.g;
+    var b = color.b * color_distortion.b;
 
-    return output_color;
+    return vec4<f32>(select(r, 1.0, r > 1.0), select(g, 1.0, g > 1.0), select(b, 1.0, b > 1.0), color.a);
 }

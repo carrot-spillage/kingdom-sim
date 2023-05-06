@@ -19,7 +19,7 @@ pub struct GameTimePlugin;
 impl Plugin for GameTimePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GameTime(
-            DateTime::from_str("2023-01-01T00:00:00.000Z").unwrap(),
+            DateTime::from_str("2023-01-01T04:00:00.000Z").unwrap(),
         ));
         app.add_system(tick.in_set(OnUpdate(GameState::Playing)));
     }

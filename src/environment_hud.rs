@@ -45,13 +45,13 @@ fn update_date_time_display(
     let time = game_time.0.time();
     let hour = time.hour();
     let minute = time.minute();
-    let formatted_hour = if hour < 9 {
+    let formatted_hour = if hour < 10 {
         " ".to_owned() + &hour.to_string()
     } else {
         hour.to_string()
     };
 
-    let formatted_minute = if minute < 9 {
+    let formatted_minute = if minute < 10 {
         "0".to_owned() + &minute.to_string()
     } else {
         minute.to_string()
@@ -65,6 +65,7 @@ fn update_date_time_display(
         ((hour as f32 * 60.0 + minute as f32) / sun_tracker_step_minutes).round() as u32;
 
     if sun_tracker.0 != next_sun_tracker_value {
+        // TODO: refactor int osome kind of a countdown to make it a little bit neater
         sun_tracker.0 = next_sun_tracker_value;
         sun_altitude.0 = sun_altitude_at_point(game_time.0);
     }

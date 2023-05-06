@@ -3,6 +3,8 @@
 //! This example is useful to implement your own post-processing effect such as
 //! edge detection, blur, pixelization, vignette... and countless others.
 
+use std::ops::Range;
+
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
@@ -46,10 +48,7 @@ fn update_lighting(
 ) {
     if let Ok(sun_altitude) = query.get_single() {
         if let Some(mut material) = materials.iter_mut().next() {
-            let brightness_curved_value = 1.0 - (-10.0 * (sun_altitude.0.max(0.0))).exp();
-            let minimal_brightness = 0.3;
-            material.1.brightness =
-                minimal_brightness + brightness_curved_value * (1.0 - minimal_brightness);
+            material.1.color_distortion = get_color_distortion(sun_altitude.0).extend(1.0);
         }
     }
 }
@@ -120,7 +119,7 @@ fn setup(
 
     // This material has the texture that has been rendered.
     let material_handle = post_processing_materials.add(TimeLightingMaterial {
-        brightness: 1.0,
+        color_distortion: Vec4::ONE,
         source_image: image_handle,
     });
 
@@ -163,6 +162,30 @@ fn main_camera_cube_rotator_system(
     }
 }
 
+static DUSK_SPAN: f32 = 0.2;
+static SUNRISE_SPAN: f32 = 0.2;
+static DUSK_RANGE: Range<f32> = 0.0..DUSK_SPAN;
+static SUNRISE_RANGE: Range<f32> = DUSK_RANGE.end..(DUSK_RANGE.end + SUNRISE_SPAN);
+static MAX_SUNRISE_DISTORTION: Vec3 = Vec3::new(0.3, 0.1, -0.3);
+static MAX_DUSK_DISTORTION: Vec3 = Vec3::new(-0.5, -0.4, -0.3);
+
+fn get_color_distortion(sun_position: f32) -> Vec3 {
+    if sun_position < DUSK_RANGE.start {
+        Vec3::ONE + MAX_DUSK_DISTORTION
+    } else if SUNRISE_RANGE.contains(&sun_position) {
+        let distortion_scale = 1.0 - (sun_position - SUNRISE_RANGE.start) / SUNRISE_SPAN;
+        Vec3::ONE + (MAX_SUNRISE_DISTORTION * distortion_scale)
+    } else if DUSK_RANGE.contains(&sun_position) {
+        let distortion_scale = 1.0 - (sun_position - DUSK_RANGE.start) / DUSK_SPAN;
+        Vec3::ONE
+            + (((MAX_DUSK_DISTORTION * distortion_scale)
+                + (MAX_SUNRISE_DISTORTION * (1.0 - distortion_scale)))
+                / 2.0)
+    } else {
+        Vec3::ONE
+    }
+}
+
 // Region below declares of the custom material handling post processing effect
 
 /// Our custom post processing material
@@ -175,7 +198,7 @@ struct TimeLightingMaterial {
     source_image: Handle<Image>,
 
     #[uniform(2)]
-    brightness: f32,
+    color_distortion: Vec4,
 }
 
 impl Material2d for TimeLightingMaterial {
