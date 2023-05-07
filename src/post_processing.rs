@@ -62,6 +62,8 @@ fn setup(
         ..default()
     };
 
+    println!("size is {:?}", size);
+
     // This is the texture that will be rendered to.
     let mut image = Image {
         texture_descriptor: TextureDescriptor {
