@@ -147,7 +147,7 @@ fn handle_task_process(
                     &building_prefab.textures,
                 )
             }
-            CraftingProcessUpdate::Incomplete { delta } => {
+            CraftingProcessUpdate::Incomplete { delta: _ } => {
                 println!("Constructing: Incomplete");
                 // TODO: update textures
                 // if let Some(new_texture) = get_construction_site_texture(

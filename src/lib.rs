@@ -3,6 +3,7 @@ mod common;
 mod create_world;
 mod loading;
 // mod menu;
+mod ambience;
 mod biomes;
 mod creature;
 mod cutting_tree;
@@ -20,6 +21,7 @@ mod quad_tree;
 mod tasks;
 mod work;
 
+use crate::ambience::DayNightPlugin;
 use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
 use crate::datetime::GameTimePlugin;
 use crate::environment_hud::EnvironmentHudPlugin;
@@ -114,6 +116,7 @@ impl Plugin for GamePlugin {
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
             .add_plugin(InitPlugin)
+            .add_plugin(DayNightPlugin)
             .add_plugin(PostProcessPlugin)
             .add_plugin(EnvironmentHudPlugin)
             // stuff added for tilemap

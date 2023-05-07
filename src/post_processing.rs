@@ -1,10 +1,3 @@
-//! A custom post processing effect, using two cameras, with one reusing the render texture of the first one.
-//! Here a chromatic aberration is applied to a 3d scene containing a rotating cube.
-//! This example is useful to implement your own post-processing effect such as
-//! edge detection, blur, pixelization, vignette... and countless others.
-
-use std::ops::Range;
-
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
@@ -21,16 +14,15 @@ use bevy::{
 };
 use bevy_pancam::PanCam;
 
-use crate::{create_world::WorldParams, environment_hud::SunAltitude, GameState};
+use crate::{ambience::DayNightColorDistortion, create_world::WorldParams, GameState};
 
 pub struct PostProcessPlugin;
 
 impl Plugin for PostProcessPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(Material2dPlugin::<TimeLightingMaterial>::default())
+        app.add_plugin(Material2dPlugin::<DayNightLightingMaterial>::default())
             .add_startup_system(setup)
-            .add_system(main_camera_cube_rotator_system)
-            .add_systems((update_lighting,).in_set(OnUpdate(GameState::Playing)));
+            .add_system(update_day_night_material.in_set(OnUpdate(GameState::Playing)));
     }
 
     fn name(&self) -> &str {
@@ -38,18 +30,17 @@ impl Plugin for PostProcessPlugin {
     }
 }
 
-/// Marks the first camera cube (rendered to a texture.)
-#[derive(Component)]
-struct MainCube;
-
-fn update_lighting(
-    query: Query<&SunAltitude, Changed<SunAltitude>>,
-    mut materials: ResMut<Assets<TimeLightingMaterial>>,
+fn update_day_night_material(
+    mut post_processing_materials: ResMut<Assets<DayNightLightingMaterial>>,
+    day_night_color_distortions: Query<&DayNightColorDistortion, Changed<DayNightColorDistortion>>,
 ) {
-    if let Ok(sun_altitude) = query.get_single() {
-        if let Some(mut material) = materials.iter_mut().next() {
-            material.1.color_distortion = get_color_distortion(sun_altitude.0).extend(1.0);
-        }
+    if let Ok(day_night_color_distortion) = day_night_color_distortions.get_single() {
+        post_processing_materials
+            .iter_mut()
+            .next()
+            .unwrap()
+            .1
+            .color_distortion = day_night_color_distortion.0.extend(1.0).clone();
     }
 }
 
@@ -57,8 +48,9 @@ fn setup(
     mut commands: Commands,
     windows: Query<&Window>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut post_processing_materials: ResMut<Assets<TimeLightingMaterial>>,
+    mut post_processing_materials: ResMut<Assets<DayNightLightingMaterial>>,
     mut images: ResMut<Assets<Image>>,
+    day_light_color_distortions: Query<&DayNightColorDistortion>,
     world_params: Res<WorldParams>,
 ) {
     // This assumes we only have a single window
@@ -118,8 +110,8 @@ fn setup(
     ))));
 
     // This material has the texture that has been rendered.
-    let material_handle = post_processing_materials.add(TimeLightingMaterial {
-        color_distortion: Vec4::ONE,
+    let material_handle = post_processing_materials.add(DayNightLightingMaterial {
+        color_distortion: Vec4::ZERO, // TODO: put an actual initial value: day_light_color_distortions.single().0.extend(1.0)
         source_image: image_handle,
     });
 
@@ -151,47 +143,10 @@ fn setup(
     ));
 }
 
-/// Rotates the cube rendered by the main camera
-fn main_camera_cube_rotator_system(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<MainCube>>,
-) {
-    for mut transform in &mut query {
-        transform.rotate_x(0.55 * time.delta_seconds());
-        transform.rotate_z(0.15 * time.delta_seconds());
-    }
-}
-
-static DUSK_SPAN: f32 = 0.2;
-static SUNRISE_SPAN: f32 = 0.2;
-static DUSK_RANGE: Range<f32> = 0.0..DUSK_SPAN;
-static SUNRISE_RANGE: Range<f32> = DUSK_RANGE.end..(DUSK_RANGE.end + SUNRISE_SPAN);
-static MAX_SUNRISE_DISTORTION: Vec3 = Vec3::new(0.3, 0.1, -0.3);
-static MAX_DUSK_DISTORTION: Vec3 = Vec3::new(-0.5, -0.4, -0.3);
-
-fn get_color_distortion(sun_position: f32) -> Vec3 {
-    if sun_position < DUSK_RANGE.start {
-        Vec3::ONE + MAX_DUSK_DISTORTION
-    } else if SUNRISE_RANGE.contains(&sun_position) {
-        let distortion_scale = 1.0 - (sun_position - SUNRISE_RANGE.start) / SUNRISE_SPAN;
-        Vec3::ONE + (MAX_SUNRISE_DISTORTION * distortion_scale)
-    } else if DUSK_RANGE.contains(&sun_position) {
-        let distortion_scale = 1.0 - (sun_position - DUSK_RANGE.start) / DUSK_SPAN;
-        Vec3::ONE
-            + (((MAX_DUSK_DISTORTION * distortion_scale)
-                + (MAX_SUNRISE_DISTORTION * (1.0 - distortion_scale)))
-                / 2.0)
-    } else {
-        Vec3::ONE
-    }
-}
-
-// Region below declares of the custom material handling post processing effect
-
 /// Our custom post processing material
 #[derive(AsBindGroup, TypeUuid, Clone)]
 #[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-struct TimeLightingMaterial {
+struct DayNightLightingMaterial {
     /// In this example, this image will be the result of the main camera.
     #[texture(0)]
     #[sampler(1)]
@@ -201,7 +156,7 @@ struct TimeLightingMaterial {
     color_distortion: Vec4,
 }
 
-impl Material2d for TimeLightingMaterial {
+impl Material2d for DayNightLightingMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/lighting.wgsl".into()
     }
