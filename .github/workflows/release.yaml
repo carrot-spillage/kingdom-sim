@@ -13,7 +13,7 @@ on:
 env:
   GAME_EXECUTABLE_NAME: kingdom_sim
   GAME_OSX_APP_NAME: KingdomSim
-  TOOLCHAIN: nightly
+  TOOLCHAIN: stable
 
 jobs:
   # build-macOS:
