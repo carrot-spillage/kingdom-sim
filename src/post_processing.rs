@@ -40,7 +40,7 @@ fn update_day_night_material(
             .next()
             .unwrap()
             .1
-            .color_distortion = day_night_color_distortion.0.extend(1.0).clone();
+            .color_distortion = day_night_color_distortion.0.extend(1.0);
     }
 }
 
@@ -61,8 +61,6 @@ fn setup(
         height: window.resolution.physical_height(),
         ..default()
     };
-
-    println!("size is {:?}", size);
 
     // This is the texture that will be rendered to.
     let mut image = Image {
@@ -114,7 +112,6 @@ fn setup(
     // This material has the texture that has been rendered.
     let material_handle = post_processing_materials.add(DayNightLightingMaterial {
         source_image: image_handle,
-        _padding1: 0.0,
         color_distortion: Vec4::ZERO, // TODO: put an actual initial value: day_light_color_distortions.single().0.extend(1.0)
     });
 
@@ -154,8 +151,6 @@ struct DayNightLightingMaterial {
     #[texture(0)]
     #[sampler(1)]
     source_image: Handle<Image>,
-
-    _padding1: f32,
 
     #[uniform(2)]
     color_distortion: Vec4,
