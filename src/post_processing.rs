@@ -1,11 +1,13 @@
+use std::mem::size_of;
+
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
         camera::RenderTarget,
         render_resource::{
-            AsBindGroup, Extent3d, ShaderRef, TextureDescriptor, TextureDimension, TextureFormat,
-            TextureUsages,
+            AsBindGroup, Extent3d, ShaderRef, TextureDescriptor,
+            TextureDimension, TextureFormat, TextureUsages,
         },
         texture::BevyDefault,
         view::RenderLayers,
@@ -53,6 +55,7 @@ fn setup(
     day_light_color_distortions: Query<&DayNightColorDistortion>,
     world_params: Res<WorldParams>,
 ) {
+    println!("size is {:?}", size_of::<Handle<Image>>());
     // This assumes we only have a single window
     let window = windows.single();
 
@@ -114,7 +117,7 @@ fn setup(
     // This material has the texture that has been rendered.
     let material_handle = post_processing_materials.add(DayNightLightingMaterial {
         source_image: image_handle,
-        _padding1: Vec3::ZERO,
+        _padding1: 0.0,
         color_distortion: Vec4::ZERO, // TODO: put an actual initial value: day_light_color_distortions.single().0.extend(1.0)
     });
 
@@ -155,7 +158,7 @@ struct DayNightLightingMaterial {
     #[sampler(1)]
     source_image: Handle<Image>,
 
-    _padding1: Vec3,
+    _padding1: f32,
 
     #[uniform(2)]
     color_distortion: Vec4,

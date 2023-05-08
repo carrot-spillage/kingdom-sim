@@ -4,6 +4,7 @@ version = "0.0.1"
 publish = false
 authors = ["azuresplash@gmail.com"]
 edition = "2021"
+exclude = ["dist", "build", "assets", "credits"]
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -15,14 +16,19 @@ opt-level = 1
 lto = true
 codegen-units = 1
 
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+
 [features]
-dev = ["bevy/dynamic_linking"]
+dev = ["bevy/bevy_dylib"]
 
 [dependencies]
 bevy = { version = "0.10", features = ["bevy_asset", "bevy_asset", "bevy_render", "bevy_core_pipeline", "bevy_winit", "png", "x11"] }
 bevy_kira_audio = { version = "0.15" }
 bevy_asset_loader = { version = "0.16" }
-rand = "0.8"
 itertools = "0.10"
 bevy_common_assets = { version = "0.6", features = ["yaml"] }
 bevy_turborand = { version = "0.5" }
