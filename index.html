@@ -1,12 +1,11 @@
 <!DOCTYPE html><html lang="en"><head>
-    <meta charset="utf-8">
-    <title>Bevy game</title>
-    <!-- TODO -->
-    
-    
-    
-    <link rel="icon" href="icon.ico">
-    <style type="text/css">body {
+  <meta charset="utf-8">
+  <title>Bevy game</title> <!-- ToDo -->
+  
+  
+  
+  <link rel="icon" href="icon.ico">
+  <style type="text/css">body {
     background: linear-gradient(
             135deg,
             white 0%,
@@ -22,11 +21,12 @@
 canvas {
     background-color: white;
 }</style>
-  
-<link rel="preload" href="/kingdom_sim-ce8231fbf47d051b_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/kingdom_sim-ce8231fbf47d051b.js"></head>
-  <body>
-    <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
+
+<link rel="preload" href="/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0.js"></head>
+
+<body>
+  <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
 // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
 
 // the following function keeps track of all AudioContexts and resumes them on the first user
@@ -88,6 +88,11 @@ canvas {
         document.addEventListener(eventName, resumeAllContexts);
     });
 })();</script>
-  
+  <div class="game-container">
+    <canvas id="bevy">
+      Javascript and support for canvas is required
+    </canvas>
+  </div>
 
-<script type="module">import init from '/kingdom_sim-ce8231fbf47d051b.js';init('/kingdom_sim-ce8231fbf47d051b_bg.wasm');</script></body></html>
+
+<script type="module">import init from '/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0.js';init('/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0_bg.wasm');</script></body></html>
