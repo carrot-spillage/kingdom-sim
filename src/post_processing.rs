@@ -1,13 +1,11 @@
-use std::mem::size_of;
-
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
         camera::RenderTarget,
         render_resource::{
-            AsBindGroup, Extent3d, ShaderRef, TextureDescriptor,
-            TextureDimension, TextureFormat, TextureUsages,
+            AsBindGroup, Extent3d, ShaderRef, TextureDescriptor, TextureDimension, TextureFormat,
+            TextureUsages,
         },
         texture::BevyDefault,
         view::RenderLayers,
@@ -55,7 +53,6 @@ fn setup(
     day_light_color_distortions: Query<&DayNightColorDistortion>,
     world_params: Res<WorldParams>,
 ) {
-    println!("size is {:?}", size_of::<Handle<Image>>());
     // This assumes we only have a single window
     let window = windows.single();
 
