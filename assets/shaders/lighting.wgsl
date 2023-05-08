@@ -8,7 +8,7 @@ var texture: texture_2d<f32>;
 var our_sampler: sampler;
 
 @group(1) @binding(2)
-var<uniform> color_distortion: vec3<f32>;
+var<uniform> color_distortion: vec4<f32>;
 
 @fragment
 fn fragment(

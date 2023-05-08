@@ -6,24 +6,18 @@
   
   <link rel="icon" href="icon.ico">
   <style type="text/css">body {
-    background: linear-gradient(
-            135deg,
-            white 0%,
-            white 49%,
-            black 49%,
-            black 51%,
-            white 51%,
-            white 100%
-    ) repeat;
-    background-size: 20px 20px;
-    margin: 0;
+    all: unset;
+    display: flex; 
+    height: 100vh; 
+    align-items: center; 
+    justify-content: center;
 }
 canvas {
     background-color: white;
 }</style>
 
-<link rel="preload" href="/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0.js"></head>
+<link rel="preload" href="/kingdom-sim/kingdom_sim-b0bbf651fa798b34_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/kingdom-sim/kingdom_sim-b0bbf651fa798b34.js"></head>
 
 <body>
   <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
@@ -88,11 +82,6 @@ canvas {
         document.addEventListener(eventName, resumeAllContexts);
     });
 })();</script>
-  <div class="game-container">
-    <canvas id="bevy">
-      Javascript and support for canvas is required
-    </canvas>
-  </div>
 
 
-<script type="module">import init from '/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0.js';init('/kingdom-sim/kingdom_sim-2cb4d059af9d3eb0_bg.wasm');</script></body></html>
+<script type="module">import init from '/kingdom-sim/kingdom_sim-b0bbf651fa798b34.js';init('/kingdom-sim/kingdom_sim-b0bbf651fa798b34_bg.wasm');</script></body></html>
