@@ -131,15 +131,18 @@ fn setup(
 
     // The post-processing pass camera.
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                // renders after the first main camera which has default value: 0.
-                order: 1,
-                ..default()
+        (
+            Camera2dBundle {
+                camera: Camera {
+                    // renders after the first main camera which has default value: 0.
+                    order: 1,
+                    ..default()
+                },
+                ..Camera2dBundle::default()
             },
-            ..Camera2dBundle::default()
-        },
-        post_processing_pass_layer,
+            post_processing_pass_layer,
+        ),
+        UiCameraConfig { show_ui: false },
     ));
 }
 

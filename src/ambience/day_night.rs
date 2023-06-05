@@ -1,13 +1,23 @@
-use std::ops::Range;
+use std::{
+    f32::consts::{FRAC_PI_4, PI},
+    ops::Range,
+};
 
-use bevy::prelude::{
-    App, Commands, Component, IntoSystemAppConfig, IntoSystemConfigs, OnEnter, OnUpdate, Plugin,
-    Query, Res, Vec3,
+use bevy::{
+    prelude::{
+        App, Assets, Commands, Component, GlobalTransform, Image, IntoSystemAppConfig,
+        IntoSystemConfigs, Mat2, Mat4, OnEnter, OnUpdate, Plugin, Quat, Query, Res, ResMut,
+        Transform, Vec2, Vec3, Vec4,
+    },
+    sprite::{MaterialMesh2dBundle, SpriteBundle},
 };
 use chrono::{DateTime, Timelike, Utc};
 use sun_times::altitude;
 
-use crate::{datetime::GameTime, GameState};
+use crate::{
+    create_world::WorldParams, datetime::GameTime, movement::ISO_MAT, weather::generate_clouds,
+    GameState,
+};
 
 #[derive(Component)]
 pub struct DayNightColorDistortion(pub Vec3);
@@ -55,8 +65,21 @@ struct SunIntervalTracker(u32);
 #[derive(Component)]
 pub struct SunAltitude(pub f32);
 
-fn init_sun(mut commands: Commands, game_time: Res<GameTime>) {
+fn init_sun(mut commands: Commands, game_time: Res<GameTime>, world_params: Res<WorldParams>) {
     let sun_altitude = sun_altitude_at_point(game_time.0);
+
+    // let mat4 = Mat4::from_cols(
+    //     Vec4::new(1.0, 0.0, 0.0, 0.0),
+    //     Vec4::new(0.0, 1.15, 0.25, 0.5),
+    //     Vec4::new(0.0, 0.0, 1.0, 0.0),
+    //     Vec4::new(0.0, 1.0, 0.0, 1.0),
+    // );
+
+    let mut mat4 = Mat4::IDENTITY;
+    // Skew X by 0.25 of Y
+    mat4.x_axis += Vec4::new(1.0, 0.25, 0.0, 0.0);
+    mat4.y_axis += Vec4::ZERO;
+
     commands.spawn((
         DayNightColorDistortion(get_day_night_color_distortion(sun_altitude)),
         SunIntervalTracker(0),

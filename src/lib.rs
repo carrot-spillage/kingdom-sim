@@ -19,6 +19,7 @@ mod planting;
 mod plants;
 mod quad_tree;
 mod tasks;
+mod weather;
 mod work;
 
 use crate::ambience::DayNightPlugin;
@@ -40,7 +41,6 @@ use bevy_turborand::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;
-
 use tasks::TaskPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};

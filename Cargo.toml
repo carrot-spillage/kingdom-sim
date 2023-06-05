@@ -37,6 +37,7 @@ serde = "1.0"
 chrono = "0.4"
 bevy_pancam = "0.8"
 sun-times = "0.2.0"
+noise = { version = "0.8.2" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 winit = { version = "0.28", features = ["x11"] }

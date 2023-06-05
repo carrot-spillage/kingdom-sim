@@ -65,7 +65,7 @@ pub fn isometrify_position(position: Vec3, world_params: &Res<WorldParams>) -> V
     result.extend(z)
 }
 
-static ISO_MAT: Mat2 = Mat2::from_cols(Vec2::new(1.0, -0.5), Vec2::new(1.0, 0.5));
+pub static ISO_MAT: Mat2 = Mat2::from_cols(Vec2::new(1.0, -0.5), Vec2::new(1.0, 0.5));
 
 pub fn isometric(vec: Vec2) -> Vec2 {
     ISO_MAT * vec
