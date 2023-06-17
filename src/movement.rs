@@ -55,9 +55,11 @@ pub struct ArrivedToEntityEvent {
 
 pub struct MovementPlugin;
 
+pub static LAND_Z_OFFSET: f32 = 10.0;
+
 pub fn isometrify_position(position: Vec3, world_params: &Res<WorldParams>) -> Vec3 {
     let mut result = isometric(position.truncate());
-    let z = world_params.half_max_isometric_z - result.y;
+    let z = LAND_Z_OFFSET + world_params.half_max_isometric_z - result.y;
     if position.z > 0.0 {
         result.y += position.z;
     }

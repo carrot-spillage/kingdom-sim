@@ -14,12 +14,14 @@ mod post_processing;
 mod environment_hud;
 mod harvesting;
 mod items;
+mod land_tilemap;
 mod occupy_tiles_plugin;
 mod planting;
 mod plants;
 mod quad_tree;
 mod tasks;
 mod weather;
+mod weather_ui;
 mod work;
 
 use crate::ambience::DayNightPlugin;
@@ -30,6 +32,7 @@ use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
+use crate::weather_ui::WeatherUIPlugin;
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
 
@@ -110,6 +113,7 @@ impl Plugin for GamePlugin {
             // .add_plugin(MenuPlugin)
             .add_plugin(TaskPlugin)
             .add_plugin(MovementPlugin)
+            // .add_plugin(CloudPlugin)
             .add_plugin(PlantsPlugin)
             .add_plugin(HarvestingPlugin)
             .add_plugin(ConstructionPlugin)
@@ -121,7 +125,8 @@ impl Plugin for GamePlugin {
             .add_plugin(EnvironmentHudPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
-            .add_plugin(TilemapPlugin);
+            .add_plugin(TilemapPlugin)
+            .add_plugin(WeatherUIPlugin);
         // .add_startup_system(startup)
         // .add_system(helpers::camera::movement);
         // #[cfg(debug_assertions)]

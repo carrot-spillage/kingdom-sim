@@ -4,7 +4,7 @@ use bevy::prelude::{
     ResMut, Transform, Vec2, With,
 };
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
-use bevy::sprite::SpriteBundle;
+use bevy::sprite::{Sprite, SpriteBundle};
 use noise::utils::{NoiseMapBuilder, PlaneMapBuilder};
 use noise::{Fbm, Perlin};
 
@@ -43,6 +43,10 @@ pub struct CloudPlugin;
 impl Plugin for CloudPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<RegenerateCloudChunkEvent>()
+            .insert_resource(Wind {
+                direction: Vec2::new(1.0, 0.75),
+                speed: 3.0,
+            })
             .add_system(init.in_schedule(OnEnter(GameState::Playing)))
             .add_systems((move_blocks, generate_image).in_set(OnUpdate(GameState::Playing)));
     }
@@ -82,19 +86,32 @@ fn generate_image(
     world_params: Res<WorldParams>,
     mut images: ResMut<Assets<Image>>,
 ) {
+    let chunk_size = Vec2::new(256.0, 256.0);
+
     for event in &mut events {
         let mut image_handle = cloud_image_handles.get_mut(event.0).unwrap();
-        *image_handle = images.set(image_handle.clone(), generate_clouds(world_params.size));
+        *image_handle = images.set(image_handle.clone(), generate_clouds(chunk_size));
+        //Image::new_fill(TextureDimension::D2, );
+        //*image_handle = images.set(image_handle.clone(), generate_clouds(world_params.size)); // TODO:
     }
 }
 
 fn init(mut images: ResMut<Assets<Image>>, mut commands: Commands, world_params: Res<WorldParams>) {
-    let chunk_size = 256;
+    let chunk_size = 256; // todo make it a constant?
     let buffer_chunk_count = 2; // todo make it a constant
     let tile_grid = world_params.size / (chunk_size * 2) as f32;
     let cols = tile_grid.x + buffer_chunk_count as f32;
     let rows = tile_grid.y + buffer_chunk_count as f32;
-    let image_handle = images.add(Image::default());
+    let image_handle = images.add(Image::new_fill(
+        Extent3d {
+            width: chunk_size,
+            height: chunk_size,
+            depth_or_array_layers: 2,
+        },
+        TextureDimension::D2,
+        &[0, 0, 0, 0],
+        TextureFormat::Rgba8Uint,
+    ));
     for x in (-cols as u32)..(cols as u32) {
         for y in (-rows as u32)..(rows as u32) {
             commands

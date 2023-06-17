@@ -1,3 +1,3 @@
-mod clouds;
 mod air_block;
-pub use clouds::generate_clouds;
+mod clouds;
+pub use clouds::CloudPlugin;

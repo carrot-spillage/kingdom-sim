@@ -1,23 +1,13 @@
-use std::{
-    f32::consts::{FRAC_PI_4, PI},
-    ops::Range,
-};
+use std::ops::Range;
 
-use bevy::{
-    prelude::{
-        App, Assets, Commands, Component, GlobalTransform, Image, IntoSystemAppConfig,
-        IntoSystemConfigs, Mat2, Mat4, OnEnter, OnUpdate, Plugin, Quat, Query, Res, ResMut,
-        Transform, Vec2, Vec3, Vec4,
-    },
-    sprite::{MaterialMesh2dBundle, SpriteBundle},
+use bevy::prelude::{
+    App, Commands, Component, IntoSystemAppConfig, IntoSystemConfigs, Mat4, OnEnter, OnUpdate,
+    Plugin, Query, Res, Vec3, Vec4,
 };
 use chrono::{DateTime, Timelike, Utc};
 use sun_times::altitude;
 
-use crate::{
-    create_world::WorldParams, datetime::GameTime, movement::ISO_MAT, weather::generate_clouds,
-    GameState,
-};
+use crate::{create_world::WorldParams, datetime::GameTime, GameState};
 
 #[derive(Component)]
 pub struct DayNightColorDistortion(pub Vec3);

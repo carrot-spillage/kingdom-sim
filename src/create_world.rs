@@ -8,14 +8,7 @@ use bevy::{
     },
     sprite::SpriteBundle,
 };
-use bevy_ecs_tilemap::{
-    prelude::{
-        get_tilemap_center_transform, IsoCoordSystem, TilemapId, TilemapSize, TilemapTexture,
-        TilemapTileSize, TilemapType,
-    },
-    tiles::{TileBundle, TilePos, TileStorage},
-    TilemapBundle,
-};
+
 use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
@@ -24,6 +17,7 @@ use crate::{
         BuildingPrefabMap, ConstructionSite,
     },
     items::{spawn_item_batch, ItemBatch, ItemPrefabId, ItemPrefabMap},
+    land_tilemap::create_land_tilemap,
     planting::logic::Planting,
     quad_tree::QuadTree,
 };
@@ -76,7 +70,7 @@ fn create_world(
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    create_tilemap(&mut commands, &world_params, &textures);
+    create_land_tilemap(&mut commands, &world_params, &textures);
     let house_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
 
     let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
@@ -188,79 +182,6 @@ fn create_world(
 pub struct AreaOccupiedEvent {
     pub area: Rect,
 }
-
-fn create_tilemap(
-    commands: &mut Commands,
-    world_params: &Res<WorldParams>,
-    textures: &Res<TextureAssets>,
-) {
-    let tile_size = TilemapTileSize {
-        x: world_params.tile_side * 2.0,
-        y: world_params.tile_side,
-    };
-    let grid_size = tile_size.into();
-    let map_type = TilemapType::Isometric(IsoCoordSystem::Diamond);
-
-    let tilemap_entity = commands.spawn_empty().id();
-    let map_size = TilemapSize {
-        x: (world_params.size.x / world_params.tile_side) as u32,
-        y: (world_params.size.y / world_params.tile_side) as u32,
-    };
-    println!("Map size {:?}", map_size);
-    let mut tile_storage = TileStorage::empty(map_size);
-
-    for x in 0..map_size.x {
-        for y in 0..map_size.y {
-            let tile_pos = TilePos { x, y };
-            let tile_entity = commands
-                .spawn(TileBundle {
-                    position: tile_pos,
-                    tilemap_id: TilemapId(tilemap_entity),
-                    ..Default::default()
-                })
-                .id();
-            tile_storage.set(&tile_pos, tile_entity);
-        }
-    }
-
-    commands.entity(tilemap_entity).insert(TilemapBundle {
-        grid_size,
-        map_type,
-        size: map_size,
-        storage: tile_storage,
-        texture: TilemapTexture::Single(textures.tile.clone()),
-        tile_size,
-        transform: get_tilemap_center_transform(&map_size, &grid_size, &map_type, 0.0),
-        ..Default::default()
-    });
-}
-
-// fn swap_texture_or_hide(
-//     asset_server: Res<AssetServer>,
-//     keyboard_input: Res<Input<KeyCode>>,
-//     mut query: Query<(&mut TilemapTexture, &mut Visibility)>,
-// ) {
-//     if keyboard_input.just_pressed(KeyCode::Space) {
-//         let texture_a = TilemapTexture::Single(asset_server.load("tiles.png"));
-//         let texture_b = TilemapTexture::Single(asset_server.load("tiles2.png"));
-//         for (mut tilemap_tex, _) in &mut query {
-//             if *tilemap_tex == texture_a {
-//                 *tilemap_tex = texture_b.clone();
-//             } else {
-//                 *tilemap_tex = texture_a.clone();
-//             }
-//         }
-//     }
-//     if keyboard_input.just_pressed(KeyCode::H) {
-//         for (_, mut visibility) in &mut query {
-//             if visibility.is_visible {
-//                 visibility.is_visible = false;
-//             } else {
-//                 visibility.is_visible = true;
-//             }
-//         }
-//     }
-// }
 
 #[derive(Component)]
 struct Campfire;

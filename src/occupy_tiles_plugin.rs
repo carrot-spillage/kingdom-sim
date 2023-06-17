@@ -1,10 +1,11 @@
 use bevy::prelude::{
-    App, Color, Commands, EventReader, IntoSystemConfig, OnUpdate, Plugin, Query, Rect, Res,
+    App, Color, Commands, EventReader, IntoSystemConfig, OnUpdate, Plugin, Query, Rect, Res, With,
 };
 use bevy_ecs_tilemap::tiles::{TileColor, TilePos, TileStorage};
 
 use crate::{
     create_world::{AreaOccupiedEvent, WorldParams},
+    land_tilemap::LandTilemap,
     GameState,
 };
 
@@ -23,7 +24,7 @@ impl Plugin for OccupyTilesPlugin {
 
 fn mark_tiles_in_area_as_occupied(
     mut commands: Commands,
-    grids: Query<&TileStorage>,
+    grids: Query<&TileStorage, With<LandTilemap>>,
     mut events: EventReader<AreaOccupiedEvent>,
     world_params: Res<WorldParams>,
 ) {
