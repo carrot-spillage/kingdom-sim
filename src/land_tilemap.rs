@@ -32,7 +32,6 @@ pub fn create_land_tilemap(
         x: (world_params.size.x / world_params.tile_side) as u32,
         y: (world_params.size.y / world_params.tile_side) as u32,
     };
-    println!("Map size {:?}", map_size);
     let mut tile_storage = TileStorage::empty(map_size);
 
     for x in 0..map_size.x {

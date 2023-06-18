@@ -90,6 +90,9 @@ pub struct TextureAssets {
     #[asset(path = "textures/tile.png")]
     pub tile: Handle<Image>,
 
+    #[asset(path = "textures/blank_tile.png")]
+    pub blank_tile: Handle<Image>,
+
     #[asset(path = "textures/campfire.png")]
     pub campfire: Handle<Image>,
 

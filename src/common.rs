@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use bevy::prelude::{Component, Entity};
+use bevy::prelude::{Component, Entity, Resource};
 use bevy_turborand::prelude::*;
 
 #[derive(Component)]
@@ -20,6 +20,9 @@ pub struct SimpleDestructible {
     pub current_health: f32,
     pub max_health: f32,
 }
+
+#[derive(Resource)]
+pub struct TilemapZOffset(pub f32);
 
 #[derive(Clone, Copy, Debug)]
 

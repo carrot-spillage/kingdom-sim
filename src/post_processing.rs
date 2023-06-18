@@ -84,7 +84,8 @@ fn setup(
 
     let image_handle = images.add(image);
 
-    let mut camera_bundle = Camera2dBundle::new_with_far(world_params.half_max_isometric_z * 2.0);
+    let mut camera_bundle =
+        Camera2dBundle::new_with_far(world_params.half_max_isometric_z * 2.0 + 100.0); // 100.0 for other UI layers
     camera_bundle.projection.scale = 2.0;
     camera_bundle.camera.target = RenderTarget::Image(image_handle.clone());
 

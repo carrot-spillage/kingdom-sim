@@ -105,7 +105,6 @@ impl Plugin for GamePlugin {
             // game logic plugins
             .add_plugin(GameTimePlugin)
             .add_plugin(CarrierPlugin)
-            .add_plugin(OccupyTilesPlugin)
             .add_plugin(CraftingProcessPlugin)
             .add_plugin(CreatureConstructingTaskPlugin)
             // Systems that create Egui widgets should be run during the `CoreSet::Update` set,
@@ -119,6 +118,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ConstructionPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
+            .add_plugin(WeatherUIPlugin { z_offset: 3.0 })
             .add_plugin(InitPlugin)
             .add_plugin(DayNightPlugin)
             .add_plugin(PostProcessPlugin)
@@ -126,7 +126,7 @@ impl Plugin for GamePlugin {
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
             .add_plugin(TilemapPlugin)
-            .add_plugin(WeatherUIPlugin);
+            .add_plugin(OccupyTilesPlugin);
         // .add_startup_system(startup)
         // .add_system(helpers::camera::movement);
         // #[cfg(debug_assertions)]
