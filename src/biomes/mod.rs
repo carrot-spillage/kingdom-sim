@@ -1,13 +1,13 @@
+mod soil_fertility;
+
 use bevy::prelude::{App, Component, IntoSystemConfig, OnUpdate, Plugin, Res};
 use chrono::Timelike;
 
 use crate::{datetime::GameTime, GameState};
+pub use soil_fertility::{SoilFertility, SoilFertilityLayerPlugin};
 
 #[derive(Component)]
 pub struct Humidity(pub f32); // 0..1
-
-#[derive(Component)]
-pub struct SoilFertility(pub f32); // 0..1
 
 #[derive(Component)]
 pub struct Temperature(pub f32); // -50..+50

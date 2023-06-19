@@ -20,11 +20,12 @@ mod planting;
 mod plants;
 mod quad_tree;
 mod tasks;
+mod tilemap_utils;
 mod weather;
-mod weather_ui;
 mod work;
 
 use crate::ambience::DayNightPlugin;
+use crate::biomes::SoilFertilityLayerPlugin;
 use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
 use crate::datetime::GameTimePlugin;
 use crate::environment_hud::EnvironmentHudPlugin;
@@ -32,7 +33,6 @@ use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
-use crate::weather_ui::WeatherUIPlugin;
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
 
@@ -118,7 +118,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ConstructionPlugin)
             .add_plugin(TreeCuttingPlugin)
             .add_plugin(PlantingPlugin)
-            .add_plugin(WeatherUIPlugin { z_offset: 3.0 })
+            .add_plugin(SoilFertilityLayerPlugin { z_offset: 3.0 })
             .add_plugin(InitPlugin)
             .add_plugin(DayNightPlugin)
             .add_plugin(PostProcessPlugin)
