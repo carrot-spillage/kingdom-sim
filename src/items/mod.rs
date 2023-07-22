@@ -4,7 +4,6 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
-use itertools::Itertools;
 
 use crate::{
     create_world::WorldParams,

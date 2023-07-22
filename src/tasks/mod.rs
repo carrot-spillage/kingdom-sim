@@ -10,7 +10,8 @@ use crate::{
     GameState,
 };
 use bevy::prelude::{
-    App, Commands, Component, Entity, IntoSystemConfigs, OnUpdate, Plugin, Query, Vec3, With,
+    in_state, App, Commands, Component, Entity, IntoSystemConfigs, Plugin, Query, Update, Vec3,
+    With,
 };
 use std::collections::VecDeque;
 
@@ -22,8 +23,10 @@ pub struct TaskPlugin;
 impl Plugin for TaskPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
             (proceed_to_next_task, update_tooltip_text, update_tooltip)
-                .in_set(OnUpdate(GameState::Playing)),
+                .chain()
+                .run_if(in_state(GameState::Playing)),
         );
     }
 
