@@ -1,5 +1,5 @@
 use bevy::prelude::{
-    App, Component, IntoSystemConfig, OnUpdate, Plugin, Query, Resource, Vec2, With,
+    in_state, App, Component, IntoSystemConfigs, Plugin, Query, Resource, Update, Vec2, With,
 };
 
 use crate::GameState;
@@ -23,7 +23,10 @@ pub struct AirBlockPlugin;
 
 impl Plugin for AirBlockPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(update_air_blocks.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            Update,
+            update_air_blocks.run_if(in_state(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {

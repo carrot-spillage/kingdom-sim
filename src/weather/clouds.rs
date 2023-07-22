@@ -1,7 +1,7 @@
 use bevy::prelude::{
-    App, Assets, Commands, Component, Entity, Event, EventReader, EventWriter, Handle, Image,
-    IntoSystemConfigs, OnEnter, Plugin, Quat, Query, Rect, Res,
-    ResMut, Transform, Vec2, With,
+    in_state, App, Assets, Commands, Component, Entity, Event, EventReader, EventWriter, Handle,
+    Image, IntoSystemConfigs, OnEnter, Plugin, Quat, Query, Rect, Res, ResMut, Transform, Update,
+    Vec2, With,
 };
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy::sprite::{Sprite, SpriteBundle};
@@ -47,8 +47,13 @@ impl Plugin for CloudPlugin {
                 direction: Vec2::new(1.0, 0.75),
                 speed: 3.0,
             })
-            .add_system(init.in_schedule(OnEnter(GameState::Playing)))
-            .add_systems((move_blocks, generate_image).in_set(OnUpdate(GameState::Playing)));
+            .add_systems(OnEnter(GameState::Playing), init)
+            .add_systems(
+                Update,
+                (move_blocks, generate_image)
+                    .chain()
+                    .run_if(in_state(GameState::Playing)),
+            );
     }
 
     fn name(&self) -> &str {
