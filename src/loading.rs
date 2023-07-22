@@ -5,7 +5,7 @@ use crate::{
     plants::bundle::{PlantPrefab, Size},
     GameState,
 };
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::{prelude::*, reflect::TypePath, utils::hashbrown::HashMap};
 
 use bevy_asset_loader::prelude::{AssetCollection, LoadingState, LoadingStateAppExt};
 use bevy_kira_audio::AudioSource;
@@ -27,26 +27,26 @@ impl Plugin for LoadingPlugin {
         .add_collection_to_loading_state::<_, ItemPrefabAssets>(GameState::Loading)
         .add_collection_to_loading_state::<_, BuildingPrefabAssets>(GameState::Loading);
 
-        app.add_system(setup_prefabs.in_schedule(OnExit(GameState::Loading)));
+        app.add_systems(OnExit(GameState::Loading), setup_prefabs);
     }
 }
 
 // the following asset collections will be loaded during the State `GameState::Loading`
 // when done loading, they will be inserted as resources (see https://github.com/NiklasEi/bevy_asset_loader)
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(TypePath, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
 pub struct PlantPrefabVec {
     pub plants: Vec<PlantPrefab<String, Size>>,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(TypePath, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "160a57b6-2417-47c7-bd3b-52ace245cc49"]
 pub struct ItemPrefabVec {
     pub items: Vec<ItemPrefab<String>>,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
+#[derive(TypePath, serde::Deserialize, bevy::reflect::TypeUuid, Debug)]
 #[uuid = "2d6e164e-73cc-4b74-b7d3-cdbfc59ef727"]
 pub struct BuildingPrefabVec {
     pub buildings: Vec<BuildingPrefab<String, Size>>,

@@ -1,5 +1,6 @@
 use bevy::prelude::{
-    in_state, App, Color, Commands, EventReader, Plugin, Query, Rect, Res, Update, With,
+    in_state, App, Color, Commands, EventReader, IntoSystemConfigs, Plugin, Query, Rect, Res,
+    Update, With,
 };
 use bevy_ecs_tilemap::tiles::{TileColor, TilePos, TileStorage};
 

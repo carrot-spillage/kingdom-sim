@@ -1,4 +1,6 @@
-use bevy::prelude::{in_state, App, Commands, Component, OnEnter, Plugin, Query, Update};
+use bevy::prelude::{
+    in_state, App, Commands, Component, IntoSystemConfigs, OnEnter, Plugin, Query, Update,
+};
 
 use crate::GameState;
 

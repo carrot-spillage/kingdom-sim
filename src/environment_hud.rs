@@ -5,7 +5,7 @@ use bevy::{
         Label, NodeBundle, OnEnter, Plugin, Query, Res, TextBundle, Update, With,
     },
     text::{Text, TextStyle},
-    ui::{JustifyContent, Size, Style, UiRect, Val},
+    ui::{JustifyContent, Style, UiRect, Val},
 };
 
 use crate::{loading::FontAssets, GameState};
@@ -58,7 +58,7 @@ fn create_environment_hud(mut commands: Commands, fonts: Res<FontAssets>) {
     commands
         .spawn(NodeBundle {
             style: Style {
-                size: Size::width(Val::Percent(100.0)),
+                width: Val::Percent(100.0),
                 justify_content: JustifyContent::SpaceBetween,
                 ..default()
             },
@@ -69,7 +69,7 @@ fn create_environment_hud(mut commands: Commands, fonts: Res<FontAssets>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        width: Val::Px(200.0),
                         border: UiRect::all(Val::Px(2.0)),
                         ..default()
                     },
@@ -80,7 +80,7 @@ fn create_environment_hud(mut commands: Commands, fonts: Res<FontAssets>) {
                     parent
                         .spawn(NodeBundle {
                             style: Style {
-                                size: Size::width(Val::Percent(100.0)),
+                                width: Val::Percent(100.0),
                                 ..default()
                             },
                             background_color: Color::rgba(0.0, 0.0, 0.0, 0.0).into(),

@@ -20,11 +20,12 @@ pub struct ConstructionSiteStorage {
 impl ConstructionSiteStorage {
     pub(crate) fn accept(&mut self, item_batches: &mut Vec<ItemBatch>) {
         self.needed_batches.retain_mut(|needed| {
-            let found = item_batches
+            let found_index = item_batches
                 .iter_mut()
-                .find_position(|x| x.prefab_id == needed.prefab_id);
+                .position(|x| x.prefab_id == needed.prefab_id);
 
-            if let Some((index, item_batch)) = found {
+            if let Some(index) = found_index {
+                let mut item_batch = item_batches[index];
                 let result = deliver_quantity(needed.quantity, item_batch.quantity);
                 self.available_batches.push(ItemBatch {
                     prefab_id: item_batch.prefab_id,
