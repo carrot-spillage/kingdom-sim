@@ -1,6 +1,6 @@
 use bevy::prelude::{
-    App, Assets, Commands, Component, Entity, EventReader, EventWriter, Handle, Image,
-    IntoSystemAppConfig, IntoSystemConfigs, OnEnter, OnUpdate, Plugin, Quat, Query, Rect, Res,
+    App, Assets, Commands, Component, Entity, Event, EventReader, EventWriter, Handle, Image,
+    IntoSystemConfigs, OnEnter, Plugin, Quat, Query, Rect, Res,
     ResMut, Transform, Vec2, With,
 };
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
@@ -78,6 +78,7 @@ fn move_blocks(
     }
 }
 
+#[derive(Event)]
 struct RegenerateCloudChunkEvent(Entity);
 
 fn generate_image(

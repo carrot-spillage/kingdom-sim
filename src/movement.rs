@@ -1,8 +1,8 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Changed, Commands, Component, Entity, IntoSystemConfigs, Mat2, OnUpdate, Plugin,
-        Query, Res, Transform, Vec2,
+        App, Changed, Commands, Component, Entity, Event, IntoSystemConfigs, Mat2, OnUpdate,
+        Plugin, Query, Res, Transform, Vec2,
     },
 };
 
@@ -46,8 +46,10 @@ impl Walker {
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Position(pub Vec3);
 
+#[derive(Event)]
 pub struct ArrivedToPositionEvent(pub Entity);
 
+#[derive(Event)]
 pub struct ArrivedToEntityEvent {
     pub moving_entity: Entity,
     pub destination_entity: Entity,

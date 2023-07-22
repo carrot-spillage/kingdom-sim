@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Commands, Component, Entity, EventWriter, IntoSystemAppConfig, NextState, OnEnter,
+        App, Commands, Component, Entity, Event, EventWriter, IntoSystemAppConfig, NextState, OnEnter,
         Plugin, Query, Rect, Res, ResMut, Resource, Transform, With, Without,
     },
     sprite::SpriteBundle,
@@ -179,6 +179,7 @@ fn create_world(
     next_state.set(GameState::Playing);
 }
 
+#[derive(Event)]
 pub struct AreaOccupiedEvent {
     pub area: Rect,
 }

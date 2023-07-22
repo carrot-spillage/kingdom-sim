@@ -1,8 +1,8 @@
 use bevy::{
     math::Vec2,
     prelude::{
-        App, Commands, Entity, EventReader, EventWriter, ParallelSystemDescriptorCoercion, Query,
-        Res, ResMut, SystemSet, With, Without,
+        App, Commands, Entity, Event, EventReader, EventWriter, ParallelSystemDescriptorCoercion,
+        Query, Res, ResMut, SystemSet, With, Without,
     },
 };
 
@@ -233,12 +233,14 @@ pub(crate) fn advance_all_work_processes(
     }
 }
 
+#[derive(Event)]
 pub struct WorkScheduledEvent {
     pub job_id: &'static str,
     pub target: TargetOrPosition,
     pub work_process_id: Entity,
 }
 
+#[derive(Event)]
 pub struct WorkProgressedEvent {
     pub job_id: &'static str,
     pub work_process_id: Entity,
@@ -246,6 +248,7 @@ pub struct WorkProgressedEvent {
     pub units_of_work_left: f32,
 }
 
+#[derive(Event)]
 pub struct WorkCompletedEvent {
     pub job_id: &'static str,
     pub work_process_id: Entity,
@@ -253,6 +256,7 @@ pub struct WorkCompletedEvent {
     pub quality: f32,
 }
 
+#[derive(Event)]
 struct DespawnWorkProccessEvent(pub Entity);
 
 #[derive(Clone, Copy)]

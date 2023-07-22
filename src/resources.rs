@@ -1,7 +1,8 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Commands, Component, Entity, EventReader, Plugin, Query, Res, SystemSet, Transform,
+        App, Commands, Component, Entity, Event, EventReader, Plugin, Query, Res, SystemSet,
+        Transform,
     },
     sprite::SpriteBundle,
 };
@@ -30,6 +31,7 @@ pub struct ResourceCarrier {
     pub max_volume: u32,
 }
 
+#[derive(Event)]
 pub struct BreaksIntoResourcesEvent(pub Entity);
 
 pub struct ResourcesPlugin;
