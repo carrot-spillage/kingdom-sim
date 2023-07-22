@@ -1,5 +1,5 @@
 use bevy::prelude::{
-    App, Changed, Commands, Component, Entity, IntoSystemConfig, OnUpdate, Plugin, Query,
+    in_state, App, Changed, Commands, Component, Entity, IntoSystemConfigs, Plugin, Query, Update,
 };
 
 use crate::{
@@ -33,7 +33,10 @@ pub struct CraftingProcessPlugin;
 
 impl Plugin for CraftingProcessPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(set_can_continue.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            Update,
+            set_can_continue.run_if(in_state(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {

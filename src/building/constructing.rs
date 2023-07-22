@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        Added, App, Commands, Component, Entity, IntoSystemConfig, IntoSystemConfigs, OnUpdate,
-        Plugin, Query, ResMut, With,
+        in_state, Added, App, Commands, Component, Entity, IntoSystemConfigs, Plugin, Query,
+        ResMut, Update, With,
     },
     utils::HashSet,
 };
@@ -32,7 +32,7 @@ pub struct CreatureConstructingTaskPlugin;
 
 impl Plugin for CreatureConstructingTaskPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems((start, stop).in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(Update, (start, stop).run_if(in_state(GameState::Playing)));
     }
 
     fn name(&self) -> &str {
@@ -86,7 +86,10 @@ pub struct ConstructionPlugin;
 
 impl Plugin for ConstructionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(handle_task_process.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            Update,
+            handle_task_process.run_if(in_state(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {

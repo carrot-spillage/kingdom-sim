@@ -1,9 +1,6 @@
 mod soil_fertility;
 
-use bevy::prelude::{
-    App, Commands, Component, IntoSystemAppConfig, IntoSystemConfig, OnEnter, OnUpdate, Plugin,
-    Query,
-};
+use bevy::prelude::Component;
 
 pub use soil_fertility::{SoilFertility, SoilFertilityLayerPlugin};
 

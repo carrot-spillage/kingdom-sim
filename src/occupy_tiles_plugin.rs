@@ -1,5 +1,5 @@
 use bevy::prelude::{
-    App, Color, Commands, EventReader, IntoSystemConfig, OnUpdate, Plugin, Query, Rect, Res, With,
+    in_state, App, Color, Commands, EventReader, Plugin, Query, Rect, Res, Update, With,
 };
 use bevy_ecs_tilemap::tiles::{TileColor, TilePos, TileStorage};
 
@@ -13,8 +13,10 @@ pub struct OccupyTilesPlugin;
 
 impl Plugin for OccupyTilesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AreaOccupiedEvent>()
-            .add_system(mark_tiles_in_area_as_occupied.in_set(OnUpdate(GameState::Playing)));
+        app.add_event::<AreaOccupiedEvent>().add_systems(
+            Update,
+            mark_tiles_in_area_as_occupied.run_if(in_state(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {

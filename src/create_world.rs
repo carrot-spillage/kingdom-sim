@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use bevy::{
     math::{Vec2, Vec3},
     prelude::{
-        App, Commands, Component, Entity, Event, EventWriter, IntoSystemAppConfig, NextState, OnEnter,
-        Plugin, Query, Rect, Res, ResMut, Resource, Transform, With, Without,
+        App, Commands, Component, Entity, Event, EventWriter, NextState, OnEnter, Plugin, Query,
+        Rect, Res, ResMut, Resource, Transform, With, Without,
     },
     sprite::SpriteBundle,
 };
@@ -39,8 +39,8 @@ pub struct InitPlugin;
 
 impl Plugin for InitPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(create_world.in_schedule(OnEnter(GameState::CreatingWorld)))
-            .add_system(run_dummy_commands.in_schedule(OnEnter(GameState::Playing)));
+        app.add_systems(OnEnter(GameState::CreatingWorld), create_world)
+            .add_systems(OnEnter(GameState::Playing), run_dummy_commands);
     }
 
     fn name(&self) -> &str {

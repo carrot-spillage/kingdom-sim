@@ -40,7 +40,7 @@ use bevy::app::App;
 use bevy_common_assets::yaml::YamlAssetPlugin;
 use bevy_ecs_tilemap::TilemapPlugin;
 use bevy_pancam::PanCamPlugin;
-use bevy_turborand::RngPlugin;
+use bevy_turborand::prelude::RngPlugin;
 use harvesting::HarvestingPlugin;
 use loading::{ItemPrefabVec, PlantPrefabVec};
 use planting::PlantingPlugin;

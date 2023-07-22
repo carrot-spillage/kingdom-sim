@@ -1,8 +1,8 @@
 use std::ops::Range;
 
 use bevy::prelude::{
-    App, Commands, Component, IntoSystemAppConfig, IntoSystemConfigs, Mat4, OnEnter, OnUpdate,
-    Plugin, Query, Res, Vec3, Vec4,
+    in_state, App, Commands, Component, IntoSystemConfigs, Mat4, OnEnter, Plugin, Query, Res,
+    Update, Vec3, Vec4,
 };
 use chrono::{DateTime, Timelike, Utc};
 use sun_times::altitude;
@@ -16,8 +16,8 @@ pub struct DayNightPlugin;
 
 impl Plugin for DayNightPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(init_sun.in_schedule(OnEnter(GameState::Playing)))
-            .add_systems((update_sun,).in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(OnEnter(GameState::Playing), init_sun)
+            .add_systems(Update, update_sun.run_if(in_state(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

@@ -22,7 +22,10 @@ impl Plugin for PostProcessPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(Material2dPlugin::<DayNightLightingMaterial>::default())
             .add_startup_system(setup)
-            .add_system(update_day_night_material.in_set(OnUpdate(GameState::Playing)));
+            .add_systems(
+                Update,
+                update_day_night_material.run_if(in_state(GameState::Playing)),
+            );
     }
 
     fn name(&self) -> &str {

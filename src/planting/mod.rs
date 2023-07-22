@@ -1,6 +1,6 @@
 pub mod logic;
 
-use bevy::prelude::{App, IntoSystemConfig, OnUpdate, Plugin};
+use bevy::prelude::{in_state, App, IntoSystemConfigs, Plugin, Update};
 
 use crate::GameState;
 
@@ -10,7 +10,10 @@ pub struct PlantingPlugin;
 
 impl Plugin for PlantingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(handle_task_progress.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(
+            Update,
+            handle_task_progress.run_if(in_state(GameState::Playing)),
+        );
     }
 
     fn name(&self) -> &str {

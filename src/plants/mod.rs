@@ -5,8 +5,8 @@ mod resource_producer;
 
 use bevy::{
     prelude::{
-        App, Commands, Entity, EventWriter, Handle, Image, IntoSystemConfigs, OnUpdate, Plugin,
-        Query, Rect, Res, ResMut, Transform, Vec3,
+        in_state, App, Commands, Entity, EventWriter, Handle, Image, IntoSystemConfigs, Plugin,
+        Query, Rect, Res, ResMut, Transform, Update, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
@@ -157,6 +157,7 @@ pub struct PlantsPlugin;
 impl Plugin for PlantsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
             (
                 grow,
                 germinate,
@@ -164,7 +165,7 @@ impl Plugin for PlantsPlugin {
                 produce_resources,
                 break_into_resources,
             )
-                .in_set(OnUpdate(GameState::Playing)),
+                .run_if(in_state(GameState::Playing)),
         );
     }
 

@@ -1,8 +1,8 @@
 use bevy::{
     math::Vec3,
     prelude::{
-        App, Changed, Commands, Component, Entity, Event, IntoSystemConfigs, Mat2, OnUpdate,
-        Plugin, Query, Res, Transform, Vec2,
+        in_state, App, Changed, Commands, Component, Entity, Event, IntoSystemConfigs, Mat2,
+        Plugin, Query, Res, Transform, Update, Vec2,
     },
 };
 
@@ -80,8 +80,9 @@ impl Plugin for MovementPlugin {
         app.add_event::<ArrivedToPositionEvent>()
             .add_event::<ArrivedToEntityEvent>()
             .add_systems(
+                Update,
                 (move_to_position, move_to_entity, isometrify_from_position)
-                    .in_set(OnUpdate(GameState::Playing)),
+                    .run_if(in_state(GameState::Playing)),
             );
     }
 }

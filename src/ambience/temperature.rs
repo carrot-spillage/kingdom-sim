@@ -1,7 +1,4 @@
-use bevy::prelude::{
-    App, Commands, Component, IntoSystemAppConfig, IntoSystemConfig, OnEnter, OnUpdate, Plugin,
-    Query,
-};
+use bevy::prelude::{in_state, App, Commands, Component, OnEnter, Plugin, Query, Update};
 
 use crate::GameState;
 
@@ -17,8 +14,11 @@ pub struct TemperaturePlugin;
 
 impl Plugin for TemperaturePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(init_temperature.in_schedule(OnEnter(GameState::Playing)))
-            .add_system(update_temperature.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(OnEnter(GameState::Playing), init_temperature)
+            .add_systems(
+                Update,
+                update_temperature.run_if(in_state(GameState::Playing)),
+            );
     }
 
     fn name(&self) -> &str {

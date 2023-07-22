@@ -1,9 +1,8 @@
 use crate::datetime::GameTime;
 use bevy::{
     prelude::{
-        default, App, BuildChildren, Color, Commands, Component, IntoSystemAppConfig,
-        IntoSystemConfigs, Label, NodeBundle, OnEnter, OnUpdate, Plugin, Query, Res, TextBundle,
-        With,
+        default, in_state, App, BuildChildren, Color, Commands, Component, IntoSystemConfigs,
+        Label, NodeBundle, OnEnter, Plugin, Query, Res, TextBundle, Update, With,
     },
     text::{Text, TextStyle},
     ui::{JustifyContent, Size, Style, UiRect, Val},
@@ -18,8 +17,11 @@ pub struct EnvironmentHudPlugin;
 
 impl Plugin for EnvironmentHudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(create_environment_hud.in_schedule(OnEnter(GameState::Playing)))
-            .add_systems((update_date_time_display,).in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(OnEnter(GameState::Playing), create_environment_hud)
+            .add_systems(
+                Update,
+                update_date_time_display.run_if(in_state(GameState::Playing)),
+            );
     }
 
     fn name(&self) -> &str {

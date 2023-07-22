@@ -1,6 +1,6 @@
 use bevy::prelude::{
-    App, Color, Commands, Component, IntoSystemAppConfig, IntoSystemConfig, OnEnter, OnUpdate,
-    Plugin, Query, Res, ResMut,
+    in_state, App, Color, Commands, Component, IntoSystemConfigs, OnEnter, Plugin, Query, Res,
+    ResMut, Update,
 };
 use bevy_ecs_tilemap::{
     prelude::{TilemapId, TilemapTexture},
@@ -31,8 +31,8 @@ pub struct SoilFertilityTilemap;
 impl Plugin for SoilFertilityLayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TilemapZOffset(self.z_offset))
-            .add_system(create_tilemap.in_schedule(OnEnter(GameState::CreatingWorld)))
-            .add_system(update_tiles.in_set(OnUpdate(GameState::Playing)));
+            .add_systems(OnEnter(GameState::CreatingWorld), create_tilemap)
+            .add_systems(Update, update_tiles.run_if(in_state(GameState::Playing)));
     }
 
     fn name(&self) -> &str {

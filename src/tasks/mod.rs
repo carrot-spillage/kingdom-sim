@@ -25,7 +25,6 @@ impl Plugin for TaskPlugin {
         app.add_systems(
             Update,
             (proceed_to_next_task, update_tooltip_text, update_tooltip)
-                .chain()
                 .run_if(in_state(GameState::Playing)),
         );
     }

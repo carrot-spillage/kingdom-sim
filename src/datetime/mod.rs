@@ -1,6 +1,6 @@
 use std::{ops::AddAssign, str::FromStr};
 
-use bevy::prelude::{App, IntoSystemConfig, OnUpdate, Plugin, ResMut, Resource};
+use bevy::prelude::{in_state, App, IntoSystemConfigs, Plugin, ResMut, Resource, Update};
 use chrono::{DateTime, Duration, Utc};
 
 use crate::GameState;
@@ -21,7 +21,7 @@ impl Plugin for GameTimePlugin {
         app.insert_resource(GameTime(
             DateTime::from_str("2023-01-01T04:00:00.000Z").unwrap(),
         ));
-        app.add_system(tick.in_set(OnUpdate(GameState::Playing)));
+        app.add_systems(Update, tick.run_if(in_state(GameState::Playing)));
     }
 
     fn name(&self) -> &str {
