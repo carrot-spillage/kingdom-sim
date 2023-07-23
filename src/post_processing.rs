@@ -116,7 +116,7 @@ fn setup(
     // This material has the texture that has been rendered.
     let material_handle = post_processing_materials.add(DayNightLightingMaterial {
         source_image: image_handle,
-        color_distortion: Vec4::ZERO, // TODO: put an actual initial value: day_light_color_distortions.single().0.extend(1.0)
+        color_distortion: Vec4::ZERO, // TODO: put an actual initial value (right now single will find nothing and fail): day_light_color_distortions.single().0.extend(1.0)
     });
 
     // Post processing 2d quad, with material using the render texture done by the main camera, with a custom shader.

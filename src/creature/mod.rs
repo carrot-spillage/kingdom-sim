@@ -206,7 +206,7 @@ fn transfer_items(
 
         let (mut storage, mut crafting_process) =
             construction_site_storages.get_mut(*target_id).unwrap(); // TODO: there might be other kinds of recepients of items
-                                                                     // TODO: check the position
+        // TODO: check the position (that we actually arrived at the spot and not doing it from the distance)
         storage.accept(&mut item_container.items);
         println!("Storage received batches {:?}", storage);
 
