@@ -20,8 +20,8 @@ pub struct PostProcessPlugin;
 
 impl Plugin for PostProcessPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(Material2dPlugin::<DayNightLightingMaterial>::default())
-            .add_startup_system(setup)
+        app.add_plugins(Material2dPlugin::<DayNightLightingMaterial>::default())
+            .add_systems(Startup, setup)
             .add_systems(
                 Update,
                 update_day_night_material.run_if(in_state(GameState::Playing)),

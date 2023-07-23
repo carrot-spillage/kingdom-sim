@@ -1,5 +1,6 @@
-#import bevy_sprite::mesh2d_view_bindings
-#import bevy_pbr::utils
+#import bevy_pbr::utils                    coords_to_viewport_uv
+#import bevy_sprite::mesh2d_view_bindings  view
+#import bevy_sprite::mesh2d_vertex_output  MeshVertexOutput
 
 @group(1) @binding(0)
 var texture: texture_2d<f32>;
@@ -12,10 +13,9 @@ var<uniform> color_distortion: vec4<f32>;
 
 @fragment
 fn fragment(
-    @builtin(position) position: vec4<f32>,
-    #import bevy_sprite::mesh2d_vertex_output
+    mesh: MeshVertexOutput,
 ) -> @location(0) vec4<f32> {
-    let uv = coords_to_viewport_uv(position.xy, view.viewport);
+    let uv = coords_to_viewport_uv(mesh.position.xy, view.viewport);
 
     // Sample the texture using the provided sampler and UV coordinates.
     var color = vec4<f32>(textureSample(texture, our_sampler, uv));

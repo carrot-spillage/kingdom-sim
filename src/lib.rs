@@ -93,46 +93,46 @@ impl Plugin for GamePlugin {
             map_size_factor,
         ));
         app.add_state::<GameState>()
-            .add_plugin(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
-            .add_plugin(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
-            .add_plugin(YamlAssetPlugin::<BuildingPrefabVec>::new(&[
+            .add_plugins(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
+            .add_plugins(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
+            .add_plugins(YamlAssetPlugin::<BuildingPrefabVec>::new(&[
                 "buildings.yaml",
             ]))
-            .add_plugin(LoadingPlugin)
+            .add_plugins(LoadingPlugin)
             // external plugins
-            .add_plugin(PanCamPlugin::default())
-            .add_plugin(RngPlugin::default().with_rng_seed(12345))
+            .add_plugins(PanCamPlugin::default())
+            .add_plugins(RngPlugin::default().with_rng_seed(12345))
             // game logic plugins
-            .add_plugin(GameTimePlugin)
-            .add_plugin(CarrierPlugin)
-            .add_plugin(CraftingProcessPlugin)
-            .add_plugin(CreatureConstructingTaskPlugin)
+            .add_plugins(GameTimePlugin)
+            .add_plugins(CarrierPlugin)
+            .add_plugins(CraftingProcessPlugin)
+            .add_plugins(CreatureConstructingTaskPlugin)
             // Systems that create Egui widgets should be run during the `CoreSet::Update` set,
             // or after the `EguiSet::BeginFrame` system (which belongs to the `CoreSet::PreUpdate` set).
-            // .add_plugin(MenuPlugin)
-            .add_plugin(TaskPlugin)
-            .add_plugin(MovementPlugin)
-            // .add_plugin(CloudPlugin)
-            .add_plugin(PlantsPlugin)
-            .add_plugin(HarvestingPlugin)
-            .add_plugin(ConstructionPlugin)
-            .add_plugin(TreeCuttingPlugin)
-            .add_plugin(PlantingPlugin)
-            .add_plugin(SoilFertilityLayerPlugin { z_offset: 3.0 })
-            .add_plugin(InitPlugin)
-            .add_plugin(DayNightPlugin)
-            .add_plugin(PostProcessPlugin)
-            .add_plugin(EnvironmentHudPlugin)
+            // .add_plugins(MenuPlugin)
+            .add_plugins(TaskPlugin)
+            .add_plugins(MovementPlugin)
+            // .add_plugins(CloudPlugin)
+            .add_plugins(PlantsPlugin)
+            .add_plugins(HarvestingPlugin)
+            .add_plugins(ConstructionPlugin)
+            .add_plugins(TreeCuttingPlugin)
+            .add_plugins(PlantingPlugin)
+            .add_plugins(SoilFertilityLayerPlugin { z_offset: 3.0 })
+            .add_plugins(InitPlugin)
+            .add_plugins(DayNightPlugin)
+            .add_plugins(PostProcessPlugin)
+            .add_plugins(EnvironmentHudPlugin)
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
-            .add_plugin(TilemapPlugin)
-            .add_plugin(OccupyTilesPlugin);
-        // .add_startup_system(startup)
-        // .add_system(helpers::camera::movement);
+            .add_plugins(TilemapPlugin)
+            .add_plugins(OccupyTilesPlugin);
+        // .add_systems(Startup, startup)
+        // .add_systems(helpers::camera::movement);
         // #[cfg(debug_assertions)]
         // {
-        //     app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-        //         .add_plugin(LogDiagnosticsPlugin::default());
+        //     app.add_plugins(FrameTimeDiagnosticsPlugin::default())
+        //         .add_plugins(LogDiagnosticsPlugin::default());
         // }
     }
 }

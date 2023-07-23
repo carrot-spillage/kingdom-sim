@@ -1,10 +1,9 @@
 use bevy::prelude::{
     in_state, App, Assets, Commands, Component, Entity, Event, EventReader, EventWriter, Handle,
-    Image, IntoSystemConfigs, OnEnter, Plugin, Quat, Query, Rect, Res, ResMut, Transform, Update,
-    Vec2, With,
+    Image, IntoSystemConfigs, OnEnter, Plugin, Query, Res, ResMut, Update, Vec2, With,
 };
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
-use bevy::sprite::{Sprite, SpriteBundle};
+use bevy::sprite::SpriteBundle;
 use noise::utils::{NoiseMapBuilder, PlaneMapBuilder};
 use noise::{Fbm, Perlin};
 

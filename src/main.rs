@@ -17,6 +17,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(GamePlugin)
+        .add_plugins(GamePlugin)
         .run();
 }
