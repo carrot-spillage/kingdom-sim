@@ -87,7 +87,7 @@ fn update_sun(
 ) {
     let (mut sun_altitude, mut sun_tracking_countdown, mut day_night_color_distortion) =
         sun_params.single_mut();
-    let time = game_time.0.time();
+    let time: chrono::NaiveTime = game_time.0.time();
     let hour = time.hour();
     let minute = time.minute();
     let sun_tracker_step_minutes = 5.0;
