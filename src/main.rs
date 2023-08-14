@@ -12,7 +12,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.7, 0.7, 0.7)))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                resolution: (1200., 1200.).into(),
+                resolution: (1024., 800.).into(),
                 ..default()
             }),
             ..default()

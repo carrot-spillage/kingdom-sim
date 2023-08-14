@@ -7,7 +7,7 @@ use bevy::{
     },
     utils::HashMap,
 };
-use bevy_turborand::{DelegatedRng, RngComponent};
+use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 use chrono::{Datelike, NaiveDate, Timelike};
 
 use crate::{datetime::GameTime, GameState};
@@ -63,15 +63,19 @@ fn update_hour(game_time: Res<GameTime>, mut hour_q: Query<&mut Hour>) {
     }
 }
 
-fn init(mut commands: Commands) {
-    commands
-        .spawn_empty()
-        .insert((BaseTemperature(16.0), Hour(0), RainIntensity(0.0)));
+fn init(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
+    commands.spawn_empty().insert((
+        BaseTemperature(16.0),
+        Temperature(16.0),
+        Hour(0),
+        RainIntensity(0.0),
+        RngComponent::from(&mut global_rng),
+    ));
 }
 
 fn update_temperature(
     game_time: Res<GameTime>,
-    hour_altitude_q: Query<&SunAltitude, Changed<Hour>>,
+    hour_altitude_q: Query<&SunAltitude, Changed<SunAltitude>>,
     mut daily_temperature_for_year: ResMut<WeatherForYear>,
     base_temperature_q: Query<&BaseTemperature>,
     mut weather_q: Query<(&mut Temperature, &mut RainIntensity)>,

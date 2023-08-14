@@ -3,4 +3,4 @@ mod temperature;
 
 pub use day_night::{DayNightColorDistortion, DayNightPlugin, SunAltitude};
 
-pub use temperature::TemperaturePlugin;
+pub use temperature::{Temperature, TemperaturePlugin};

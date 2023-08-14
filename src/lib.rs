@@ -24,7 +24,7 @@ mod tilemap_utils;
 mod weather;
 mod work;
 
-use crate::ambience::DayNightPlugin;
+use crate::ambience::{DayNightPlugin, TemperaturePlugin};
 use crate::biomes::SoilFertilityLayerPlugin;
 use crate::building::{ConstructionPlugin, CreatureConstructingTaskPlugin};
 use crate::datetime::GameTimePlugin;
@@ -112,7 +112,6 @@ impl Plugin for GamePlugin {
             // .add_plugins(MenuPlugin)
             .add_plugins(TaskPlugin)
             .add_plugins(MovementPlugin)
-            // .add_plugins(CloudPlugin)
             .add_plugins(PlantsPlugin)
             .add_plugins(HarvestingPlugin)
             .add_plugins(ConstructionPlugin)
@@ -121,6 +120,7 @@ impl Plugin for GamePlugin {
             .add_plugins(SoilFertilityLayerPlugin { z_offset: 3.0 })
             .add_plugins(InitPlugin)
             .add_plugins(DayNightPlugin)
+            .add_plugins(TemperaturePlugin)
             .add_plugins(PostProcessPlugin)
             .add_plugins(EnvironmentHudPlugin)
             // stuff added for tilemap

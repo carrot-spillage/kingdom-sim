@@ -89,6 +89,7 @@ fn update_sun(
         sun_params.single_mut();
     let time: chrono::NaiveTime = game_time.0.time();
     let hour = time.hour();
+
     let minute = time.minute();
     let sun_tracker_step_minutes = 5.0;
     let next_sun_interval_tracker_value =

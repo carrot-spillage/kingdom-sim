@@ -39,7 +39,9 @@ bevy_kira_audio = { version = "0.16" }
 bevy_asset_loader = { version = "0.17" }
 bevy_common_assets = { version = "0.7", features = ["yaml"] }
 bevy_turborand = { version = "0.6" }
-bevy_ecs_tilemap = { version = "0.11", features = ["atlas"] }
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", branch = "main", features = [
+    "atlas",
+] }
 serde = "1.0"
 chrono = "0.4"
 bevy_pancam = "0.9"
