@@ -34,12 +34,30 @@ impl Plugin for EnvironmentHudPlugin {
     }
 }
 
-use chrono::Timelike;
+use chrono::{Datelike, Timelike};
 fn update_date_time_display(
     mut tooltips: Query<&mut Text, With<DateTimeDisplay>>,
     game_time: Res<GameTime>,
 ) {
     let mut tooltip = tooltips.single_mut();
+    let date = game_time.0.date_naive();
+    let month = date.month0() as usize;
+
+    let months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+
     let time = game_time.0.time();
     let hour = time.hour();
     let minute = time.minute();
@@ -55,7 +73,7 @@ fn update_date_time_display(
         minute.to_string()
     };
 
-    let text = formatted_hour + ":" + &formatted_minute;
+    let text = months[month].to_owned() + " " + &formatted_hour + ":" + &formatted_minute;
     tooltip.sections[0].value = text;
 }
 

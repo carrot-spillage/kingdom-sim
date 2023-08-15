@@ -45,7 +45,7 @@ bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", 
 serde = "1.0"
 chrono = "0.4"
 bevy_pancam = "0.9"
-sun-times = "0.2.0"
+sun = "0.2"
 noise = { version = "0.8.2" }
 
 [target.'cfg(target_os = "linux")'.dependencies]

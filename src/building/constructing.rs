@@ -151,7 +151,7 @@ fn handle_task_process(
                 )
             }
             CraftingProcessUpdate::Incomplete { delta: _ } => {
-                println!("Constructing: Incomplete");
+                // println!("Constructing: Incomplete");
                 // TODO: update textures
                 // if let Some(new_texture) = get_construction_site_texture(
                 //     1.0 - (process.units_of_work_left + delta) / work.units_of_work,

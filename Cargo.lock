@@ -2172,7 +2172,7 @@ dependencies = [
  "embed-resource",
  "noise",
  "serde",
- "sun-times",
+ "sun",
  "winit",
 ]
 
@@ -3293,13 +3293,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6637bab7722d379c8b41ba849228d680cc12d0a45ba1fa2b48f2a30577a06731"
 
 [[package]]
-name = "sun-times"
+name = "sun"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc36d654e4388a4a79eab4852fd58db0687ac457bf1a097abfa4b8cc40a785c8"
-dependencies = [
- "chrono",
-]
+checksum = "dfc29238f46800dc0e29dbc0b3cab5e745dd40560220f759e30d298740781b59"
 
 [[package]]
 name = "svg_fmt"

@@ -93,13 +93,14 @@ fn update_temperature(
             daily_temperature_for_year.year = year;
             daily_temperature_for_year.daily_temperature =
                 generate_daily_temperature_for_year(toal_days, base_temperature);
+
             let mut rng = rng_q.single_mut();
             daily_temperature_for_year.hourly_rain_intensity =
                 generate_hourly_rain_for_year(toal_days, &mut rng);
         }
 
         let day_base_temperature =
-            daily_temperature_for_year.daily_temperature[naive_date.day0() as usize];
+            daily_temperature_for_year.daily_temperature[naive_date.ordinal0() as usize];
         let daily_temperature_change_range = (-0.25, 0.5);
 
         let temperature = generate_temperature(

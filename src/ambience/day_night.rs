@@ -5,7 +5,7 @@ use bevy::prelude::{
     Update, Vec3, Vec4,
 };
 use chrono::{DateTime, Timelike, Utc};
-use sun_times::altitude;
+use sun::pos;
 
 use crate::{create_world::WorldParams, datetime::GameTime, GameState};
 
@@ -104,5 +104,7 @@ fn update_sun(
 }
 
 fn sun_altitude_at_point(date_time: DateTime<Utc>) -> f32 {
-    altitude(date_time, 51.527178, -0.109798) as f32 / 90.0
+    pos(date_time.timestamp_millis(), 51.527178, -0.109798)
+        .altitude
+        .sin() as f32
 }
