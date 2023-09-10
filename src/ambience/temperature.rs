@@ -12,7 +12,7 @@ use chrono::{Datelike, NaiveDate, Timelike};
 
 use crate::{datetime::GameTime, GameState};
 
-use super::SunAltitude;
+use super::{generate_hourly_rain_for_year::generate_hourly_rain_for_year, SunAltitude};
 
 #[derive(Component)]
 pub struct Temperature(pub f32); // -50..+50
@@ -95,8 +95,21 @@ fn update_temperature(
                 generate_daily_temperature_for_year(toal_days, base_temperature);
 
             let mut rng = rng_q.single_mut();
-            daily_temperature_for_year.hourly_rain_intensity =
-                generate_hourly_rain_for_year(toal_days, &mut rng);
+            let hourly_rain = generate_hourly_rain_for_year(toal_days, &mut rng);
+
+            daily_temperature_for_year.hourly_rain_intensity = hourly_rain
+                .iter()
+                .enumerate()
+                .map(|(i, wb)| {
+                    (
+                        DayHour {
+                            day: i as u32 / 24,
+                            hour: i as u32 % 24,
+                        },
+                        RainIntensity(wb.rain_intensity),
+                    )
+                })
+                .collect();
         }
 
         let day_base_temperature =
@@ -169,36 +182,52 @@ struct DayHour {
     hour: u32,
 }
 
-fn generate_hourly_rain_for_year(
-    days: u32,
-    rng: &mut RngComponent,
-) -> HashMap<DayHour, RainIntensity> {
-    let max_hours = 24 * 3;
-    let mut until_index = 0;
-    let mut intensity = 0.0;
+// fn generate_hourly_rain_for_year(
+//     days: u32,
+//     rng: &mut RngComponent,
+// ) -> HashMap<DayHour, RainIntensity> {
+//     let max_hours = 24 * 3;
+//     let mut until_index = 0;
+//     let mut intensity: f32 = 0.0;
 
-    (0..days * 24)
-        .map(|hour| {
-            let rain_chance = 0.2;
-            let rain_free_chance = 1.0 - rain_chance;
+//     (0..days * 24)
+//         .map(|hour| {
+//             let (new_until_index, day_hour, new_intensity) =
+//                 calc_rain_intervals(hour, max_hours, intensity, rng, until_index);
+//             until_index = new_until_index;
+//             new_intensity = intensity;
+//             (day_hour, new_intensity)
+//         })
+//         .collect()
+// }
 
-            if until_index <= hour {
-                let current_rain_random: f32 = rng.f32_normalized();
-                until_index = hour + rng.u32(0..max_hours);
-                intensity = if current_rain_random > rain_free_chance {
-                    (current_rain_random - rain_free_chance) * (1.0 / rain_chance)
-                } else {
-                    0.0
-                }
-            }
+// fn calc_rain_intervals(
+//     hour: u32,
+//     max_hours: u32,
+//     intensity: f32,
+//     rng: &mut RngComponent,
+//     until_index: u32,
+// ) -> (u32, DayHour, RainIntensity) {
+//     let rain_chance = 0.2;
+//     let rain_free_chance = 1.0 - rain_chance;
+//     let mut new_until_index = until_index;
+//     let mut local_intensity = intensity;
+//     if until_index <= hour {
+//         let current_rain_random: f32 = rng.f32_normalized();
+//         new_until_index = hour + rng.u32(0..max_hours);
+//         local_intensity = if current_rain_random > rain_free_chance {
+//             (current_rain_random - rain_free_chance) * (1.0 / rain_chance)
+//         } else {
+//             0.0
+//         }
+//     }
 
-            return (
-                DayHour {
-                    day: hour / 24,
-                    hour: hour % 24,
-                },
-                RainIntensity(intensity),
-            );
-        })
-        .collect()
-}
+//     return (
+//         new_until_index,
+//         DayHour {
+//             day: hour / 24,
+//             hour: hour % 24,
+//         },
+//         RainIntensity(local_intensity),
+//     );
+// }
