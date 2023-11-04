@@ -39,9 +39,7 @@ bevy_kira_audio = { version = "0.17" }
 bevy_asset_loader = { version = "0.17" }
 bevy_common_assets = { version = "0.7", features = ["yaml"] }
 bevy_turborand = { version = "0.6" }
-bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", branch = "main", features = [
-    "atlas",
-] }
+bevy_ecs_tilemap = { version = "0.11.1"}
 serde = "1.0"
 chrono = "0.4"
 bevy_pancam = "0.9"
@@ -49,7 +47,7 @@ sun = "0.2"
 noise = { version = "0.8.2" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.28", features = ["x11"] }
+winit = { version = "0.29", features = ["x11"] }
 
 [build-dependencies]
 embed-resource = "2.1"
