@@ -23,6 +23,7 @@ mod tasks;
 mod tilemap_utils;
 mod weather;
 mod work;
+mod countdown_heap;
 
 use crate::ambience::{DayNightPlugin, TemperaturePlugin};
 use crate::biomes::SoilFertilityLayerPlugin;
