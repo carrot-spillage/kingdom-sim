@@ -21,9 +21,9 @@ mod plants;
 mod quad_tree;
 mod tasks;
 mod tilemap_utils;
+mod timer_plugin;
 mod weather;
 mod work;
-mod countdown_heap;
 
 use crate::ambience::{DayNightPlugin, TemperaturePlugin};
 use crate::biomes::SoilFertilityLayerPlugin;
@@ -127,7 +127,8 @@ impl Plugin for GamePlugin {
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
             .add_plugins(TilemapPlugin)
-            .add_plugins(OccupyTilesPlugin);
+            .add_plugins(OccupyTilesPlugin)
+            .add_plugins(TimerPlugin);
         // .add_systems(Startup, startup)
         // .add_systems(helpers::camera::movement);
         // #[cfg(debug_assertions)]
