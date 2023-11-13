@@ -34,6 +34,7 @@ use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
+use crate::timer_plugin::TimerPlugin;
 use crate::work::CraftingProcessPlugin;
 // use crate::menu::MenuPlugin;
 

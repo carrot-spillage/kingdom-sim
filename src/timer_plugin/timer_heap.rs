@@ -23,10 +23,15 @@ impl<T: Clone> Ord for TimerHeapItem<T> {
     }
 }
 
-#[derive(Default)]
 pub(crate) struct TimerHeap<T: Clone> {
     tick: u32,
     heap: BinaryHeap<TimerHeapItem<T>>,
+}
+
+impl<T: Clone + Default> Default for TimerHeap<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T: Clone> TimerHeap<T> {
@@ -37,12 +42,12 @@ impl<T: Clone> TimerHeap<T> {
         }
     }
 
-    fn push(&mut self, data: T, duration: u32) {
+    pub fn push(&mut self, data: T, duration: u32) {
         self.heap.push(TimerHeapItem(data, self.tick + duration));
     }
 
     // peeks and pops every item whose index equals to the given one
-    fn try_produce(&mut self) -> Vec<T> {
+    pub fn try_produce(&mut self) -> Vec<T> {
         self.tick += 1;
         let mut elapsed: Vec<T> = Vec::new();
         while let Some(TimerHeapItem(data, final_tick)) = self.heap.peek().cloned() {

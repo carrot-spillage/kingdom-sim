@@ -1,9 +1,12 @@
 mod timer_heap;
 
+use std::default;
+
 use timer_heap::TimerHeap;
 
 use bevy::prelude::{
-    Added, App, Component, Entity, Event, EventWriter, FromWorld, Local, Plugin, Query, ResMut,
+    default, Added, App, Component, Entity, Event, EventWriter, FromWorld, Local, Plugin, Query,
+    ResMut,
 };
 use bevy_turborand::{DelegatedRng, GlobalRng};
 
@@ -13,6 +16,12 @@ enum TimerType {
     OnceRandom(u32, u32),
     RepeatedExact(u32),
     RepeatedRandom(u32, u32),
+}
+
+impl Default for TimerType {
+    fn default() -> Self {
+        Self::OnceExact(0)
+    }
 }
 
 impl TimerType {
@@ -35,9 +44,6 @@ struct ProducedEvent<T> {
     _t: std::marker::PhantomData<T>,
 }
 
-#[derive(Default)]
-struct ProducerDescriptor(Entity, TimerType);
-
 pub struct TimerPlugin<T: Clone + std::marker::Sync + std::marker::Send + 'static> {
     heap: TimerHeap<(T, TimerType)>,
     _t: std::marker::PhantomData<T>,
@@ -52,21 +58,24 @@ impl<T: Clone + std::marker::Sync + std::marker::Send + 'static> Plugin for Time
 fn track_producer<
     T: Default + FromWorld + Clone + std::marker::Sync + std::marker::Send + 'static,
 >(
-    mut timer_heap: Local<TimerHeap<(T, TimerType)>>,
+    mut timer_heap: Local<TimerHeap<(Option<Entity>, TimerType)>>,
     mut elapsed_writer: EventWriter<ProducedEvent<T>>,
     mut query: Query<(Entity, &Timer<T>), Added<Timer<T>>>,
     mut global_rng: ResMut<GlobalRng>,
 ) {
-    let mut elapsed: Vec<Entity> = Vec::new();
     for (entity, timer) in query.iter_mut() {
-        timer_heap.push(entity, timer.0.get_duration(&mut global_rng), timer);
+        timer_heap.push(
+            (Some(entity), timer.0),
+            timer.0.get_duration(&mut global_rng),
+        );
     }
 
-    elapsed.append(&mut timer_heap.try_produce());
+    let expired_items = timer_heap.try_produce();
 
-    for elapsed_entity in elapsed.iter() {
+    for elapsed_item in expired_items.iter() {
+        let entity = elapsed_item.0.unwrap();
         elapsed_writer.send(ProducedEvent {
-            entity: *elapsed_entity,
+            entity,
             _t: std::marker::PhantomData,
         });
     }
