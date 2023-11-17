@@ -32,6 +32,7 @@ use crate::datetime::GameTimePlugin;
 use crate::environment_hud::EnvironmentHudPlugin;
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
+use crate::plants::bundle::Growing;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
 use crate::timer_plugin::TimerPlugin;
@@ -114,6 +115,7 @@ impl Plugin for GamePlugin {
             // .add_plugins(MenuPlugin)
             .add_plugins(TaskPlugin)
             .add_plugins(MovementPlugin)
+            .add_plugins(TimerPlugin::<Growing>::new()) // Maybe it doesn't have to come before plugins that use it
             .add_plugins(PlantsPlugin)
             .add_plugins(HarvestingPlugin)
             .add_plugins(ConstructionPlugin)
@@ -128,8 +130,7 @@ impl Plugin for GamePlugin {
             // stuff added for tilemap
             //.set(ImagePlugin::default_nearest())
             .add_plugins(TilemapPlugin)
-            .add_plugins(OccupyTilesPlugin)
-            .add_plugins(TimerPlugin);
+            .add_plugins(OccupyTilesPlugin);
         // .add_systems(Startup, startup)
         // .add_systems(helpers::camera::movement);
         // #[cfg(debug_assertions)]

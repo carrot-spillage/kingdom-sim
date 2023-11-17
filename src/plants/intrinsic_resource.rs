@@ -1,9 +1,15 @@
 use std::ops::Range;
 
-use bevy::prelude::{Component, Query};
+use bevy::{
+    ecs::{entity::Entity, event::EventReader, query::Added, system::Commands},
+    prelude::{Component, Query},
+};
 use bevy_turborand::prelude::*;
 
-use crate::items::{ItemBatch, ItemPrefabId};
+use crate::{
+    items::{ItemBatch, ItemPrefabId},
+    timer_plugin::{ElapsedEvent, TimedComponent},
+};
 
 use super::bundle::Growing;
 
@@ -38,8 +44,19 @@ impl IntrinsicPlantResourceGrower {
     }
 }
 
-pub fn grow_resource(mut growers: Query<(&Growing, &mut IntrinsicPlantResourceGrower)>) {
-    for (growing, mut grower) in &mut growers {
-        grower.update(growing.maturity);
+pub fn grow_elapsed(
+    mut commands: Commands,
+    mut elapsed_growers: EventReader<ElapsedEvent<Growing>>,
+    mut growers: Query<(&TimedComponent<Growing>, &mut IntrinsicPlantResourceGrower)>,
+) {
+    for elapsed in &mut elapsed_growers {
+        let (growing, mut grower) = growers.get_mut(elapsed.entity).unwrap();
+        grower.update(growing.get_data().maturity);
+        if growing.get_data().maturity >= 1.0 {
+            grower.max_out();
+            commands
+                .entity(elapsed.entity)
+                .remove::<TimedComponent<Growing>>();
+        }
     }
 }

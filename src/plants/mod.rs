@@ -23,7 +23,7 @@ use crate::{
 use self::{
     bundle::{Germinator, GerminatorParams, Growing, PlantPrefab, PlantPrefabId},
     destruction::break_into_resources,
-    intrinsic_resource::grow_resource,
+    intrinsic_resource::grow_elapsed,
     resource_producer::produce_resources,
 };
 
@@ -161,7 +161,7 @@ impl Plugin for PlantsPlugin {
             (
                 grow,
                 germinate,
-                grow_resource,
+                grow_elapsed,
                 produce_resources,
                 break_into_resources,
             )
