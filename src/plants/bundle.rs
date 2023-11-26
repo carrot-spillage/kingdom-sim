@@ -171,7 +171,7 @@ impl<T> PlantPrefab<T> {
                         maturity: 0.0,
                         rate: self.growth_rate,
                     },
-                    period: 4,
+                    period: 1,
                 }),
                 PlantMaturityStage::FullyGrown => None,
             },

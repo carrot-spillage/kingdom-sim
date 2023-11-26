@@ -1,40 +1,40 @@
 use std::collections::BinaryHeap;
 
 #[derive(Debug, Clone, Copy)]
-struct TimerHeapItem<T: Clone>(T, u32);
+struct TimedQueItem<T: Clone>(T, u32);
 
-impl<T: Clone> PartialEq for TimerHeapItem<T> {
+impl<T: Clone> PartialEq for TimedQueItem<T> {
     fn eq(&self, other: &Self) -> bool {
         self.1 == other.1
     }
 }
 
-impl<T: Clone> PartialOrd for TimerHeapItem<T> {
+impl<T: Clone> PartialOrd for TimedQueItem<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<T: Clone> Eq for TimerHeapItem<T> {}
+impl<T: Clone> Eq for TimedQueItem<T> {}
 
-impl<T: Clone> Ord for TimerHeapItem<T> {
+impl<T: Clone> Ord for TimedQueItem<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.1.cmp(&other.1).reverse()
     }
 }
 
-pub(crate) struct TimerHeap<T: Clone> {
+pub(crate) struct TimedQue<T: Clone> {
     tick: u32,
-    heap: BinaryHeap<TimerHeapItem<T>>,
+    heap: BinaryHeap<TimedQueItem<T>>,
 }
 
-impl<T: Clone + Default> Default for TimerHeap<T> {
+impl<T: Clone + Eq + Ord + Default> Default for TimedQue<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Clone> TimerHeap<T> {
+impl<T: Clone + Eq + Ord> TimedQue<T> {
     pub fn new() -> Self {
         Self {
             tick: 0,
@@ -43,14 +43,14 @@ impl<T: Clone> TimerHeap<T> {
     }
 
     pub fn push(&mut self, data: T, duration: u32) {
-        self.heap.push(TimerHeapItem(data, self.tick + duration));
+        self.heap.push(TimedQueItem(data, self.tick + duration));
     }
 
-    // peeks and pops every item whose index equals to the given one
-    pub fn try_produce(&mut self) -> Vec<T> {
+    // peeks and pops every item whose final_tick value equals to the current tick
+    pub fn pop_elapsed(&mut self) -> Vec<T> {
         self.tick += 1;
         let mut elapsed: Vec<T> = Vec::new();
-        while let Some(TimerHeapItem(data, final_tick)) = self.heap.peek().cloned() {
+        while let Some(TimedQueItem(data, final_tick)) = self.heap.peek().cloned() {
             if final_tick == self.tick {
                 self.heap.pop();
                 elapsed.push(data);
@@ -59,5 +59,9 @@ impl<T: Clone> TimerHeap<T> {
             }
         }
         elapsed
+    }
+
+    pub fn remove(&mut self, data: T) {
+        println!("implement remove")
     }
 }

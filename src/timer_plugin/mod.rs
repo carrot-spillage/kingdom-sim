@@ -3,13 +3,11 @@ mod timer_heap;
 use bevy::{
     app::Update,
     ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
-    prelude::{
-        Added, App, Component, Entity, Event, EventWriter, FromWorld, Local, Plugin, Query, ResMut,
-    },
+    prelude::{Added, App, Component, Entity, Event, EventWriter, Local, Plugin, Query, ResMut},
 };
 use bevy_turborand::{DelegatedRng, GlobalRng};
 use std::ops::Range;
-use timer_heap::TimerHeap;
+use timer_heap::TimedQue;
 
 use crate::GameState;
 
@@ -69,7 +67,7 @@ impl<T: Clone + std::marker::Sync + std::marker::Send + 'static> Plugin for Time
 }
 
 fn track_timers<T: Clone + std::marker::Sync + std::marker::Send + 'static>(
-    mut timer_heap: Local<TimerHeap<Option<Entity>>>,
+    mut timer_heap: Local<TimedQue<Option<Entity>>>,
     mut elapsed_writer: EventWriter<ElapsedEvent<T>>,
     mut query: Query<(Entity, &TimedComponent<T>), Added<TimedComponent<T>>>,
     mut global_rng: ResMut<GlobalRng>,
@@ -78,9 +76,9 @@ fn track_timers<T: Clone + std::marker::Sync + std::marker::Send + 'static>(
         timer_heap.push(Some(entity), timed_component.get_duration(&mut global_rng));
     }
 
-    let expired_items = timer_heap.try_produce();
+    let elapsed_items = timer_heap.pop_elapsed();
 
-    for elapsed_item in expired_items.iter() {
+    for elapsed_item in elapsed_items.iter() {
         let entity = elapsed_item.unwrap();
         elapsed_writer.send(ElapsedEvent {
             entity,
