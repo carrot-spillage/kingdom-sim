@@ -1,7 +1,7 @@
 use crate::{
     common::{SimpleDestructible, VariableCountdown},
     items::ItemPrefabId,
-    timer_plugin::TimedComponent,
+    timer_plugin::{Timed, TimerSettings},
 };
 use bevy::prelude::{Bundle, Component, Handle, Image, ResMut, Vec2};
 use bevy_turborand::prelude::*;
@@ -69,6 +69,13 @@ impl Germinator {
 pub struct Growing {
     pub rate: f32,
     pub maturity: f32,
+    pub timer_settings: TimerSettings,
+}
+
+impl Timed for Growing {
+    fn get_timer_settings(&self) -> TimerSettings {
+        self.timer_settings
+    }
 }
 
 #[derive(Bundle, Clone, Debug)]
@@ -136,7 +143,7 @@ impl<T> PlantPrefab<T> {
         PlantBundle,
         Option<IntrinsicPlantResourceGrower>,
         Option<PlantResourceProducer>,
-        Option<TimedComponent<Growing>>,
+        Option<Growing>,
         Option<Germinator>,
     ) {
         let mut rng = RngComponent::from(global_rng);
@@ -166,12 +173,10 @@ impl<T> PlantPrefab<T> {
                 )
             }),
             match maturity_state {
-                PlantMaturityStage::Germ => Some(TimedComponent::RepeatedExact {
-                    data: Growing {
-                        maturity: 0.0,
-                        rate: self.growth_rate,
-                    },
-                    period: 1,
+                PlantMaturityStage::Germ => Some(Growing {
+                    maturity: 0.0,
+                    rate: self.growth_rate,
+                    timer_settings: TimerSettings::RepeatedExact(1),
                 }),
                 PlantMaturityStage::FullyGrown => None,
             },

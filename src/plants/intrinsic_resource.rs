@@ -1,14 +1,14 @@
 use std::ops::Range;
 
 use bevy::{
-    ecs::{entity::Entity, event::EventReader, query::Added, system::Commands},
+    ecs::{event::EventReader, system::Commands},
     prelude::{Component, Query},
 };
 use bevy_turborand::prelude::*;
 
 use crate::{
     items::{ItemBatch, ItemPrefabId},
-    timer_plugin::{ElapsedEvent, TimedComponent},
+    timer_plugin::ElapsedEvent,
 };
 
 use super::bundle::Growing;
@@ -47,19 +47,14 @@ impl IntrinsicPlantResourceGrower {
 pub fn grow_elapsed(
     mut commands: Commands,
     mut elapsed_growers: EventReader<ElapsedEvent<Growing>>,
-    mut growers: Query<(
-        &mut TimedComponent<Growing>,
-        &mut IntrinsicPlantResourceGrower,
-    )>,
+    mut growers: Query<(&mut Growing, &mut IntrinsicPlantResourceGrower)>,
 ) {
     for elapsed in &mut elapsed_growers {
         if let Ok((growing, mut grower)) = growers.get_mut(elapsed.entity) {
-            grower.update(growing.get_data().maturity);
-            if growing.get_data().maturity >= 1.0 {
+            grower.update(growing.maturity);
+            if growing.maturity >= 1.0 {
                 grower.max_out();
-                commands
-                    .entity(elapsed.entity)
-                    .remove::<TimedComponent<Growing>>();
+                commands.entity(elapsed.entity).remove::<Growing>();
             }
         } else {
             println!("grow_elapsed: entity not found")

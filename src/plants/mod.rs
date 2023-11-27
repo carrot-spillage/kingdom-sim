@@ -11,7 +11,6 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_turborand::{GlobalRng, RngComponent};
-use timer_plugin::TimedComponent;
 
 use crate::{
     create_world::{AreaOccupiedEvent, WorldParams},
@@ -106,21 +105,15 @@ pub fn spawn_plant(
 
 pub fn grow(
     mut commands: Commands,
-    mut growing_query: Query<(
-        Entity,
-        &mut TimedComponent<Growing>,
-        &mut Transform,
-        &GerminatorParams,
-    )>,
+    mut growing_query: Query<(Entity, &mut Growing, &mut Transform, &GerminatorParams)>,
 ) {
-    for (tree_id, mut _growing, mut transform, germinator_params) in &mut growing_query {
-        let growing = _growing.get_data();
+    for (tree_id, mut growing, mut transform, germinator_params) in &mut growing_query {
         growing.maturity = (growing.maturity + growing.rate).min(1.0);
         transform.scale = Vec3::new(growing.maturity, growing.maturity, 1.0);
         if growing.maturity == 1.0 {
             commands
                 .entity(tree_id)
-                .remove::<TimedComponent<Growing>>()
+                .remove::<Growing>()
                 .insert(Germinator::new(germinator_params.clone()));
         }
     }

@@ -2,41 +2,38 @@ mod timer_heap;
 
 use bevy::{
     app::Update,
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
-    prelude::{Added, App, Component, Entity, Event, EventWriter, Local, Plugin, Query, ResMut},
+    ecs::{
+        component::Component,
+        schedule::{common_conditions::in_state, IntoSystemConfigs},
+    },
+    prelude::{Added, App, Entity, Event, EventWriter, Local, Plugin, Query, ResMut},
 };
 use bevy_turborand::{DelegatedRng, GlobalRng};
-use std::ops::Range;
 use timer_heap::TimedQue;
 
 use crate::GameState;
 
-#[derive(Component, Debug, Clone)]
-pub enum TimedComponent<T> {
-    OnceExact { data: T, period: u32 },
-    OnceRandom { data: T, period_range: Range<u32> },
-    RepeatedExact { data: T, period: u32 },
-    RepeatedRandom { data: T, period_range: Range<u32> },
+#[derive(Clone, Copy, Debug)]
+pub enum TimerSettings {
+    OnceExact(u32),
+    OnceRandom(u32, u32),
+    RepeatedExact(u32),
+    RepeatedRandom(u32, u32),
 }
 
-impl<T> TimedComponent<T> {
+impl TimerSettings {
     fn get_duration(&self, rng: &mut GlobalRng) -> u32 {
         match self {
-            TimedComponent::OnceExact { period, .. } => *period,
-            TimedComponent::OnceRandom { period_range, .. } => rng.u32(period_range.clone()),
-            TimedComponent::RepeatedExact { period, .. } => *period,
-            TimedComponent::RepeatedRandom { period_range, .. } => rng.u32(period_range.clone()),
+            TimerSettings::OnceExact(period) => *period,
+            TimerSettings::OnceRandom(min, max) => rng.u32(min..max),
+            TimerSettings::RepeatedExact(period) => *period,
+            TimerSettings::RepeatedRandom(min, max) => rng.u32(min..max),
         }
     }
+}
 
-    pub fn get_data(&self) -> &T {
-        match self {
-            TimedComponent::OnceExact { data, .. } => data,
-            TimedComponent::OnceRandom { data, .. } => data,
-            TimedComponent::RepeatedExact { data, .. } => data,
-            TimedComponent::RepeatedRandom { data, .. } => data,
-        }
-    }
+pub trait Timed {
+    fn get_timer_settings(&self) -> TimerSettings;
 }
 
 #[derive(Event)]
@@ -57,7 +54,7 @@ impl<T: Clone + std::marker::Sync + std::marker::Send + 'static> TimerPlugin<T> 
     }
 }
 
-impl<T: Clone + std::marker::Sync + std::marker::Send + 'static> Plugin for TimerPlugin<T> {
+impl<T: Component + Timed + Clone> Plugin for TimerPlugin<T> {
     fn build(&self, app: &mut App) {
         app.add_event::<ElapsedEvent<T>>().add_systems(
             Update,
@@ -66,17 +63,22 @@ impl<T: Clone + std::marker::Sync + std::marker::Send + 'static> Plugin for Time
     }
 }
 
-fn track_timers<T: Clone + std::marker::Sync + std::marker::Send + 'static>(
-    mut timer_heap: Local<TimedQue<Option<Entity>>>,
+fn track_timers<T: Component + Timed + Clone>(
+    mut timed_que: Local<TimedQue<Option<Entity>>>,
     mut elapsed_writer: EventWriter<ElapsedEvent<T>>,
-    mut query: Query<(Entity, &TimedComponent<T>), Added<TimedComponent<T>>>,
+    mut query: Query<(Entity, &T), Added<T>>,
     mut global_rng: ResMut<GlobalRng>,
 ) {
     for (entity, timed_component) in query.iter_mut() {
-        timer_heap.push(Some(entity), timed_component.get_duration(&mut global_rng));
+        timed_que.push(
+            Some(entity),
+            timed_component
+                .get_timer_settings()
+                .get_duration(&mut global_rng),
+        );
     }
 
-    let elapsed_items = timer_heap.pop_elapsed();
+    let elapsed_items = timed_que.pop_elapsed();
 
     for elapsed_item in elapsed_items.iter() {
         let entity = elapsed_item.unwrap();
