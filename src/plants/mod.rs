@@ -17,7 +17,7 @@ use crate::{
     movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
     quad_tree::QuadTree,
-    timer_plugin, GameState,
+    GameState,
 };
 
 use self::{
@@ -46,14 +46,15 @@ pub fn spawn_plant(
 ) -> Entity {
     let (plant_bundle, maybe_resource_grower, maybe_producer, maybe_growing, maybe_germinator) =
         prefab.to_plant_components(maturity_state, global_rng);
-    let maybe_maturity_based_producer = maybe_producer.map(|producer| match maturity_state {
-        PlantMaturityStage::Germ => producer,
-        PlantMaturityStage::FullyGrown => {
-            let mut maxed_producer = producer.clone();
-            maxed_producer.max_out();
-            maxed_producer
-        }
-    });
+    let maybe_maturity_based_producer =
+        maybe_producer.map(|producer: PlantResourceProducer| match maturity_state {
+            PlantMaturityStage::Germ => producer,
+            PlantMaturityStage::FullyGrown => {
+                let mut maxed_producer = producer.clone();
+                maxed_producer.current.quantity = maxed_producer.max_quantity;
+                maxed_producer
+            }
+        });
     let maybe_maturity_based_grower = maybe_resource_grower.map(|grower| match maturity_state {
         PlantMaturityStage::Germ => grower,
         PlantMaturityStage::FullyGrown => {

@@ -176,7 +176,7 @@ impl<T> PlantPrefab<T> {
                 PlantMaturityStage::Germ => Some(Growing {
                     maturity: 0.0,
                     rate: self.growth_rate,
-                    timer_settings: TimerSettings::RepeatedExact(1),
+                    timer_settings: TimerSettings::RepeatedExact(20),
                 }),
                 PlantMaturityStage::FullyGrown => None,
             },

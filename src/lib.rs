@@ -33,6 +33,7 @@ use crate::environment_hud::EnvironmentHudPlugin;
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
 use crate::plants::bundle::Growing;
+use crate::plants::PlantResourceProducer;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
 use crate::timer_plugin::TimerPlugin;
@@ -75,12 +76,10 @@ enum GameState {
 
 pub struct GamePlugin;
 
-pub struct Dummy;
-
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let tile_side = 16;
-        let map_size_factor: u32 = 7; // 2^5 tiles = 512
+        let map_size_factor: u32 = 10; // 2^5 tiles = 512
         let side = (2_u32.pow(map_size_factor) * tile_side) as f32;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
@@ -116,6 +115,7 @@ impl Plugin for GamePlugin {
             .add_plugins(TaskPlugin)
             .add_plugins(MovementPlugin)
             .add_plugins(TimerPlugin::<Growing>::new()) // Maybe it doesn't have to come before plugins that use it
+            .add_plugins(TimerPlugin::<PlantResourceProducer>::new()) // Maybe it doesn't have to come before plugins that use it
             .add_plugins(PlantsPlugin)
             .add_plugins(HarvestingPlugin)
             .add_plugins(ConstructionPlugin)
