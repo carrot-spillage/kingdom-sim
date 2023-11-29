@@ -1,6 +1,9 @@
-use bevy::prelude::{
-    in_state, App, Color, Commands, Component, IntoSystemConfigs, OnEnter, Plugin, Query, Res,
-    ResMut, Update,
+use bevy::{
+    ecs::query::Changed,
+    prelude::{
+        in_state, App, Color, Commands, Component, IntoSystemConfigs, OnEnter, Plugin, Query, Res,
+        ResMut, Update,
+    },
 };
 use bevy_ecs_tilemap::{
     prelude::{TilemapId, TilemapTexture},
@@ -77,7 +80,7 @@ fn create_tilemap(
     commands.entity(tilemap_entity).insert(tilemap_bundle);
 }
 
-fn update_tiles(mut tiles: Query<(&SoilFertility, &mut TileColor)>) {
+fn update_tiles(mut tiles: Query<(&SoilFertility, &mut TileColor), Changed<SoilFertility>>) {
     for (fertility, mut tile_color) in &mut tiles {
         tile_color.0.set_a(fertility.0);
     }

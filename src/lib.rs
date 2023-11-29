@@ -52,7 +52,7 @@ use tasks::TaskPlugin;
 // #[cfg(debug_assertions)]
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use create_world::{InitPlugin, WorldParams};
+use create_world::{CreateWorldPlugin, WorldParams};
 
 use creature::CarrierPlugin;
 use cutting_tree::TreeCuttingPlugin;
@@ -122,7 +122,7 @@ impl Plugin for GamePlugin {
             .add_plugins(TreeCuttingPlugin)
             .add_plugins(PlantingPlugin)
             .add_plugins(SoilFertilityLayerPlugin { z_offset: 3.0 })
-            .add_plugins(InitPlugin)
+            .add_plugins(CreateWorldPlugin)
             .add_plugins(DayNightPlugin)
             .add_plugins(TemperaturePlugin)
             .add_plugins(PostProcessPlugin)
@@ -131,8 +131,7 @@ impl Plugin for GamePlugin {
             //.set(ImagePlugin::default_nearest())
             .add_plugins(TilemapPlugin)
             .add_plugins(OccupyTilesPlugin);
-        // .add_systems(Startup, startup)
-        // .add_systems(helpers::camera::movement);
+
         // #[cfg(debug_assertions)]
         // {
         //     app.add_plugins(FrameTimeDiagnosticsPlugin::default())

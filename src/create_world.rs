@@ -35,9 +35,9 @@ use crate::{
     GameState,
 };
 
-pub struct InitPlugin;
+pub struct CreateWorldPlugin;
 
-impl Plugin for InitPlugin {
+impl Plugin for CreateWorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::CreatingWorld), create_world)
             .add_systems(OnEnter(GameState::Playing), run_dummy_commands);
@@ -132,7 +132,7 @@ fn create_world(
         }
     }
 
-    println!("Creating trees {:?}", world_params.side);
+    println!("Creating trees {:?}", world_params.side as usize / 2);
     for _ in 0..world_params.side as usize / 2 {
         let prefab = plants.0.get(&PlantPrefabId(1)).unwrap();
         let tree_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 2.0);
@@ -153,6 +153,7 @@ fn create_world(
         });
     }
 
+    println!("Trees created");
     for _ in 0..5 {
         let bush_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 3.0);
         let prefab = plants.0.get(&PlantPrefabId(2)).unwrap();
