@@ -81,6 +81,7 @@ fn create_tilemap(
 }
 
 fn update_tiles(mut tiles: Query<(&SoilFertility, &mut TileColor), Changed<SoilFertility>>) {
+    // TODO: querying this has a perf impact
     for (fertility, mut tile_color) in &mut tiles {
         tile_color.0.set_a(fertility.0);
     }
