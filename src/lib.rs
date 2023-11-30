@@ -32,7 +32,7 @@ use crate::datetime::GameTimePlugin;
 use crate::environment_hud::EnvironmentHudPlugin;
 use crate::loading::{BuildingPrefabVec, LoadingPlugin};
 use crate::occupy_tiles_plugin::OccupyTilesPlugin;
-use crate::plants::bundle::Growing;
+use crate::plants::bundle::{Germinator, Growing};
 use crate::plants::PlantResourceProducer;
 use crate::post_processing::PostProcessPlugin;
 use crate::quad_tree::QuadTree;
@@ -116,6 +116,7 @@ impl Plugin for GamePlugin {
             .add_plugins(MovementPlugin)
             .add_plugins(TimerPlugin::<Growing>::new()) // Maybe it doesn't have to come before plugins that use it
             .add_plugins(TimerPlugin::<PlantResourceProducer>::new()) // Maybe it doesn't have to come before plugins that use it
+            .add_plugins(TimerPlugin::<Germinator>::new()) // Maybe it doesn't have to come before plugins that use it
             .add_plugins(PlantsPlugin)
             .add_plugins(HarvestingPlugin)
             .add_plugins(ConstructionPlugin)

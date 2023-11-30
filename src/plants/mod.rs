@@ -3,20 +3,25 @@ mod destruction;
 mod intrinsic_resource;
 mod resource_producer;
 
+use std::f32::consts::PI;
+
 use bevy::{
+    ecs::event::EventReader,
+    math::Vec2,
     prelude::{
         in_state, App, Commands, Entity, EventWriter, Handle, Image, IntoSystemConfigs, Plugin,
         Query, Rect, Res, ResMut, Transform, Update, Vec3,
     },
     sprite::{Sprite, SpriteBundle},
 };
-use bevy_turborand::{GlobalRng, RngComponent};
+use bevy_turborand::{DelegatedRng, GlobalRng, RngComponent};
 
 use crate::{
     create_world::{AreaOccupiedEvent, WorldParams},
     movement::{isometrify_position, Position},
     planting::logic::PlantPrefabMap,
     quad_tree::QuadTree,
+    timer_plugin::ElapsedEvent,
     GameState,
 };
 
@@ -125,32 +130,39 @@ pub fn germinate(
     mut global_rng: ResMut<GlobalRng>,
     plant_prefab_map: Res<PlantPrefabMap>,
     world_params: Res<WorldParams>,
+    mut elapsed_germinators: EventReader<ElapsedEvent<Germinator>>,
     mut germinator_params_query: Query<(
         &PlantPrefabId,
         &Position,
-        &mut Germinator,
+        &GerminatorParams,
         &mut RngComponent,
     )>,
     mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
 ) {
-    for (plant_prefab_id, position, mut germinator, mut rng) in &mut germinator_params_query {
-        if let Some(germ_offset) = germinator.try_produce(&mut rng) {
-            let germ_position = position.0 + germ_offset.extend(0.0);
-            let prefab = plant_prefab_map.0.get(plant_prefab_id).unwrap();
-            let germ_rect = Rect::from_center_size(germ_position.truncate(), prefab.collision_box);
-            quad_tree.try_occupy_rect(germ_rect, || {
-                area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
-                return spawn_plant(
-                    &mut commands,
-                    &mut global_rng,
-                    &world_params,
-                    prefab,
-                    germ_rect.center().extend(germ_position.z),
-                    &PlantMaturityStage::Germ,
-                );
-            });
-        }
+    for germinator_event in &mut elapsed_germinators {
+        let (plant_prefab_id, position, germinator_params, mut rng) = germinator_params_query
+            .get_mut(germinator_event.entity)
+            .unwrap();
+        let rand_offset_x = rng.f32_normalized() * germinator_params.radius as f32;
+        let rand_offset_y = (rng.f32_normalized() * PI).sin() * germinator_params.radius as f32;
+
+        let germ_offset = Vec2::new(rand_offset_x as f32, rand_offset_y as f32);
+
+        let germ_position = position.0 + germ_offset.extend(0.0);
+        let prefab = plant_prefab_map.0.get(plant_prefab_id).unwrap();
+        let germ_rect = Rect::from_center_size(germ_position.truncate(), prefab.collision_box);
+        quad_tree.try_occupy_rect(germ_rect, || {
+            area_occupied_events.send(AreaOccupiedEvent { area: germ_rect });
+            return spawn_plant(
+                &mut commands,
+                &mut global_rng,
+                &world_params,
+                prefab,
+                germ_rect.center().extend(germ_position.z),
+                &PlantMaturityStage::Germ,
+            );
+        });
     }
 }
 

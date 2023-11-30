@@ -1,11 +1,10 @@
 use crate::{
-    common::{SimpleDestructible, VariableCountdown},
+    common::SimpleDestructible,
     items::ItemPrefabId,
     timer_plugin::{Timed, TimerSettings},
 };
 use bevy::prelude::{Bundle, Component, Handle, Image, ResMut, Vec2};
 use bevy_turborand::prelude::*;
-use std::f32::consts::PI;
 
 use super::{
     intrinsic_resource::IntrinsicPlantResourceGrower, resource_producer::PlantResourceProducer,
@@ -37,27 +36,23 @@ pub struct GerminatorParams {
 
 #[derive(Component, Clone, Debug)]
 pub struct Germinator {
-    countdown: VariableCountdown,
-    params: GerminatorParams,
+    pub timer_settings: TimerSettings,
+}
+
+impl Timed for Germinator {
+    fn get_timer_settings(&self) -> TimerSettings {
+        self.timer_settings
+    }
 }
 
 impl Germinator {
     pub fn new(params: GerminatorParams) -> Self {
         Germinator {
-            countdown: VariableCountdown::new(params.period_range.from..params.period_range.to),
-            params,
+            timer_settings: TimerSettings::RepeatedRandom(
+                params.period_range.from,
+                params.period_range.to,
+            ),
         }
-    }
-
-    pub fn try_produce(&mut self, rng: &mut RngComponent) -> Option<Vec2> {
-        if self.countdown.tick_yield(rng) {
-            let rand_offset_x = rng.f32_normalized() * self.params.radius as f32;
-            let rand_offset_y = (rng.f32_normalized() * PI).sin() * self.params.radius as f32;
-
-            return Some(Vec2::new(rand_offset_x as f32, rand_offset_y as f32));
-        }
-
-        None
     }
 }
 
