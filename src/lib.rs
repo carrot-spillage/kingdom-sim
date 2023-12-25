@@ -79,7 +79,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let tile_side = 16;
-        let map_size_factor: u32 = 11; // 2^5 tiles = 512
+        let map_size_factor: u32 = 10; // 2^5 tiles = 512
         let side = (2_u32.pow(map_size_factor) * tile_side) as f32;
         let size = Vec2::new(side, side);
         let world_params = WorldParams {
