@@ -25,7 +25,7 @@ jobs:
           version: "latest"
       - name: Add wasm target
         run: |
-          rustup target add wasm32-unknown-unknown
+          rustup target add wasm32-unknown-unknown --features atlas
       - name: Build Release
         run: |
           trunk build --release --public-url "${GITHUB_REPOSITORY#*/}"
