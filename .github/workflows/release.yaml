@@ -25,10 +25,10 @@ jobs:
           version: "latest"
       - name: Add wasm target
         run: |
-          rustup target add wasm32-unknown-unknown --features atlas
+          rustup target add wasm32-unknown-unknown
       - name: Build Release
         run: |
-          trunk build --release --public-url "${GITHUB_REPOSITORY#*/}"
+          trunk build --release --public-url "${GITHUB_REPOSITORY#*/}" --features atlas
       - name: optimize Wasm
         uses: NiklasEi/wasm-opt-action@v2
         with:
