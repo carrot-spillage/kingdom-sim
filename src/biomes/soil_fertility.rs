@@ -1,10 +1,14 @@
 use bevy::{
+    asset::{Assets, Handle},
     ecs::query::Changed,
+    math::{UVec2, Vec2},
     prelude::{
         in_state, App, Color, Commands, Component, IntoSystemConfigs, OnEnter, Plugin, Query, Res,
         ResMut, Update,
     },
+    render::texture::Image,
 };
+
 use bevy_ecs_tilemap::{
     prelude::{TilemapId, TilemapTexture},
     tiles::{TileBundle, TileColor, TilePos},
@@ -49,40 +53,63 @@ fn create_tilemap(
     textures: Res<TextureAssets>,
     mut global_rng: ResMut<GlobalRng>,
     z_offset: Res<TilemapZOffset>,
+    assets: ResMut<Assets<Image>>,
+) {
+    let tile_side = world_params.tile_side * 1.0;
+
+    let image = setup_image(assets, tile_side as u32);
+    generate_overlay(
+        BASE_COLOR,
+        world_params,
+        &mut commands,
+        &mut global_rng,
+        z_offset,
+        image,
+        tile_side,
+    );
+}
+
+fn generate_overlay(
+    overlay_color: Color,
+    world_params: Res<WorldParams>,
+    commands: &mut Commands<'_, '_>,
+    global_rng: &mut ResMut<GlobalRng>,
+    z_offset: Res<TilemapZOffset>,
+    tile_texture: Handle<Image>,
+    tile_side: f32,
 ) {
     let mut tilemap_bundle = new_tilemap_bundle(
-        world_params,
+        world_params.half_max_isometric_z,
         z_offset,
-        TilemapTexture::Single(textures.blank_tile.clone()),
+        TilemapTexture::Single(tile_texture),
+        tile_side,
+        world_params.size,
     );
     let tile_storage = &mut tilemap_bundle.storage;
-    let map_size = tilemap_bundle.size;
+
     let tilemap_entity = commands.spawn(SoilFertilityTilemap).id();
 
-    let fetility_cell_size_in_tiles: u32 = 32;
+    let overlay_map_size = tilemap_bundle.size;
+
     let fertility_map = generate_fertility(
         global_rng.u32(0..=u32::MAX),
-        map_size.x / fetility_cell_size_in_tiles,
-        map_size.y / fetility_cell_size_in_tiles,
+        overlay_map_size.x,
+        overlay_map_size.y,
     );
-    for x in 0..map_size.x {
-        for y in 0..map_size.y {
+
+    let tile_color = TileColor(overlay_color);
+    for x in 0..overlay_map_size.x {
+        for y in 0..overlay_map_size.y {
             let tile_pos = TilePos { x, y };
             let tile_entity = commands
                 .spawn((
                     TileBundle {
                         position: tile_pos,
                         tilemap_id: TilemapId(tilemap_entity),
-                        color: TileColor(BASE_COLOR),
+                        color: tile_color,
                         ..Default::default()
                     },
-                    SoilFertility(
-                        fertility_map[(x / fetility_cell_size_in_tiles
-                            + y / fetility_cell_size_in_tiles
-                                * (map_size.x / fetility_cell_size_in_tiles))
-                            as usize]
-                            .2 as f32,
-                    ),
+                    SoilFertility(fertility_map[(x + y * (overlay_map_size.x)) as usize].2 as f32),
                 ))
                 .id();
             tile_storage.set(&tile_pos, tile_entity);
@@ -111,4 +138,60 @@ pub fn generate_fertility(seed: u32, width: u32, height: u32) -> Vec<(u32, u32, 
         .enumerate()
         .map(|(index, value)| (index as u32 % width, index as u32 / width, *value))
         .collect()
+}
+
+use image::{DynamicImage, ImageBuffer};
+
+/// This function builds your image, you can use any pixel format you like
+fn make_rhombus_tile(
+    canvas_size: UVec2,
+    shape_scale: Vec2,
+    color: image::Rgba<u8>,
+    border_width: u32,
+    border_color: image::Rgba<u8>,
+) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+    let mut image = ImageBuffer::new(canvas_size.x, canvas_size.y);
+
+    let center_x = canvas_size.x / 2;
+    let center_y = canvas_size.y / 2;
+
+    let rhombus_width = (canvas_size.x as f32 * shape_scale.x) as u32;
+    let rhombus_height = (canvas_size.y as f32 * shape_scale.y) as u32;
+
+    let rhombus_left = center_x - rhombus_width / 2;
+    let rhombus_right = center_x + rhombus_width / 2;
+    let rhombus_top = center_y - rhombus_height / 2;
+    let rhombus_bottom = center_y + rhombus_height / 2;
+
+    for (x, y, pixel) in image.enumerate_pixels_mut() {
+        if x >= rhombus_left && x <= rhombus_right && y >= rhombus_top && y <= rhombus_bottom {
+            *pixel = color;
+        } else if border_width > 0
+            && (x == rhombus_left || x == rhombus_right || y == rhombus_top || y == rhombus_bottom)
+        {
+            *pixel = border_color;
+        }
+    }
+
+    image
+}
+
+fn setup_image(mut images: ResMut<Assets<Image>>, tile_side: u32) -> Handle<Image> {
+    let image: ImageBuffer<image::Rgba<u8>, Vec<u8>> = make_rhombus_tile(
+        UVec2::new(tile_side, tile_side),
+        Vec2::new(1.0, 0.5),
+        image::Rgba([0, 0, 255, 255]),
+        0,
+        image::Rgba([255, 255, 255, 255]),
+    );
+    // This does 3 things in one line:
+    // 1. Create a DynamicImage from our ImageBuffer
+    // 2. Convert that to an ImageBuffer<Rgba<u8>, _>
+    // 3. Convert it back into a DynamicImage
+    // You can skip steps 2 and 3 here if your image is built in Rgba<u8>
+    let dynamic_image = DynamicImage::from(image).to_rgba8().into();
+
+    // Now add it to Bevy!
+    return images.add(Image::from_dynamic(dynamic_image, true));
+    // Then spawn the sprite, or whatever else you'd like to do with it
 }

@@ -45,7 +45,7 @@ chrono = "0.4"
 bevy_pancam = "0.9"
 sun = "0.2"
 noise = { version = "0.8.2" }
-
+image = { version = "0.24" }
 [target.'cfg(target_os = "linux")'.dependencies]
 winit = { version = "0.29", features = ["x11"] }
 
