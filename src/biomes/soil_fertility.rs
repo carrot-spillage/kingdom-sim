@@ -59,22 +59,34 @@ fn create_tilemap(
     let map_size = tilemap_bundle.size;
     let tilemap_entity = commands.spawn(SoilFertilityTilemap).id();
 
-    for (x, y, fertility) in
-        generate_fertility(global_rng.u32(0..=u32::MAX), map_size.x, map_size.y)
-    {
-        let tile_pos = TilePos { x, y };
-        let tile_entity = commands
-            .spawn((
-                TileBundle {
-                    position: tile_pos,
-                    tilemap_id: TilemapId(tilemap_entity),
-                    color: TileColor(BASE_COLOR),
-                    ..Default::default()
-                },
-                SoilFertility(fertility as f32),
-            ))
-            .id();
-        tile_storage.set(&tile_pos, tile_entity);
+    let fetility_cell_size_in_tiles: u32 = 32;
+    let fertility_map = generate_fertility(
+        global_rng.u32(0..=u32::MAX),
+        map_size.x / fetility_cell_size_in_tiles,
+        map_size.y / fetility_cell_size_in_tiles,
+    );
+    for x in 0..map_size.x {
+        for y in 0..map_size.y {
+            let tile_pos = TilePos { x, y };
+            let tile_entity = commands
+                .spawn((
+                    TileBundle {
+                        position: tile_pos,
+                        tilemap_id: TilemapId(tilemap_entity),
+                        color: TileColor(BASE_COLOR),
+                        ..Default::default()
+                    },
+                    SoilFertility(
+                        fertility_map[(x / fetility_cell_size_in_tiles
+                            + y / fetility_cell_size_in_tiles
+                                * (map_size.x / fetility_cell_size_in_tiles))
+                            as usize]
+                            .2 as f32,
+                    ),
+                ))
+                .id();
+            tile_storage.set(&tile_pos, tile_entity);
+        }
     }
 
     commands.entity(tilemap_entity).insert(tilemap_bundle);
