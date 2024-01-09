@@ -1,4 +1,6 @@
 mod soil_fertility;
+mod tile_image;
+mod overlay_tilemap;
 
 use bevy::prelude::Component;
 
