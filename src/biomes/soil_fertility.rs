@@ -55,7 +55,7 @@ fn create_tilemap(
     z_offset: Res<TilemapZOffset>,
     assets: ResMut<Assets<Image>>,
 ) {
-    let tile_side = world_params.tile_side * 1.0;
+    let tile_side = world_params.tile_side * 16.0;
 
     let image = setup_image(assets, tile_side as u32);
     generate_overlay(
@@ -145,42 +145,39 @@ use image::{DynamicImage, ImageBuffer};
 /// This function builds your image, you can use any pixel format you like
 fn make_rhombus_tile(
     canvas_size: UVec2,
-    shape_scale: Vec2,
     color: image::Rgba<u8>,
     border_width: u32,
     border_color: image::Rgba<u8>,
 ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+    println!("canvas_size: {:?}", canvas_size);
     let mut image = ImageBuffer::new(canvas_size.x, canvas_size.y);
 
-    let center_x = canvas_size.x / 2;
-    let center_y = canvas_size.y / 2;
-
-    let rhombus_width = (canvas_size.x as f32 * shape_scale.x) as u32;
-    let rhombus_height = (canvas_size.y as f32 * shape_scale.y) as u32;
-
-    let rhombus_left = center_x - rhombus_width / 2;
-    let rhombus_right = center_x + rhombus_width / 2;
-    let rhombus_top = center_y - rhombus_height / 2;
-    let rhombus_bottom = center_y + rhombus_height / 2;
-
+    let f_canvas_size = canvas_size.as_vec2();
+    let mid = f_canvas_size / 2.0;
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-        if x >= rhombus_left && x <= rhombus_right && y >= rhombus_top && y <= rhombus_bottom {
+        if is_in_rhombus(Vec2::new(x as f32, y as f32), f_canvas_size, mid) {
             *pixel = color;
-        } else if border_width > 0
-            && (x == rhombus_left || x == rhombus_right || y == rhombus_top || y == rhombus_bottom)
-        {
-            *pixel = border_color;
         }
     }
 
     image
 }
 
+fn is_in_rhombus(point: Vec2, size: Vec2, mid: Vec2) -> bool {
+    let point = point - mid;
+    let size = size - mid;
+
+    let point = point;
+    let size = size;
+
+    let point = (point / size).abs();
+
+    point.x + point.y <= 1.0
+}
 fn setup_image(mut images: ResMut<Assets<Image>>, tile_side: u32) -> Handle<Image> {
     let image: ImageBuffer<image::Rgba<u8>, Vec<u8>> = make_rhombus_tile(
-        UVec2::new(tile_side, tile_side),
-        Vec2::new(1.0, 0.5),
-        image::Rgba([0, 0, 255, 255]),
+        UVec2::new(tile_side * 2, tile_side),
+        image::Rgba([255, 255, 255, 255]),
         0,
         image::Rgba([255, 255, 255, 255]),
     );
