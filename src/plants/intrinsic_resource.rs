@@ -49,7 +49,7 @@ pub fn grow_elapsed(
     mut elapsed_growers: EventReader<ElapsedEvent<Growing>>,
     mut growers: Query<(&mut Growing, &mut IntrinsicPlantResourceGrower)>,
 ) {
-    for elapsed in &mut elapsed_growers {
+    for elapsed in elapsed_growers.read() {
         if let Ok((growing, mut grower)) = growers.get_mut(elapsed.entity) {
             grower.update(growing.maturity);
             if growing.maturity >= 1.0 {

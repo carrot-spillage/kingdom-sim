@@ -36,7 +36,7 @@ fn mark_tiles_in_area_as_occupied(
     }
 
     let tile_storage = grids.single();
-    for AreaOccupiedEvent { area } in events.iter() {
+    for AreaOccupiedEvent { area } in events.read() {
         let world_offset = world_params.size / 2.0;
         let offset_area = Rect {
             min: area.min + world_offset,

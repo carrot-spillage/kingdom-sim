@@ -23,10 +23,10 @@ lto = "thin"
 
 
 [features]
-dev = ["bevy/bevy_dylib", "bevy/trace_tracy"]
+dev = ["bevy/trace_tracy"]
 
 [dependencies]
-bevy = { version = "0.11", features = [
+bevy = { version = "0.12", features = [
     "bevy_asset",
     "bevy_asset",
     "bevy_render",
@@ -35,14 +35,14 @@ bevy = { version = "0.11", features = [
     "png",
     "x11",
 ] }
-bevy_kira_audio = { version = "0.17" }
-bevy_asset_loader = { version = "0.17" }
-bevy_common_assets = { version = "0.7", features = ["yaml"] }
-bevy_turborand = { version = "0.6" }
-bevy_ecs_tilemap = { version = "0.11.1", features = ["atlas"] }
+bevy_kira_audio = { version = "0.19" }
+bevy_asset_loader = { version = "0.19" }
+bevy_common_assets = { version = "0.9", features = ["yaml"] }
+bevy_turborand = { version = "0.7" }
+bevy_ecs_tilemap = { version = "0.12", features = ["atlas"] }
 serde = "1.0"
 chrono = "0.4"
-bevy_pancam = "0.9"
+bevy_pancam = "0.10"
 sun = "0.2"
 noise = { version = "0.8.2" }
 image = { version = "0.24" }

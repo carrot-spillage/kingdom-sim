@@ -1,3 +1,4 @@
+use bevy::ecs::change_detection::DetectChangesMut;
 use bevy::prelude::{
     in_state, App, Assets, Commands, Component, Entity, Event, EventReader, EventWriter, Handle,
     Image, IntoSystemConfigs, OnEnter, Plugin, Query, Res, ResMut, Update, Vec2, With,
@@ -93,9 +94,9 @@ fn generate_image(
 ) {
     let chunk_size = Vec2::new(256.0, 256.0);
 
-    for event in &mut events {
+    for event in events.read() {
         let mut image_handle = cloud_image_handles.get_mut(event.0).unwrap();
-        *image_handle = images.set(image_handle.clone(), generate_clouds(chunk_size));
+        *image_handle = images.add(image_handle.clone(), generate_clouds(chunk_size));
         //Image::new_fill(TextureDimension::D2, );
         //*image_handle = images.set(image_handle.clone(), generate_clouds(world_params.size)); // TODO:
     }

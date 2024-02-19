@@ -40,7 +40,7 @@ pub fn produce_resources(
     mut producers: Query<&mut PlantResourceProducer>,
     mut elapsed_producers: EventReader<ElapsedEvent<PlantResourceProducer>>,
 ) {
-    for event in &mut elapsed_producers {
+    for event in elapsed_producers.read() {
         let mut producer = producers.get_mut(event.entity).unwrap();
         if producer.current.quantity < producer.max_quantity {
             producer.current.quantity += 1;

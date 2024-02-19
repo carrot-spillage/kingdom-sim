@@ -140,7 +140,7 @@ pub fn germinate(
     mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
 ) {
-    for germinator_event in &mut elapsed_germinators {
+    for germinator_event in elapsed_germinators.read() {
         let (plant_prefab_id, position, germinator_params, mut rng) = germinator_params_query
             .get_mut(germinator_event.entity)
             .unwrap();

@@ -151,7 +151,7 @@ fn setup(
 }
 
 /// Our custom post processing material
-#[derive(Reflect, AsBindGroup, TypeUuid, Clone)]
+#[derive(Reflect, AsBindGroup, Asset, TypeUuid, Clone)]
 #[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
 struct DayNightLightingMaterial {
     /// In this example, this image will be the result of the main camera.
