@@ -94,7 +94,7 @@ impl Plugin for GamePlugin {
             Rect::from_corners(-size / 2.0, size / 2.0),
             map_size_factor,
         ));
-        app.add_state::<GameState>()
+        app.init_state::<GameState>()
             .add_plugins(YamlAssetPlugin::<PlantPrefabVec>::new(&["plants.yaml"]))
             .add_plugins(YamlAssetPlugin::<ItemPrefabVec>::new(&["items.yaml"]))
             .add_plugins(YamlAssetPlugin::<BuildingPrefabVec>::new(&[

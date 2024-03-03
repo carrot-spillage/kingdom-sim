@@ -3,7 +3,7 @@ use bevy::{
     prelude::{
         default, Added, Changed, Color, Component, Entity, Query, Res, Transform, With, Without,
     },
-    text::{Text, Text2dBundle, TextAlignment, TextStyle},
+    text::{JustifyText, Text, Text2dBundle, TextStyle},
 };
 
 use crate::{
@@ -38,8 +38,8 @@ where
         font_size: 11.0,
         color: Color::ORANGE_RED,
     };
-    let text_alignment = TextAlignment::Center;
-    Text::from_section(text, text_style.clone()).with_alignment(text_alignment)
+    let justify_text = JustifyText::Center;
+    Text::from_section(text, text_style.clone()).with_justify(justify_text)
 }
 
 pub fn create_tooltip_bundle(top: f32, fonts: &Res<FontAssets>) -> Text2dBundle {

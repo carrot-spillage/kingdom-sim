@@ -1,14 +1,14 @@
-#import bevy_pbr::utils                    coords_to_viewport_uv
-#import bevy_sprite::mesh2d_view_bindings  view
-#import bevy_sprite::mesh2d_vertex_output  VertexOutput
+#import bevy_pbr::utils::{coords_to_viewport_uv}
+#import bevy_sprite::mesh2d_view_bindings::{view}
+#import bevy_sprite::mesh2d_vertex_output::{VertexOutput}
 
-@group(1) @binding(0)
+@group(2) @binding(0)
 var texture: texture_2d<f32>;
 
-@group(1) @binding(1)
+@group(2) @binding(1)
 var our_sampler: sampler;
 
-@group(1) @binding(2)
+@group(2) @binding(2)
 var<uniform> color_distortion: vec4<f32>;
 
 @fragment

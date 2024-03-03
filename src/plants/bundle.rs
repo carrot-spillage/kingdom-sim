@@ -3,7 +3,10 @@ use crate::{
     items::ItemPrefabId,
     timer_plugin::{Timed, TimerSettings},
 };
-use bevy::prelude::{Bundle, Component, Handle, Image, ResMut, Vec2};
+use bevy::{
+    prelude::{Bundle, Component, Handle, Image, ResMut, Vec2},
+    reflect::TypePath,
+};
 use bevy_turborand::prelude::*;
 
 use super::{
@@ -11,24 +14,19 @@ use super::{
     PlantMaturityStage,
 };
 
-#[derive(
-    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
-)]
-#[uuid = "407e6caf-2901-437a-b2e6-5ca256de6b2a"]
+#[derive(Component, serde::Deserialize, TypePath, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct PlantPrefabId(pub u32);
 
 #[derive(Component, Clone, Debug)]
 pub struct PlantName(pub &'static str);
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug)]
-#[uuid = "c1b29b63-2032-413c-bb10-bb0e9b54f7b2"]
+#[derive(serde::Deserialize, TypePath, Clone, Copy, Debug)]
 pub struct Range<T> {
     pub from: T,
     pub to: T,
 }
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4b"]
+#[derive(Component, serde::Deserialize, TypePath, Clone, Copy, Debug)]
 pub struct GerminatorParams {
     pub radius: u32,
     pub period_range: Range<u32>,
@@ -81,23 +79,20 @@ pub struct PlantBundle {
     pub rng: RngComponent,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
-#[uuid = "fd8aa8ff-bb48-4572-a6d8-7e7dc1fec9a7"]
+#[derive(serde::Deserialize, TypePath, Debug, Clone, Copy)]
 pub struct IntrinsicResourceParams {
     pub max_quantity_range: Range<u32>,
     pub item_prefab_id: ItemPrefabId,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
-#[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f61053"]
+#[derive(serde::Deserialize, TypePath, Debug, Clone, Copy)]
 pub struct ResourceProducerParams {
     pub max_quantity: u32,
     pub period_range: Range<u32>,
     pub item_prefab_id: ItemPrefabId,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
-#[uuid = "f36d1e36-3e4f-4608-b9f7-5bc1b9f62055"]
+#[derive(serde::Deserialize, TypePath, Debug, Clone, Copy)]
 pub struct Size {
     pub x: f32,
     pub y: f32,
@@ -109,8 +104,7 @@ impl Size {
     }
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c4a"]
+#[derive(serde::Deserialize, Debug, Clone)]
 pub struct PlantPrefab<T = Handle<Image>, V = Vec2> {
     pub id: PlantPrefabId,
     pub name: String,
@@ -123,8 +117,7 @@ pub struct PlantPrefab<T = Handle<Image>, V = Vec2> {
     pub resource_producer: Option<ResourceProducerParams>,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b44380a2c4a"]
+#[derive(serde::Deserialize, Debug, Clone)]
 pub struct PlantPrefabTextureSet<T> {
     pub default: T,
 }

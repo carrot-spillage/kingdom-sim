@@ -34,20 +34,17 @@ impl Plugin for LoadingPlugin {
 // the following asset collections will be loaded during the State `GameState::Loading`
 // when done loading, they will be inserted as resources (see https://github.com/NiklasEi/bevy_asset_loader)
 
-#[derive(TypePath, serde::Deserialize, Asset, bevy::reflect::TypeUuid, Debug)]
-#[uuid = "413be529-bfeb-41b3-9db0-4b8b380a2c48"]
+#[derive(TypePath, serde::Deserialize, Asset, Debug)]
 pub struct PlantPrefabVec {
     pub plants: Vec<PlantPrefab<String, Size>>,
 }
 
-#[derive(TypePath, serde::Deserialize, Asset, bevy::reflect::TypeUuid, Debug)]
-#[uuid = "160a57b6-2417-47c7-bd3b-52ace245cc49"]
+#[derive(TypePath, serde::Deserialize, Asset, Debug)]
 pub struct ItemPrefabVec {
     pub items: Vec<ItemPrefab<String>>,
 }
 
-#[derive(TypePath, serde::Deserialize, Asset, bevy::reflect::TypeUuid, Debug)]
-#[uuid = "2d6e164e-73cc-4b74-b7d3-cdbfc59ef727"]
+#[derive(TypePath, serde::Deserialize, Asset, Debug)]
 pub struct BuildingPrefabVec {
     pub buildings: Vec<BuildingPrefab<String, Size>>,
 }

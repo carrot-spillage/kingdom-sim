@@ -1,3 +1,4 @@
+use bevy::render::render_asset::RenderAssetUsages;
 use image::DynamicImage;
 
 use bevy::math::UVec2;
@@ -62,6 +63,10 @@ pub(crate) fn generate_image(mut images: ResMut<Assets<Image>>, tile_side: u32) 
     let dynamic_image = DynamicImage::from(image).to_rgba8().into();
 
     // Now add it to Bevy!
-    return images.add(Image::from_dynamic(dynamic_image, true));
+    return images.add(Image::from_dynamic(
+        dynamic_image,
+        true,
+        RenderAssetUsages::RENDER_WORLD,
+    ));
     // Then spawn the sprite, or whatever else you'd like to do with it
 }

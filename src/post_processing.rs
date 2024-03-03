@@ -1,6 +1,5 @@
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
     render::{
         camera::RenderTarget,
         render_resource::{
@@ -108,10 +107,10 @@ fn setup(
 
     let post_processing_pass_layer = RenderLayers::layer((RenderLayers::TOTAL_LAYERS - 1) as u8);
 
-    let quad_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+    let quad_handle = meshes.add(Mesh::from(Rectangle::new(
         size.width as f32,
         size.height as f32,
-    ))));
+    )));
 
     // This material has the texture that has been rendered.
     let material_handle = post_processing_materials.add(DayNightLightingMaterial {
@@ -135,24 +134,20 @@ fn setup(
 
     // The post-processing pass camera.
     commands.spawn((
-        (
-            Camera2dBundle {
-                camera: Camera {
-                    // renders after the first main camera which has default value: 0.
-                    order: 1,
-                    ..default()
-                },
-                ..Camera2dBundle::default()
+        Camera2dBundle {
+            camera: Camera {
+                // renders after the first main camera which has default value: 0.
+                order: 1,
+                ..default()
             },
-            post_processing_pass_layer,
-        ),
-        UiCameraConfig { show_ui: false },
+            ..Camera2dBundle::default()
+        },
+        post_processing_pass_layer,
     ));
 }
 
 /// Our custom post processing material
-#[derive(Reflect, AsBindGroup, Asset, TypeUuid, Clone)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
+#[derive(AsBindGroup, Asset, TypePath, Clone)]
 struct DayNightLightingMaterial {
     /// In this example, this image will be the result of the main camera.
     #[texture(0)]

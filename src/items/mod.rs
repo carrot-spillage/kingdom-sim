@@ -1,6 +1,7 @@
 use bevy::{
     math::Vec3,
     prelude::{Commands, Component, Entity, Handle, Image, Res, Resource, Transform},
+    reflect::TypePath,
     sprite::{Sprite, SpriteBundle},
     utils::hashbrown::HashMap,
 };
@@ -101,15 +102,13 @@ pub enum CarrierHands {
     Combined(ItemBatch),
 }
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
-#[uuid = "7df1e471-50ac-4f76-a7d9-c8507f28fde4"]
+#[derive(Component, serde::Deserialize, TypePath, Debug, Clone, Copy)]
 pub enum ItemHandlingKind {
     TwoHanded,
     SingleHanded,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
-#[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527b"]
+#[derive(serde::Deserialize, TypePath, Debug, Clone)]
 pub struct ItemPrefab<T = Handle<Image>> {
     pub id: ItemPrefabId,
     pub packable: bool, // false - only handheld
@@ -118,20 +117,15 @@ pub struct ItemPrefab<T = Handle<Image>> {
     pub textures: ItemPrefabTextures<T>,
 }
 
-#[derive(serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone)]
-#[uuid = "ef93bff8-fd0c-472d-a9ac-410ed43d527a"]
+#[derive(serde::Deserialize, TypePath, Debug, Clone)]
 pub struct ItemPrefabTextures<T> {
     pub dropped: T,
 }
 
-#[derive(
-    Component, serde::Deserialize, bevy::reflect::TypeUuid, Clone, Copy, Debug, Hash, PartialEq, Eq,
-)]
-#[uuid = "3819241a-9f90-47dc-b5df-bc99f8fec014"]
+#[derive(Component, serde::Deserialize, TypePath, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct ItemPrefabId(pub u32);
 
-#[derive(Component, serde::Deserialize, bevy::reflect::TypeUuid, Debug, Clone, Copy)]
-#[uuid = "3819241a-9f90-47dc-b5df-bc99538ec01f"]
+#[derive(Component, serde::Deserialize, TypePath, Debug, Clone, Copy)]
 pub struct ItemBatch {
     pub prefab_id: ItemPrefabId,
     pub quantity: u32,
