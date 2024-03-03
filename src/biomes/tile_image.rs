@@ -55,18 +55,11 @@ pub(crate) fn generate_image(mut images: ResMut<Assets<Image>>, tile_side: u32) 
         0,
         image::Rgba([255, 255, 255, 255]),
     );
-    // This does 3 things in one line:
-    // 1. Create a DynamicImage from our ImageBuffer
-    // 2. Convert that to an ImageBuffer<Rgba<u8>, _>
-    // 3. Convert it back into a DynamicImage
-    // You can skip steps 2 and 3 here if your image is built in Rgba<u8>
-    let dynamic_image = DynamicImage::from(image).to_rgba8().into();
+    let dynamic_image = DynamicImage::from(image);
 
-    // Now add it to Bevy!
     return images.add(Image::from_dynamic(
         dynamic_image,
         true,
         RenderAssetUsages::RENDER_WORLD,
     ));
-    // Then spawn the sprite, or whatever else you'd like to do with it
 }
