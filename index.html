@@ -18,7 +18,7 @@
 canvas {
     background-color: white;
 }</style>
-<link rel="modulepreload" href="kingdom-sim/kingdom_sim-a85dcc7ab6617ea.js" crossorigin="anonymous" integrity="sha384-3TUfcCkmJF/TWnosv4DrLzoS/b4laa0+0cAtsxx+shwT5uTNT8lbnIaxwuY5It63"><link rel="preload" href="kingdom-sim/kingdom_sim-a85dcc7ab6617ea_bg.wasm" crossorigin="anonymous" integrity="sha384-I34HZbrlIkrFIQE9WBLPxAxDUMMab70i81H4ae6+DhX6Ag7U5Ow43f7zKbiDu+XK" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="kingdom-sim/kingdom_sim-3c0b73b3284ace1.js" crossorigin="anonymous" integrity="sha384-EKRO032XRw6b9A/sZllS6OagfkzcSq/F5vs/qaRPRdch19mtvBSlfn91IKzJEoho"><link rel="preload" href="kingdom-sim/kingdom_sim-3c0b73b3284ace1_bg.wasm" crossorigin="anonymous" integrity="sha384-IP2r3lHg3zHXVgluWTWeM6rZdlaNdUNw0Dke7A61DObAQh9qwEfAv/FlOdzEGHty" as="fetch" type="application/wasm"></head>
 
 <body>
   <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
@@ -85,8 +85,8 @@ canvas {
 })();</script>
 
 <script type="module">
-import init, * as bindings from 'kingdom-sim/kingdom_sim-a85dcc7ab6617ea.js';
-const wasm = await init('kingdom-sim/kingdom_sim-a85dcc7ab6617ea_bg.wasm');
+import init, * as bindings from 'kingdom-sim/kingdom_sim-3c0b73b3284ace1.js';
+const wasm = await init('kingdom-sim/kingdom_sim-3c0b73b3284ace1_bg.wasm');
 
 
 window.wasmBindings = bindings;
