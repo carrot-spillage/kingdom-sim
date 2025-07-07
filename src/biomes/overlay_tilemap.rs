@@ -9,7 +9,7 @@ use bevy_turborand::DelegatedRng;
 
 use super::soil_fertility::generate_fertility;
 use super::soil_fertility::SoilFertilityTilemap;
-use super::tile_image::generate_image;
+use super::tile_image::generate_tile_image;
 use super::SoilFertility;
 
 use bevy_ecs_tilemap::prelude::TilemapTexture;
@@ -46,11 +46,11 @@ pub(crate) fn create_tilemap(
     textures: Res<TextureAssets>,
     mut global_rng: ResMut<GlobalRng>,
     z_offset: Res<TilemapZOffset>,
-    assets: ResMut<Assets<Image>>,
+    mut assets: ResMut<Assets<Image>>,
 ) {
     let tile_side = world_params.tile_side * 16.0;
 
-    let image = generate_image(assets, tile_side as u32);
+    let image = generate_tile_image(&mut assets, tile_side as u32, Color::WHITE);
     generate_overlay(
         BASE_COLOR,
         world_params,
@@ -90,7 +90,6 @@ pub(crate) fn generate_overlay(
         overlay_map_size.y,
     );
 
-    let tile_color = TileColor(overlay_color);
     for x in 0..overlay_map_size.x {
         for y in 0..overlay_map_size.y {
             let tile_pos = TilePos { x, y };
@@ -99,7 +98,7 @@ pub(crate) fn generate_overlay(
                     TileBundle {
                         position: tile_pos,
                         tilemap_id: TilemapId(tilemap_entity),
-                        color: tile_color,
+                        color: TileColor(overlay_color),
                         ..Default::default()
                     },
                     SoilFertility(fertility_map[(x + y * (overlay_map_size.x)) as usize].2 as f32),

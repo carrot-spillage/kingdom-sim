@@ -21,7 +21,7 @@ use crate::{common::TilemapZOffset, create_world::WorldParams, tilemap_utils::ne
 
 use crate::{loading::TextureAssets, GameState};
 
-use super::{tile_image::generate_image, overlay_tilemap::create_tilemap};
+use super::overlay_tilemap::create_tilemap;
 
 #[derive(Component)]
 pub struct SoilFertility(pub f32); // 0..1

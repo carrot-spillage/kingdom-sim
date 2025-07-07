@@ -1,3 +1,4 @@
+use bevy::render::color::Color;
 use bevy::render::render_asset::RenderAssetUsages;
 use image::DynamicImage;
 
@@ -48,10 +49,14 @@ fn make_rhombus_tile(
     image
 }
 
-pub(crate) fn generate_image(mut images: ResMut<Assets<Image>>, tile_side: u32) -> Handle<Image> {
+pub fn generate_tile_image(
+    images: &mut ResMut<Assets<Image>>,
+    tile_side: u32,
+    color: Color,
+) -> Handle<Image> {
     let image: ImageBuffer<image::Rgba<u8>, Vec<u8>> = make_rhombus_tile(
         UVec2::new(tile_side * 2, tile_side),
-        image::Rgba([255, 255, 255, 255]),
+        image::Rgba(color.as_rgba_u8()),
         0,
         image::Rgba([255, 255, 255, 255]),
     );

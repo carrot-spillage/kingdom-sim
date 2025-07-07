@@ -1,4 +1,9 @@
-use bevy::prelude::{Commands, Component, Res};
+use bevy::{
+    asset::Assets,
+    ecs::system::ResMut,
+    prelude::{Commands, Component, Res},
+    render::{color::Color, texture::Image},
+};
 use bevy_ecs_tilemap::{
     prelude::{
         get_tilemap_center_transform, IsoCoordSystem, TilemapId, TilemapSize, TilemapTexture,
@@ -8,7 +13,7 @@ use bevy_ecs_tilemap::{
     TilemapBundle,
 };
 
-use crate::{create_world::WorldParams, loading::TextureAssets};
+use crate::{biomes::generate_tile_image, create_world::WorldParams};
 
 #[derive(Component)]
 pub struct LandTilemap;
@@ -16,7 +21,7 @@ pub struct LandTilemap;
 pub fn create_land_tilemap(
     commands: &mut Commands,
     world_params: &Res<WorldParams>,
-    textures: &Res<TextureAssets>,
+    assets: &mut ResMut<Assets<Image>>,
 ) {
     println!("Creating land tilemap");
 
@@ -48,12 +53,16 @@ pub fn create_land_tilemap(
         }
     }
 
+    let tile_side = world_params.tile_side * 16.0;
+
+    let image = generate_tile_image(assets, tile_side as u32, Color::SEA_GREEN);
+
     commands.entity(tilemap_entity).insert(TilemapBundle {
         grid_size,
         map_type,
         size: map_size,
         storage: tile_storage,
-        texture: TilemapTexture::Single(textures.tile.clone()),
+        texture: TilemapTexture::Single(image.clone()),
         tile_size,
         transform: get_tilemap_center_transform(&map_size, &grid_size, &map_type, 0.0),
         ..Default::default()

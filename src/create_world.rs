@@ -1,11 +1,13 @@
 use std::collections::VecDeque;
 
 use bevy::{
+    asset::Assets,
     math::{Vec2, Vec3},
     prelude::{
         App, Commands, Component, Entity, Event, EventWriter, NextState, OnEnter, Plugin, Query,
         Rect, Res, ResMut, Resource, Transform, With, Without,
     },
+    render::texture::Image,
     sprite::SpriteBundle,
 };
 
@@ -65,12 +67,13 @@ fn create_world(
     plants: Res<PlantPrefabMap>,
     items: Res<ItemPrefabMap>,
     buildings: Res<BuildingPrefabMap>,
+    mut assets: ResMut<Assets<Image>>,
 
     mut quad_tree: ResMut<QuadTree<Entity>>,
     mut area_occupied_events: EventWriter<AreaOccupiedEvent>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    create_land_tilemap(&mut commands, &world_params, &textures);
+    create_land_tilemap(&mut commands, &world_params, &mut assets);
     let house_prefab = buildings.0.get(&BuildingPrefabId(1)).unwrap();
 
     let campfire_pos = get_random_pos(&mut global_rng, Vec2::ZERO, world_params.size / 4.0);
